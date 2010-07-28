@@ -18,8 +18,11 @@ The main workflow is:
 ![Basic workflow](http://eftimie.ro/wiki/_media/workflow-en.png?w=&h=&cache=cache "Basic workflow")
 
 The basic ui views are:
+
 ![Student list view](http://eftimie.ro/wiki/_media/1._home.png?w=&h=&cache=cache "Student list view")
+
 ![Timetable](http://eftimie.ro/wiki/_media/2._timetable.png?id=moodle-remote&cache=cache "Timetable")
+
 ![Student view](http://eftimie.ro/wiki/_media/3._individual.png?id=moodle-remote&cache=cache "Student view")
 
 # Middleware #
@@ -36,25 +39,28 @@ Android: Java
 Middleware: Python (Django) or PHP
 
 # Motivation #
-*     Build something useful.
-*     Familiarize ourselves with the Android platform.
-*     To win :)
+*   Build something useful.
+*   Familiarize ourselves with the Android platform.
+*   To win :)
 
 # Team #
-*      Alex Eftimie 
-*      Sergiu Iordache 
-*      Irina Preșa
+*   Alex Eftimie 
+*   Sergiu Iordache 
+*   Irina Preșa
 
 # License #
-*      GPL v3
+*   GPL v3
 
 Links
-*      http://blog.hansdezwart.info/2009/12/01/a-design-concept-for-a-mobile-moodle-application/
-*      http://ignatiawebs.blogspot.com/2010/03/moodle-accessible-for-androids-first.html
-*      http://beradrian.wordpress.com/2010/06/30/web-in-progress-registration-and-rules/
+
+*   <http://blog.hansdezwart.info/2009/12/01/a-design-concept-for-a-mobile-moodle-application/>
+*   <http://ignatiawebs.blogspot.com/2010/03/moodle-accessible-for-androids-first.html>
+*   <http://beradrian.wordpress.com/2010/06/30/web-in-progress-registration-and-rules/>
+
 Middleware:
-*      http://cipcnet.insa-lyon.fr/Members/ppollet/public/moodlews/
-*      http://cipcnet.insa-lyon.fr/Members/ppollet/public/moodlews/python-notes/
-*      http://pywebsvcs.sourceforge.net/
+
+*   <http://cipcnet.insa-lyon.fr/Members/ppollet/public/moodlews/>
+*   <http://cipcnet.insa-lyon.fr/Members/ppollet/public/moodlews/python-notes/>
+*   <http://pywebsvcs.sourceforge.net/>
 
 
