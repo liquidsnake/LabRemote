@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+	<!-- Header layout : Course, class and date -->
+	
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/header" android:layout_width="fill_parent"
+	android:layout_height="wrap_content" android:background="@color/header_color"
+	android:stretchColumns="1">
+	<TableRow>
+		<TextView android:textColor="#000000" android:textSize="30dip"
+			android:text="USO" />
+		<LinearLayout android:gravity="right"
+			android:orientation="vertical">
+			<TextView android:id="@+id/classHeader"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textColor="#000000" android:textSize="10dip"
+				android:paddingTop="2dip" />
+			<TextView android:id="@+id/dateHeader" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:textColor="#000000"
+				android:textSize="10dip" android:paddingTop="5dip" android:text="Mon, 12 July" />
+		</LinearLayout>
+	</TableRow>
+</TableLayout>

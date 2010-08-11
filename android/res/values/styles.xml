@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<style name="ListLayout">
+		<item name="android:background">#FFFFFF</item>
+		<item name="android:layout_marginTop">5dip</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_width">fill_parent</item>
+	</style>
+	
+	<style name="TableHeader">
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_width">fill_parent</item>
+		<item name="android:layout_weight">1</item>
+		<item name="android:layout_margin">1dip</item>
+		<item name="android:gravity">center</item>
+		<item name="android:textColor">@color/black</item>
+	</style>
+	<style name="RowHeader" parent="TableHeader">
+		<item name="android:background">@color/white</item>
+	</style>
+	<style name="CellHeader" parent="TableHeader">
+		<item name="android:background">@color/grey1</item>
+	</style>
+	
+	<style name="TableCell">
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_width">fill_parent</item>
+		<item name="android:layout_weight">1</item>
+		<item name="android:gravity">center</item>
+		<item name="android:textColor">@color/black</item>
+		<item name="android:layout_marginRight">1dip</item>
+		<item name="android:layout_marginBottom">1dip</item>
+	</style>
+	<style name="GreyCell" parent="TableCell">
+		 <item name="android:background">@color/grey2</item>
+	</style>	
+	<style name="WhiteCell" parent="TableCell">
+		<item name="android:background">@color/white</item>
+	</style>
+	
+	<style name="MainButton">
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_width">fill_parent</item>
+		<item name="android:layout_weight">1</item>
+		<item name="android:padding">5dip</item>
+		<item name="android:layout_margin">15dip</item>
+	</style>
+</resources>
+
