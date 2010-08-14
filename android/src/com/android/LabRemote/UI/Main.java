@@ -1,5 +1,6 @@
-/* 
- * Application main layout, after autentification
+/** 
+ * Application main layout 
+ * Appears after autentification and lets us choose a specific view
  * 
  * Version: 1.0
  * 
@@ -9,6 +10,7 @@
 package com.android.LabRemote.UI;
 
 import com.android.LabRemote.R;
+import com.android.LabRemote.Utils.CustomDate;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,55 +21,76 @@ import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
+
 public class Main extends Activity {
-	
-	private Intent mTimetableIntent, mCurrentIntent, mSearchIntent;
+
+	private Intent mTimetableIntent, mCurrentIntent;
 	private Button mTimetableButton, mCurrentButton, mExitButton, mSearchButton;
-	
+	private String currentGroup = "333 CC";
+
 	@Override
-    public void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
+
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
+		setContentView(R.layout.main);
+
+		mTimetableIntent = new Intent(this, DayList.class);
+		mCurrentIntent = new Intent(this, GroupView.class);
+
+		initMenuButtons();
+	}
+	
+	/**
+	 * Initialize menu buttons
+	 * On click event, a button takes us to the selected view
+	 */
+	private void initMenuButtons() {
 		
-        super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE); 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
-        		WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        
-        mTimetableIntent = new Intent(this, TimeTable.class);
-        mCurrentIntent = new Intent(this, GroupView.class);
-        mSearchIntent = new Intent(this, IndividualView.class);
-        
-        setContentView(R.layout.main);
-        
-        mTimetableButton = (Button) findViewById(R.id.timetableButton);
-        mTimetableButton.setOnClickListener(new OnClickListener() {
+		/** Timetable button */
+		mTimetableButton = (Button) findViewById(R.id.timetableButton);
+		mTimetableButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				startActivity(mTimetableIntent);				
+				startActivity(mTimetableIntent);
 			}
 		});
-        
-        /* Current course button */
-        mCurrentButton = (Button) findViewById(R.id.currentCourseButton);
-        mCurrentButton.setOnClickListener(new OnClickListener() {
+
+		/** Current course button */
+		mCurrentButton = (Button) findViewById(R.id.currentCourseButton);
+		mCurrentButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				startActivity(mCurrentIntent);				
+				mCurrentIntent.putExtra("Group", currentGroup);
+				mCurrentIntent.putExtra("Date", CustomDate.getCurrentDate());
+				startActivity(mCurrentIntent);
 			}
 		});
-        
-        /* Search button */
-        mSearchButton = (Button) findViewById(R.id.searchButton);
-        mSearchButton.setOnClickListener(new OnClickListener() {
+
+		/** Search button */
+		mSearchButton = (Button) findViewById(R.id.searchButton);
+		mSearchButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				startActivity(mSearchIntent);				
+				onSearchRequested();
 			}
 		});
-        
-        /* Exit button */
-        mExitButton = (Button) findViewById(R.id.exitButton);
-        mExitButton.setOnClickListener(new OnClickListener() {
+
+		/** Exit button */
+		mExitButton = (Button) findViewById(R.id.exitButton);
+		mExitButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				finish();
 			}
 		});
+	}
 
-    }
+	/** 
+	 * Passes search data to the searchable activity
+	 * @see android.app.Activity#onSearchRequested()
+	 */
+	public boolean onSearchRequested() {
+		startSearch(null, false, null, false); 
+		return true;
+	}
 }

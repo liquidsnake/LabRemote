@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-	<!-- Layout for an item in GroupView list -->
+<!-- Layout for an item in GroupView list -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent" android:layout_height="wrap_content"
-	android:orientation="horizontal" android:background="@color/white">
+	android:orientation="horizontal" android:background="@color/white" >
 
 	<FrameLayout android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:layout_weight="1">
@@ -11,16 +11,22 @@
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 	</FrameLayout>
 
-	<FrameLayout android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:layout_weight="1">
+	<FrameLayout android:layout_width="fill_parent" android:layout_gravity="center_vertical"
+		android:layout_height="wrap_content" android:layout_weight="0.5">
 		<TextView android:id="@+id/groupName" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" />
+			android:layout_height="wrap_content" android:textColor="@color/black"
+			android:textStyle="bold" android:layout_gravity="center"/>
 	</FrameLayout>
 
-	<FrameLayout android:layout_width="fill_parent"
+	<FrameLayout android:layout_width="fill_parent" 
 		android:layout_height="wrap_content" android:layout_weight="1">
-		<Button android:id="@+id/groupGrade" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" />
+		<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" 
+			android:background="@color/black" android:layout_margin="5dip" android:layout_gravity="right">
+			<EditText  android:id="@+id/groupGrade" android:layout_width="wrap_content" 
+				android:layout_height="wrap_content"  android:inputType="number" android:padding="2dip"
+				android:layout_margin="2dip" android:background="@color/grey" android:textColor="@color/black">                                           
+			</EditText>
+		</FrameLayout>
 	</FrameLayout>
 
 </LinearLayout>

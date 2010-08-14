@@ -1,20 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 	<!-- Group view layout -->
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="fill_parent" android:layout_height="fill_parent"
-	android:orientation="vertical">
+			android:layout_width="fill_parent"
+    	android:layout_height="fill_parent" android:orientation="vertical">
 
-	<TableLayout android:id="@+id/header" android:layout_width="fill_parent"
+<android.gesture.GestureOverlayView
+    android:id="@+id/gestures"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gestureStrokeType="single"
+    android:eventsInterceptionEnabled="true">
+
+	<TableLayout android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
-		<include android:id="@+id/cell1" layout="@layout/header" />
+		<include android:id="@+id/header" layout="@layout/header" />
 	</TableLayout>
+	</android.gesture.GestureOverlayView>
 
 	<ListView android:id="@+id/studentsList" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:divider="#000000"
-		android:dividerHeight="5dip" android:choiceMode="multipleChoice"
-		android:background="#000000" android:orientation="vertical">
+		android:dividerHeight="2dip" android:background="#000000" 
+		android:orientation="vertical">
 	</ListView>
 
-</LinearLayout>
 
+</LinearLayout>

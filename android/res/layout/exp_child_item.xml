@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TimeTable child item for the expandable list -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="wrap_content"
+	android:background="@color/white" android:layout_marginBottom="2dip"
+	android:orientation="horizontal" >
+	<TextView android:layout_width="fill_parent" android:id="@+id/exp_child_name"
+		android:focusable="false" android:layout_height="wrap_content"
+		gravity="center" android:padding="4dip" android:layout_gravity="center"
+		android:layout_marginLeft="100dip" android:textSize="15dip"
+		android:textColor="@color/black" />
+</LinearLayout>

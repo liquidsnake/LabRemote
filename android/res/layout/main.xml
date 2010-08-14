@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-	<!-- Application main layout, after autentification -->
+<!-- Application main layout, after autentification -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
@@ -10,6 +10,7 @@
 		android:textColor="@color/black" android:paddingBottom="20dip"
 		android:paddingTop="20dip" android:textSize="30sp" android:text="Lab Remote" />
 
+	<!-- Menu buttons -->
 	<TableLayout android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<TableRow android:layout_width="fill_parent"
