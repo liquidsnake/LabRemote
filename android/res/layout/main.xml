@@ -14,22 +14,22 @@
 	<TableLayout android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<TableRow android:layout_width="fill_parent"
-			android:layout_height="wrap_content">
-			<Button android:id="@+id/currentCourseButton" style="@style/MainButton"
+			android:layout_height="match_parent">
+			<TextView android:id="@+id/currentCourseButton" style="@style/MainButton"
 				android:text="Current">
-			</Button>
-			<Button android:id="@+id/searchButton" style="@style/MainButton"
+			</TextView>
+			<TextView android:id="@+id/searchButton" style="@style/MainButton"
 				android:text="Search">
-			</Button>
+			</TextView>
 		</TableRow>
 		<TableRow android:layout_width="fill_parent"
 			android:layout_height="wrap_content">
-			<Button android:id="@+id/timetableButton" style="@style/MainButton"
+			<TextView android:id="@+id/timetableButton" style="@style/MainButton" 
 				android:text="Timetable">
-			</Button>
-			<Button android:id="@+id/otherButton" style="@style/MainButton"
+			</TextView>
+			<TextView android:id="@+id/otherButton" style="@style/MainButton"
 				android:text="Other">
-			</Button>
+			</TextView>
 		</TableRow>
 	</TableLayout>
 

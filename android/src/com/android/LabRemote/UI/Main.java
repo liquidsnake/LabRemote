@@ -9,9 +9,6 @@
 
 package com.android.LabRemote.UI;
 
-import com.android.LabRemote.R;
-import com.android.LabRemote.Utils.CustomDate;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,12 +17,19 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.android.LabRemote.R;
+import com.android.LabRemote.Utils.CustomDate;
 
 
 public class Main extends Activity {
 
 	private Intent mTimetableIntent, mCurrentIntent;
-	private Button mTimetableButton, mCurrentButton, mExitButton, mSearchButton;
+	private TextView mTimetableButton, mSearchButton;
+	private TextView mCurrentButton;
+	private Button mExitButton;
 	private String currentGroup = "333 CC";
 
 	@Override
@@ -51,7 +55,7 @@ public class Main extends Activity {
 	private void initMenuButtons() {
 		
 		/** Timetable button */
-		mTimetableButton = (Button) findViewById(R.id.timetableButton);
+		mTimetableButton = (TextView) findViewById(R.id.timetableButton);
 		mTimetableButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				startActivity(mTimetableIntent);
@@ -59,7 +63,7 @@ public class Main extends Activity {
 		});
 
 		/** Current course button */
-		mCurrentButton = (Button) findViewById(R.id.currentCourseButton);
+		mCurrentButton = (TextView) findViewById(R.id.currentCourseButton);
 		mCurrentButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				mCurrentIntent.putExtra("Group", currentGroup);
@@ -69,7 +73,7 @@ public class Main extends Activity {
 		});
 
 		/** Search button */
-		mSearchButton = (Button) findViewById(R.id.searchButton);
+		mSearchButton = (TextView) findViewById(R.id.searchButton);
 		mSearchButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				onSearchRequested();
