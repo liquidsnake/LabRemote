@@ -14,7 +14,8 @@ class Student(models.Model):
         return u'%s %s' % (self.first_name, self.last_name)
         
     def info_dict(self):
-        return {"name": self.name,
+        return {"id": self.id,
+            "name": self.name,
             "avatar": self.avatar}
             
     def __unicode__(self):
