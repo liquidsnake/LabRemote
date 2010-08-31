@@ -7,8 +7,10 @@ class ActivityAdmin(admin.ModelAdmin): pass
 class AttendanceAdmin(admin.ModelAdmin): pass
 class CourseAdmin(admin.ModelAdmin): pass
 
+admin.site.register(Assistant, StudentAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Activity, ActivityAdmin)
 admin.site.register(Attendance, AttendanceAdmin)
 admin.site.register(Course, CourseAdmin)
+admin.site.register(Group)
 

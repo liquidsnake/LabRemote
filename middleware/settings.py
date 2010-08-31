@@ -80,3 +80,6 @@ INSTALLED_APPS = (
     'core',
     'rest',
 )
+
+if os.path.exists(os.path.dirname(__file__) + '/local_settings.py'):
+    from local_settings import *
