@@ -10,4 +10,5 @@ urlpatterns = patterns('',
     (r'timetable/(?P<user>\d+)/(?P<session_key>\w+)/$', views.timetable),
     (r'group/(?P<user>\d+)/(?P<session_key>\w+)/(?P<name>[^/]+)/', views.group),
     (r'student/(?P<user>\d+)/(?P<session_key>\w+)/(?P<course>\w+)/(?P<id>\d+)/', views.student),
+    (r'search/(?P<user>\d+)/(?P<session_key>\w+)/(?P<query>\w+)/', views.search),
 )

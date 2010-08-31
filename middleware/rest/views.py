@@ -101,3 +101,20 @@ def student(request, user, session_key, course, id):
         "id": student.id,
         "avatar": student.avatar,
         "attendance": attendance})
+        
+@valid_key
+def search(request, user, session_key, query):
+    """ Search for users having query in name.
+    Returns a list of maximum 20 results """
+    
+    limit = 20
+    # TODO: query db, not this crap
+    query = query.lower()
+    results = []
+    for u in Student.objects.all():
+        if query in u.name.lower():
+            results.append(u.info_dict())
+            if len(results) >= limit:
+                break
+    
+    return json_response(results)

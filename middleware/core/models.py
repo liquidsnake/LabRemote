@@ -13,6 +13,10 @@ class Student(models.Model):
     def name(self):
         return u'%s %s' % (self.first_name, self.last_name)
         
+    def info_dict(self):
+        return {"name": self.name,
+            "avatar": self.avatar}
+            
     def __unicode__(self):
         return self.name
         
