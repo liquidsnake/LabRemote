@@ -4,13 +4,18 @@
 import os, sys
 import curl, pycurl
 
+class LoginError(pycurl.error): pass
+
 class MoodleSession(curl.Curl):
     """ Moodle-specific methods. Sensitive to changes in site design. """
     def login(self, name, password):
         """Establish a login session."""
-        self.post("login/index.php", (("username", name),
-                                        ("password", password),
-                                        ))
+        try:
+            self.post("login/index.php", (("username", name),
+                                        ("password", password)))
+        except pycurl.error:
+            raise LoginError(pycurl.error)
+            
     def logout(self):
         """Log out 
         TODO

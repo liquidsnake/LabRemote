@@ -2,9 +2,8 @@
 # Uses cURL as backend
 
 import os, sys
-import curl, pycurl
 
-from scrapper.moodle import MoodleSession
+from scrapper.moodle import MoodleSession, LoginError
 
 MOODLE_URL = "https://cs09.curs.pub.ro/"
 USER = "ioan.eftimie"
@@ -25,7 +24,7 @@ if __name__ == "__main__":
     
     try:
         session.login(USER, PASS)
-    except pycurl.error:
+    except LoginError:
         sys.stderr.write("Failed to connect.\n")
         sys.exit(1)
     
