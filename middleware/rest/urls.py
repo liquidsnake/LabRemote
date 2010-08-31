@@ -8,6 +8,6 @@ urlpatterns = patterns('',
     # Specific requests
     (r'login/(?P<qr_code>[^/]+)/$', views.login),
     (r'timetable/(?P<user>\d+)/(?P<session_key>\w+)/$', views.timetable),
-    (r'group/(?P<user>\d+)/(?P<session_key>\w+)/(?P<name>[^/]+)/', views.group)
-    #(r'student/', views.student)
+    (r'group/(?P<user>\d+)/(?P<session_key>\w+)/(?P<name>[^/]+)/', views.group),
+    (r'student/(?P<user>\d+)/(?P<session_key>\w+)/(?P<course>\w+)/(?P<id>\d+)/', views.student),
 )

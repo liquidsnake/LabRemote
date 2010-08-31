@@ -81,7 +81,23 @@ def group(request, user, session_key, name):
     group = get_object_or_404(Group, name=name)
     students = [ {"name": s.name, 
                 "grade": 0, # TODO
+                "id": s.id,
                 "avatar": s.avatar} for s in group.students.all() ]
                 
     return json_response({"name": name, "students": students})
-                
+    
+@valid_key
+def student(request, user, session_key, course, id):
+    student = get_object_or_404(Student, pk=id)
+    course = get_object_or_404(Course, name=course)
+    
+    atts = Attendance.objects.filter(student=student, course=course)
+    attendance = [ {a.week :
+                    {"grade": a.grade}
+                    } for a in atts ]
+    
+    return json_response({"name": student.name,
+        "grade": 0, #TODO
+        "id": student.id,
+        "avatar": student.avatar,
+        "attendance": attendance})
