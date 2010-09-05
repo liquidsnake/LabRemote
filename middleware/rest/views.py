@@ -65,13 +65,13 @@ def timetable(request, user, session_key):
     timetable = dict()
     
     for (i, day) in enumerate(DAYS):
-        activities = []
+        activities = {}
         for c in assistant.courses.all():
-            acts = Activity.objects.filter(course=c, day=i)
-            acts = [{a.interval:a.group.name} for a in acts]
-            activities.extend(acts)
+            acts = Activity.objects.filter(course=c, day=i) 
+            for a in acts:
+                activities[a.interval] = a.group.name
         timetable[day] = activities
-
+    
     return json_response({"timetable" : timetable})
 
 @valid_key
