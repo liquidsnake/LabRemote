@@ -69,7 +69,7 @@ def timetable(request, user, session_key):
         for c in assistant.courses.all():
             acts = Activity.objects.filter(course=c, day=i) 
             for a in acts:
-                activities[a.interval] = a.group.name
+                activities[a.group.name] = a.interval
         timetable[day] = activities
     
     return json_response({"timetable" : timetable})
@@ -92,9 +92,9 @@ def student(request, user, session_key, course, id):
     course = get_object_or_404(Course, name=course)
     
     atts = Attendance.objects.filter(student=student, course=course)
-    attendance = [ {a.week :
-                    {"grade": a.grade}
-                    } for a in atts ]
+    attendance = {}
+    for a in atts:
+        attendance[a.week] = {"grade": a.grade}
     
     return json_response({"name": student.name,
         "grade": 0, #TODO
