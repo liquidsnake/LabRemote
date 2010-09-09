@@ -15,15 +15,13 @@ setup_environ(settings)
 
 from core.models import Assistant, Student, Course
 
-MOODLE_URL = "https://cs09.curs.pub.ro/"
-
 def main(args):
     """ Iterate through assitants and scrap their moodle """
     for a in Assistant.objects.all():
         if not a.is_updater:
             continue
         
-        session = MoodleSession(MOODLE_URL)
+        session = MoodleSession(str(a.moodle_url))
         session.set_verbosity(0)
         try:
             session.login(a.moodle_user, a.moodle_password)
