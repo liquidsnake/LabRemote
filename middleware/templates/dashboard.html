@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ block.super }} | Dashboard{% endblock %}
+
+{% block content %}
+    
+    {% if user.get_profile.assistant %}
+    Asistent: {{ user.get_profile.assistant }} <br/>
+    Sincronizare moodle: {{ user.get_profile.assistant.is_updater }}
+    
+    <div class="login_code">
+        Scanează codul de mai jos pentru a te autentifica pe mobilul Android. <br/>
+        <img src="http://chart.apis.google.com/chart?cht=qr&chs=250x250&chl={{ user.get_profile.assistant.code }}" />
+        <br/>
+        <span>code: {{ user.get_profile.assistant.code }}</span>
+    </div>
+    <p style="clear:both"></p>
+    {% endif %}
+{% endblock %}
+

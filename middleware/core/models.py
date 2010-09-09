@@ -1,6 +1,11 @@
 import hashlib
 from django.db import models
+from django.contrib.auth.models import User
 
+class UserProfile(models.Model):
+    user = models.ForeignKey(User, unique=True)    
+    
+    assistant = models.ForeignKey('Assistant', default=None, blank=True, null=True)
 
 class Student(models.Model):
     first_name = models.CharField(max_length=64)
@@ -20,18 +25,25 @@ class Student(models.Model):
             
     def __unicode__(self):
         return self.name
-        
+
 class Assistant(Student):
     code = models.CharField(max_length=128, default='')
-    courses = models.ManyToManyField('Course')
+    courses = models.ManyToManyField('Course', blank=True)
     groups = models.ManyToManyField('Group', blank=True)
+    
+    # Wheter this assistant can add courses/moodle credentials for scrapping
+    is_updater = models.BooleanField(default=False)
+    moodle_url = models.CharField(max_length=128, default='http://', blank=True)
+    moodle_user = models.CharField(max_length=128, blank=True)
+    moodle_password = models.CharField(max_length=128, blank=True)
+    moodle_course_id = models.CharField(max_length=32, default='0', blank=True)
     
     def get_session_key(self):
         """ Return an md5 hash built form code + date salt """
         #computed_hash = hashlib.sha256(self.code).hexdigest()
         computed_hash = self.code # TODO change this before release
         return computed_hash
-        
+
 class Course(models.Model):
     name = models.CharField(max_length=64)
     
@@ -74,3 +86,10 @@ class Attendance(models.Model):
     
     def __unicode__(self):
         return u"%s, %s week: %d" % (self.student, self.course, self.week)
+        
+def user_post_save(sender, instance, **kwargs):
+    profile, new = UserProfile.objects.get_or_create(user=instance)
+
+# Automatic creation of profile
+models.signals.post_save.connect(user_post_save, sender=User)
+

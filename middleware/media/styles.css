@@ -1,0 +1,41 @@
+* {
+    font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana;
+}
+body {
+    font-size: 0.9em;
+    background-color: #eee;
+    margin: 0px;
+}
+label {
+    font-size: 0.9em;
+}
+a, a:visited { color: #000;}
+a:hover {text-decoration: underline;}
+
+#container {
+    width: 900px;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-bottom: 1px solid #888;
+    border-right: 1px solid #888;
+}
+#header {
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+#user_bar {
+    text-align: right;
+    font-size: 0.8em;
+}
+#footer {
+    padding-top: 10px;
+    font-size: 0.7em;
+    text-align: center;
+}
+div.login_code {
+    float: right;
+    font-size: 0.7em;
+    text-align: center;
+}
