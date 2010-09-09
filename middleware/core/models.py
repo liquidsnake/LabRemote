@@ -25,7 +25,7 @@ class Student(models.Model):
             "avatar": self.avatar}
             
     def __unicode__(self):
-        return self.name
+        return u"%s: %s" % (self.name, self.group)
 
 class Assistant(Student):
     code = models.CharField(max_length=128, default='')
