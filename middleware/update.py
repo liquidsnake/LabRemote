@@ -13,7 +13,7 @@ from django.core.management import setup_environ
 import settings
 setup_environ(settings)
 
-from core.models import Assistant, Student
+from core.models import Assistant, Student, Course
 
 MOODLE_URL = "https://cs09.curs.pub.ro/"
 
@@ -30,17 +30,31 @@ def main(args):
         except LoginError:
             sys.stderr.write("Failed to connect.\n")
             sys.exit(1)
-    
+        
         if not session.answered("Overview of my courses"):
             sys.stderr.write("Unexpected page (%d bytes)\n" % len(session.body()))
             sys.exit(-2)
         else:
+            course_id = int(a.moodle_course_id)
+            try:
+                course = Course.objects.get(external_id=course_id)
+            except:
+                courses = session.list_courses()
+                course = None
+                for c in courses:
+                    if c[0] == course_id:
+                        course = Course(external_id=course_id, name=c[1])
+                        course.save()
+                        break
+                if course is None:
+                    sys.stderr.write("Could not get course: %d " % course_id)
+                
             groups = session.list_groups(int(a.moodle_course_id))
             for key,g in groups.items():
                 for user in g['users']:
                     try:
                         student = Student.objects.get(external_id=user[0])
-                    except Exception as e:
+                    except:
                         student = Student(external_id=user[0])
                         
                     if student.first_name != user[1] or \
@@ -50,6 +64,11 @@ def main(args):
                             student.avatar = user[2]
                             student.group = g['name']
                             student.save()
+                            
+                    if course.students.filter(id=student.id).count() == 0:
+                        # Add student to course
+                        course.students.add(student)
+                            
             print "Updated course: ", a.moodle_course_id
 
 if __name__ == "__main__":

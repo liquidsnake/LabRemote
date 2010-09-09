@@ -46,9 +46,11 @@ class Assistant(Student):
         return computed_hash
 
 class Course(models.Model):
+    external_id = models.IntegerField(default=0)
     name = models.CharField(max_length=64)
-    
-    students = models.ManyToManyField(Student)
+    title = models.CharField(max_length=100, default='')
+        
+    students = models.ManyToManyField(Student, blank=True)
     
     def __unicode__(self):
         return u"%s" % self.name
