@@ -52,6 +52,10 @@ class Course(models.Model):
         
     students = models.ManyToManyField(Student, blank=True)
     
+    def get_groups(self):
+        """ Return unique groups """
+        return list(self.students.values('group').distinct())
+        
     def __unicode__(self):
         return u"%s" % self.name
     
@@ -59,6 +63,7 @@ class Group(models.Model):
     """ This is a managed, virtual group. Not a moodle one """
     parent_group = models.CharField(default='', max_length=64, blank=True)
     name = models.CharField(max_length=64)
+    course = models.ForeignKey(Course)
     
     students = models.ManyToManyField(Student,related_name='virtual_group', blank=True)
     

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Groups{% endblock %}
+
+{% block content %}
+<h2>{% block content_title %}Groups{% endblock %}</h2>
+
+<table width="100%">
+    <tr>
+        <td width="50%" valign="top"> 
+Moodle:
+<table class="object_list">
+    <tr>
+       <th>group</th>
+    </tr>
+{% for d in moodle_groups %}
+    <tr>
+        <td>{{ d.group }}</td>
+    </tr>
+{% endfor %}
+</table>
+        </td>
+        <td width="50%" valign="top">
+LabRemote:
+<table class="object_list">
+    <tr>
+       <th>group</th>
+    </tr>
+{% for d in groups %}
+    <tr>
+        <td>{{ d.name }}</td>
+    </tr>
+{% endfor %}
+</table>
+
+        </td>
+    </tr>
+</table>
+
+{% endblock %}
+

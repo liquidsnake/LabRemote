@@ -6,7 +6,7 @@
 <body>
 <div id="container">
  <div id="header">
- <div id="user_bar">Hello <strong>{{ user.username }}</strong>. 
+ <div id="user_bar">Hello <strong>{{ user.username }}</strong> {{ request.session.course }}. 
  {% if user.is_superuser %}
  <a href="/admin/">Administration</a> |
  {% endif %}
@@ -15,9 +15,12 @@
  </div>
  
  <div id="menu">
- <a href="/">Dashboard</a>
- <a href="/students/">Students</a>
- <a href="/groups/">Groups</a>
+ {% if request.session.course %}
+ <a href="/{{ request.session.course }}/">Dashboard</a>
+ <a href="/{{ request.session.course }}/students/">Students</a>
+ <a href="/{{ request.session.course }}/groups/">Groups</a>
+ <a href="/{{ request.session.course }}/#timetable/">Timetable</a>
+ {% endif %}
  </div>
  
   <div id="content">

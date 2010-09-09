@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}course select{% endblock %}
+
+{% block content %}
+
+<p>Select a course to manage:</p>
+<ul>
+{% for course in courses %}
+    <li><a href="./?course={{ course.id }}">{{ course.name }}</a></li>
+{% endfor %}
+</ul>
+
+{% endblock %}
+
