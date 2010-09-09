@@ -6,12 +6,18 @@
 <body>
 <div id="container">
  <div id="header">
- <div id="user_bar">Autentificat ca {{ user.username }}. 
+ <div id="user_bar">Hello <strong>{{ user.username }}</strong>. 
  {% if user.is_superuser %}
  <a href="/admin/">Administration</a> |
  {% endif %}
- <a href="/accounts/logout/">Deconectare</a></div>
+ <a href="/accounts/logout/">Log out</a></div>
  <h1><img src="/media/labremote.png" width="300" align="baseline" /></h1>
+ </div>
+ 
+ <div id="menu">
+ <a href="/">Dashboard</a>
+ <a href="/students/">Students</a>
+ <a href="/groups/">Groups</a>
  </div>
  
   <div id="content">

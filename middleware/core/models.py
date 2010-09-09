@@ -8,6 +8,7 @@ class UserProfile(models.Model):
     assistant = models.ForeignKey('Assistant', default=None, blank=True, null=True)
 
 class Student(models.Model):
+    external_id = models.IntegerField(default=0)
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(default='', max_length=64, blank=True)
     

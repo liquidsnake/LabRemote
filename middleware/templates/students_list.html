@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+<h2>{% block content_title %}{% endblock %}</h2>
+<table class="object_list">
+    <tr>
+       <th>id</th>
+       <th>student</th>
+       <th>group</th>
+       <th>virtual groups</th>
+    </tr>
+{% for d in object_list %}
+    {% if d.external_id %}
+    <tr>
+        <td>{{ d.external_id }}</td>
+        <td><img src="{{ d.avatar }}" width="40" /> {{ d.first_name }} {{ d.last_name }}</td>
+        <td>{{ d.group }}</td>
+        <td>{{ d.groups }}</td>
+        <td>
+        {% block action_buttons %}
+        {% endblock %}
+        </td>
+    </tr>
+    {% endif %}
+{% endfor %}
+</table>
+
+{% block bottom_buttons %}
+{% endblock %}
+
+{% endblock %}
+

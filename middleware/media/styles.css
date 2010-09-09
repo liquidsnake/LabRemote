@@ -29,6 +29,12 @@ a:hover {text-decoration: underline;}
     text-align: right;
     font-size: 0.8em;
 }
+#menu {
+    margin: 10px
+}
+#menu a {
+    margin: 10px;
+}
 #footer {
     padding-top: 10px;
     font-size: 0.7em;
@@ -38,4 +44,19 @@ div.login_code {
     float: right;
     font-size: 0.7em;
     text-align: center;
+}
+table.object_list {
+    background-color: #eee;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+table.object_list td {
+    background-color: #fff;
+    padding: 4px;
+    font-size: 0.8em;
+}
+table.object_list th {
+    font-weight: bold;
+    font-size: 0.8em;
+    padding: 4px;
 }
