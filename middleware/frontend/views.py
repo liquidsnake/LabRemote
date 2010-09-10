@@ -104,18 +104,23 @@ def timetable(request, getcourse):
 
 
 @login_required
-def form_success(request, object, id):
+def form_success(request, object, operation, id):
     possible_objects={}
     possible_objects['Activity'] = Activity
 
-    #implemented list of object that can be crud'd
-    if object not in possible_objects:
-        return redirect('/')
+    possible_operations = ['create', 'update', 'delete']
 
-    obj = get_object_or_404(possible_objects[object], pk=id)
+    #implemented list of object that can be crud'd
+    if object not in possible_objects or operation not in possible_operations:
+        return redirect('/')
+    
+    obj = None
+    if operation != 'delete':
+        obj = get_object_or_404(possible_objects[object], pk=id)
 
     return render_to_response('form_success.html',
         {'object': obj,
+         'operation' : operation,
          'object_type': object,
         },
         context_instance=RequestContext(request),
