@@ -30,23 +30,19 @@ def dashboard(request, getcourse=''):
 @login_required
 def course_select(request, course):
     """ List clients and select one """
-    print course
     if not course:
         courses = Course.objects.all()
         return render_to_response('course_select.html',
             {'courses': courses},
             context_instance=RequestContext(request))
    
-    print 'aa' 
     course = get_object_or_404(Course, pk=course)
-    print 'bb'
     if not request.user.is_staff:
         profile = request.user.get_profile()
         if not profile.assistant or (course not in profile.assistant.courses):
             return redirect('/dev-null') # TODO error
     
     request.session['course'] = course
-    print course.name
     return redirect(reverse("course_selected", args=[course.name]))
     
 @login_required
@@ -96,7 +92,6 @@ def timetable(request, getcourse):
     activities_per_day = [(day,[]) for day in days]
     for act in activities:
         activities_per_day[act.day][1].append(act)
-    print activities_per_day
     
     return render_to_response('timetable.html',
         {'activities_per_day': activities_per_day,
@@ -110,6 +105,7 @@ def timetable(request, getcourse):
 def form_success(request, object, operation, id):
     possible_objects={}
     possible_objects['Activity'] = Activity
+    possible_objects['Group'] = Group
 
     possible_operations = ['create', 'update', 'delete']
 
