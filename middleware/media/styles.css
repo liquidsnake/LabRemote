@@ -60,3 +60,6 @@ table.object_list th {
     font-size: 0.8em;
     padding: 4px;
 }
+table.weekdays table.object_list {
+    min-width: 400px;
+}

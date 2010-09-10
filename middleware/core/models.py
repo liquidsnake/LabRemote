@@ -71,19 +71,49 @@ class Group(models.Model):
         return u"%s (%s)" % (self.name, self.parent_group)
 
 class Activity(models.Model):
+    DAY_CHOICES = (
+        (0,'Monday'),
+        (1,'Tuesday'),
+        (2,'Wednesday'),
+        (3,'Thursday'),
+        (4,'Friday'),
+        (5,'Saturday'),
+        (6,'Sunday')
+    )
+
     course = models.ForeignKey(Course)
     group = models.ForeignKey(Group, default=None, blank=True)
     
-    day = models.IntegerField(default=0)
-    time_start = models.IntegerField(default=8)
-    time_end = models.IntegerField(default=10)
+    #day of the week from 0 to 6 (0 = Monday)
+    day = models.IntegerField(default=0, choices= DAY_CHOICES)
+    #time of day in 24 hour format
+    time_hour_start = models.IntegerField(default=8)
+    time_minute_start = models.IntegerField(default=0)
+    time_hour_end = models.IntegerField(default=10)
+    time_minute_end = models.IntegerField(default=0)
     
     @property
     def interval(self):
         return u"%s-%s" % (self.time_start, self.time_end)
+    
+    @property
+    def day_of_the_week(self):
+        return self.get_day_display()
+
+    @property
+    def time_start(self):
+        return "%02d:%02d" % (self.time_hour_start, self.time_minute_start)
         
+    @property
+    def time_end(self):
+        return "%02d:%02d" % (self.time_hour_end, self.time_minute_end)
+
     def __unicode__(self):
         return u"%s:%s %d %s" % (self.course, self.group, self.day + 1, self.interval)
+
+    class Meta:
+        verbose_name_plural = "activities"
+
 
 class Attendance(models.Model):
     student = models.ForeignKey(Student)

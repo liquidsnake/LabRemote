@@ -6,6 +6,9 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    # Uncomment the next line to enable the admin:
+    (r'^admin/', include(admin.site.urls)),
+
     (r'^', include('middleware.frontend.urls')),
     (r'^api/', include('middleware.rest.urls')),
 
@@ -17,6 +20,4 @@ urlpatterns = patterns('',
     (r'^media/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': os.path.abspath(os.path.join(os.path.dirname(__file__), 'media'))}),
 
-    # Uncomment the next line to enable the admin:
-    (r'^admin/', include(admin.site.urls)),
 )
