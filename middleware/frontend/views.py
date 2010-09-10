@@ -3,6 +3,8 @@ from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.template import RequestContext
 from django.views.generic.list_detail import object_list
+import views
+from django.core.urlresolvers import reverse
 
 from middleware.core.models import Student, Group, Course, Activity
 
@@ -19,32 +21,33 @@ def dashboard(request, getcourse=''):
     """ Show client dashboard or redirect to select client page"""
     course = request.session.get('course', None)
     if not course:
-        return redirect('/course_select/')
+        return redirect(reverse(views.course_select))
     
     return render_to_response('dashboard.html', 
         context_instance=RequestContext(request),
         )      
 
 @login_required
-def course_select(request):
+def course_select(request, course):
     """ List clients and select one """
-    course = request.GET.get('course', None)
-    
+    print course
     if not course:
         courses = Course.objects.all()
         return render_to_response('course_select.html',
             {'courses': courses},
             context_instance=RequestContext(request))
-    
+   
+    print 'aa' 
     course = get_object_or_404(Course, pk=course)
-    
+    print 'bb'
     if not request.user.is_staff:
         profile = request.user.get_profile()
         if not profile.assistant or (course not in profile.assistant.courses):
             return redirect('/dev-null') # TODO error
     
     request.session['course'] = course
-    return redirect('/%s/' % course.name)
+    print course.name
+    return redirect(reverse("course_selected", args=[course.name]))
     
 @login_required
 def students_list(request, getcourse):

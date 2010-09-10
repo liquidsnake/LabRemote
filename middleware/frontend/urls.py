@@ -1,17 +1,16 @@
 from django.conf.urls.defaults import *
-
 import middleware.frontend.views as views
 from django.views.generic.create_update import create_object, update_object, delete_object
 from django.views.generic.simple import direct_to_template
 from middleware.core.models import Activity
 
 urlpatterns = patterns('',
+    url(r'^course_select(/(?P<course>\d+))?/$', views.course_select, name="course_select"),
     (r'^$', views.dashboard),
     (r'^form_success/(?P<object>[^/]+)/(?P<operation>[^/]+)(/(?P<id>\d+))?/$', views.form_success),
-    (r'^(?P<getcourse>[^/]+)/$', views.dashboard),
-    (r'^(?P<getcourse>[^/]+)/students/$', views.students_list),
-    (r'^(?P<getcourse>[^/]+)/timetable/$', views.timetable),
-    (r'^course_select/$', views.course_select),
+    url(r'^course/(?P<getcourse>[^/]+)/$', views.dashboard, name="course_selected"),
+    (r'^course/(?P<getcourse>[^/]+)/students/$', views.students_list),
+    (r'^course/(?P<getcourse>[^/]+)/timetable/$', views.timetable),
     (r'^crud/add/activity/$', create_object, {
             'model': Activity, 
             'login_required': True, 

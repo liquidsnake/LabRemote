@@ -7,7 +7,7 @@
 <p>Select a course to manage:</p>
 <ul>
 {% for course in courses %}
-    <li><a href="./?course={{ course.id }}">{{ course.name }}</a></li>
+    <li><a href="{{ course.id }}/">{{ course.name }}</a></li>
 {% endfor %}
 </ul>
 
