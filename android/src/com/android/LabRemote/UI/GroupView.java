@@ -1,57 +1,83 @@
-/** 
- * Listview - the students of a specific class
- * @see GroupViewItem
- * 
- * Version: 1.0
- * 
- * Copyright (c) 2010 LabRemote team
+/**
+ * GroupView.java
+ *     
+ * Copyright (C) 2010 LabRemote Team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.android.LabRemote.UI;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.gesture.Gesture;
-import android.gesture.GestureLibraries;
-import android.gesture.GestureLibrary;
-import android.gesture.GestureOverlayView;
-import android.gesture.Prediction;
-import android.gesture.GestureOverlayView.OnGesturePerformedListener;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
-import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.LabRemote.R;
-import com.android.LabRemote.Utils.GroupItem;
+import com.android.LabRemote.Server.Connection;
+import com.android.LabRemote.Utils.AvatarCallback;
+import com.android.LabRemote.Utils.MListAdapter;
+import com.android.LabRemote.Utils.MListItem;
+import com.android.LabRemote.Utils.ShowAvatar;
 
-public class GroupView extends Activity implements OnGesturePerformedListener {
+/** 
+ * Lists the students of a specific group
+ * @see ListItemView
+ * @see MListAdapter
+ * @see MListItem
+ */
+public class GroupView extends Activity implements AvatarCallback {
 
 	private String mGroup, mDate;
 	private ListView mListView;
-	private ArrayList<GroupItem> mList;
+	private ArrayList<MListItem> mList;
 	private Intent mIndividualIntent;
-	private GroupAdapter mAdapter;
-	private GestureLibrary mLibrary;
+	private JSONObject mData;
+	private MListAdapter mAdapter;
 
 	/**
-	 * On click on a list item, open individual activity for the selected student
+	 * Displays a newly downloaded avatar
+	 * @see ShowAvatar
+	 */
+	public void onImageReceived(ShowAvatar displayer) {
+		this.runOnUiThread(displayer);
+	}
+
+	/**
+	 * On click on a list item, opens individual activity for the selected student
+	 * @see StudentView
 	 */
 	private OnClickListener onItemClick = new OnClickListener() {
 		public void onClick(View v) {
-			mIndividualIntent = new Intent(getApplicationContext(), IndividualView.class);
-			mIndividualIntent.putExtra("Name", ((GroupItemView)v).getName().getText()); 
+			mIndividualIntent = new Intent(getApplicationContext(), StudentView.class);
+			mIndividualIntent.putExtra("Name", ((ListItemView)v).getName().getText()); 
 			mIndividualIntent.putExtra("Group", mGroup); 
 			mIndividualIntent.putExtra("Date", mDate); 
+			mIndividualIntent.putExtra("ID", ((ListItemView)v).getmId()); 
 			startActivity(mIndividualIntent);
 		}
 	};
@@ -66,113 +92,59 @@ public class GroupView extends Activity implements OnGesturePerformedListener {
 		setContentView(R.layout.group_view);
 
 		receiveData();
-
-		fillList();
-		mListView.setAdapter(mAdapter);
-
-		/** Gestures Test */
-		mLibrary = GestureLibraries.fromRawResource(this, R.raw.gestures);
-		if (!mLibrary.load()) {
-			finish();
-		}
-		GestureOverlayView gestures = (GestureOverlayView)findViewById(R.id.gestures);
-		gestures.addOnGesturePerformedListener(this);		
+		if (mData != null)
+			fillList();
 	}
 
 	/**
-	 * Receive data from the previous activity
+	 * Receives data from the previous activity and from the server
+	 * @see Connection
 	 */
 	private void receiveData() {
 
+		/** Header informations */
 		mGroup = getIntent().getStringExtra("Group");
 		TextView groupText = (TextView) findViewById(R.id.classHeader);
 		groupText.setText(mGroup);
 		mDate = getIntent().getStringExtra("Date");
 		TextView dateText = (TextView) findViewById(R.id.dateHeader);
 		dateText.setText(mDate);
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		String course = preferences.getString("course", null);
+		TextView cv = (TextView) findViewById(R.id.courseName);
+		cv.setText(course);
+
+		/** Data from the server */
+		String id = preferences.getString("userId", null);
+		String code = preferences.getString("loginCode", null);
+		mData = new Connection(this).getGroup(id, code, mGroup);
 
 	}
 
 	/**
-	 * Fill list with students
+	 * Fills list with students
 	 */
 	private void fillList() {
+		JSONArray students;
+		mListView = (ListView)findViewById(R.id.studentsList);
+		mList = new ArrayList<MListItem>();
 
-		mListView = (ListView) findViewById(R.id.studentsList);
-		mList = new ArrayList<GroupItem>();
-
-		/** Test Data for the list view */
-		String names[] = {"Popescu Anca", "Ionescu Ana Andreea", 
-				"Bobocescu Alina", "Popescu Ana Cristiana"};
-		for (int i = 0; i < 10; i++) {
-			mList.add(new GroupItem(R.drawable.mi, names[i%4], i + ""));
-		}
-
-		mAdapter = new GroupAdapter(this, mList);
-	}
-
-	/**
-	 *  Adapter class for the list's content 
-	 */
-	private class GroupAdapter extends BaseAdapter {
-
-		private ArrayList<GroupItem> mItems = new ArrayList<GroupItem>();
-		private Context mContext;
-
-		public GroupAdapter(Context context, ArrayList<GroupItem> items) {
-			mContext = context;
-			mItems = items;
-		}
-
-		public int getCount() {
-			return mItems.size();
-		}
-
-		public Object getItem(int index) {
-			return mItems.get(index);
-		}
-
-		public long getItemId(int index) {
-			return index;
-		}
-
-		public View getView(int index, View convertView, ViewGroup parent) {
-			GroupItemView item;
-
-			if (convertView == null) {
-				item = new GroupItemView(mContext, mItems.get(index));
-				item.setClickable(true);
-				item.setOnClickListener(onItemClick);
-			} else {
-				item = (GroupItemView) convertView;
-				String name = mItems.get(index).getName();
-				item.setName(name);
-				String grade = mItems.get(index).getGrade();
-				item.setGrade(grade);
-				int photo = mItems.get(index).getImg();
-				item.setImage(photo);
+		try {
+			students = mData.getJSONArray("students");
+			for (int i = 0; i < students.length(); i++) {
+				JSONObject stud = students.getJSONObject(i);
+				mList.add(new MListItem(stud.getString("avatar"), stud.getString("name"), 
+						stud.getString("grade"), stud.getString("id"))); 
 			}
-
-			return item;
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
-	}
 
-	/**
-	 * Gestures test
-	 */
-	public void onGesturePerformed(GestureOverlayView overlay, Gesture gesture) {
-		ArrayList predictions = mLibrary.recognize(gesture);
-
-		if (predictions.size() > 0) {
-			Prediction prediction = (Prediction) predictions.get(0);
-			if (prediction.score > 1.0) {
-				Toast.makeText(this, prediction.name, Toast.LENGTH_SHORT).show();
-			}
-		}
+		mAdapter = new MListAdapter(this, mList, this, onItemClick);
+		mListView.setAdapter(mAdapter);
 	}
 
 }
-
 
 
 

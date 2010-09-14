@@ -18,7 +18,7 @@
 		<FrameLayout android:layout_width="fill_parent"
 			android:layout_height="wrap_content" android:layout_weight="1">
 			<ImageView android:id="@+id/individualPhoto"
-				android:background="@drawable/mi" android:layout_width="wrap_content"
+				android:layout_width="wrap_content" android:layout_margin="2dip"
 				android:layout_height="wrap_content" />
 		</FrameLayout>
 		<FrameLayout android:layout_width="fill_parent"

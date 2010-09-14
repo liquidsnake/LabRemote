@@ -1,10 +1,20 @@
-/** 
- * Timetable view 
- * Select a class group based on a specific day and a time interval
- * 
- * Version: 1.0
- * 
- * Copyright (c) 2010 LabRemote team
+/**
+ * TimeTable.java
+ *     
+ * Copyright (C) 2010 LabRemote Team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.android.LabRemote.UI;
@@ -24,9 +34,14 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ExpandableListView.OnGroupExpandListener;
 
 import com.android.LabRemote.R;
+import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Utils.CustomDate;
 
-public class DayList extends Activity {
+
+/** 
+ * Select a class group based on a specific day and a time interval
+ */
+public class TimeTable extends Activity {
 
 	private Intent groupIntent;
 	private ExpandableListView days;
@@ -35,16 +50,16 @@ public class DayList extends Activity {
 
 	/** Test data */
 	private String[][] extendeData = {
-			{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
-					"333 CB S1 16:18", "331 CA S2 10:12" },
-			{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
-					"333 CB S1 16:18", "331 CA S2 10:12" },
-			{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
-					"333 CB S1 16:18", "331 CA S2 10:12" },
-			{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
-					"333 CB S1 16:18", "331 CA S2 10:12" },
-			{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
-					"333 CB S1 16:18", "331 CA S2 10:12" } };
+		{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
+			"333 CB S1 16:18", "331 CA S2 10:12" },
+		{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
+			"333 CB S1 16:18", "331 CA S2 10:12" },
+		{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
+			"333 CB S1 16:18", "331 CA S2 10:12" },
+		{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
+			"333 CB S1 16:18", "331 CA S2 10:12" },
+		{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
+			"333 CB S1 16:18", "331 CA S2 10:12" } };
 
 	private String[][] data = {
 			{ "334 CB", "335 CA", "332 CC", "333 CB", "331 CA" },
@@ -62,6 +77,9 @@ public class DayList extends Activity {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
 		setContentView(R.layout.day_list);
+
+		/** Server request */
+		new Connection(this).getTimetable("1", "code"); 
 
 		setSingleExpandable();
 		groupIntent = new Intent(this, GroupView.class);
@@ -84,7 +102,7 @@ public class DayList extends Activity {
 
 	/**
 	 * Fills the timetable with data
-	 * @return the adapter that controls the list's content
+	 * @return The adapter that controls the list's content
 	 */
 	public SimpleExpandableListAdapter fillList() {
 

@@ -19,10 +19,9 @@
 	</android.gesture.GestureOverlayView>
 
 	<ListView android:id="@+id/studentsList" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:divider="#000000"
-		android:dividerHeight="2dip" android:background="#000000" 
+		android:layout_height="fill_parent" android:divider="@color/grey"
+		android:dividerHeight="2dip" android:background="@color/white"
 		android:orientation="vertical">
 	</ListView>
-
 
 </LinearLayout>
