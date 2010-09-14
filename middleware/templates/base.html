@@ -16,10 +16,10 @@
  
  <div id="menu">
  {% if request.session.course %}
- <a href="/{{ request.session.course }}/">Dashboard</a>
- <a href="/{{ request.session.course }}/students/">Students</a>
- <a href="/{{ request.session.course }}/groups/">Groups</a>
- <a href="/{{ request.session.course }}/timetable/">Timetable</a>
+ <a href="{% url middleware.frontend.views.dashboard request.session.course %}">Dashboard</a>
+ <a href="{% url middleware.frontend.views.students_list request.session.course %}">Students</a>
+ <a href="{% url middleware.frontend.views.groups_index request.session.course %}">Groups</a>
+ <a href="{% url middleware.frontend.views.timetable request.session.course %}">Timetable</a>
  {% endif %}
  </div>
  

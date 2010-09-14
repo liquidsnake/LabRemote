@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+<h2>{% block content_title %}{% endblock %}</h2>
+
+<table class="weekdays">
+    {% for day, activities in activities_per_day %}
+        <tr>
+            <td>{{ day }}</td>
+            <td>
+                {% if activities %}
+                <table class="object_list">
+                    <tr>
+                       <th>group</th>
+                       <th>start</th>
+                       <th>end</th>
+                       <th></th>
+                    </tr>
+                    {% for act in activities %}
+                        <tr>
+                            <td>{{ act.group }}</td>
+                            <td>{{ act.day_of_the_week }}</td>
+                            <td>{{ act.time_start }}</td>
+                            <td>{{ act.time_end }}</td>
+                            <td>
+                            {% block action_buttons %}
+                            {% comment %} Maybe would need buttons here{% endcomment %}
+                            <a href="/crud/update/activity/{{ act.id }}/">Edit</a>
+                            <a href="/crud/delete/activity/{{ act.id }}/">Delete</a>
+                            {% endblock %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                No activities for {{ day }}! <a href='/crud/add/activity/'>Add some</a>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+<a href='/crud/add/activity/'>Add more activities</a>
+{% block bottom_buttons %}
+{% endblock %}
+
+{% endblock %}
+

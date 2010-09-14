@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+<h2>{% block content_title %}{% endblock %}</h2>
+
+{{ operation|capfirst }}d successfully on {{ object_type }} {% if object %} - {{ object }} {% endif %}
+
+
+{% block bottom_buttons %}
+{% endblock %}
+
+{% endblock %}
+

@@ -25,14 +25,19 @@ LabRemote:
 <table class="object_list">
     <tr>
        <th>group</th>
+       <th></th>
     </tr>
 {% for d in groups %}
     <tr>
         <td>{{ d.name }}</td>
+        <td>
+            <a href='/crud/update/group/{{ d.id }}/'>Edit</a>
+            <a href='/crud/delete/group/{{ d.id }}/'>Delete</a>
+        </td>
     </tr>
 {% endfor %}
 </table>
-
+            <a href='/crud/add/group/'>Add a new group</a>
         </td>
     </tr>
 </table>
