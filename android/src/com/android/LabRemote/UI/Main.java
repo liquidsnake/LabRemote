@@ -1,10 +1,20 @@
-/** 
- * Application main layout 
- * Appears after autentification and lets us choose a specific view
- * 
- * Version: 1.0
- * 
- * Copyright (c) 2010 LabRemote team
+/**
+ * Main.java
+ *     
+ * Copyright (C) 2010 LabRemote Team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.android.LabRemote.UI;
@@ -17,20 +27,22 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Utils.CustomDate;
 
-
+/** 
+ * Application's main menu layout 
+ * Appears after autentification and lets us choose a specific view
+ */
 public class Main extends Activity {
 
 	private Intent mTimetableIntent, mCurrentIntent;
 	private TextView mTimetableButton, mSearchButton;
 	private TextView mCurrentButton;
 	private Button mExitButton;
-	private String currentGroup = "333 CC";
+	private String currentGroup = "312CAa";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -42,18 +54,18 @@ public class Main extends Activity {
 		setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
 		setContentView(R.layout.main);
 
-		mTimetableIntent = new Intent(this, DayList.class);
+		mTimetableIntent = new Intent(this, TimeTable.class);
 		mCurrentIntent = new Intent(this, GroupView.class);
 
 		initMenuButtons();
 	}
-	
+
 	/**
 	 * Initialize menu buttons
 	 * On click event, a button takes us to the selected view
 	 */
 	private void initMenuButtons() {
-		
+
 		/** Timetable button */
 		mTimetableButton = (TextView) findViewById(R.id.timetableButton);
 		mTimetableButton.setOnClickListener(new OnClickListener() {
