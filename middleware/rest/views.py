@@ -4,6 +4,9 @@ from django.conf import settings
 from django.core import serializers
 from django.http import HttpResponse, Http404
 import json
+import datetime
+
+
 
 from models import *
 
@@ -85,6 +88,23 @@ def group(request, user, session_key, name):
                 "avatar": s.avatar} for s in group.students.all() ]
                 
     return json_response({"name": name, "students": students})
+
+@valid_key
+def current_group(request, user, session_key):
+    assistant = request.assistant
+    now = datetime.datetime.now().time()
+    
+    for group in assistant.groups.all():
+        for act in group.activity_set.all():
+            start = datetime.time(act.time_hour_start, act.time_minute_start)
+            end = datetime.time(act.time_hour_end, act.time_minute_end)
+            if start <= now and now <= end:
+                students = [ {"name": s.name, 
+                    "grade": 0, # TODO
+                    "id": s.id,
+                    "avatar": s.avatar} for s in group.students.all() ]    
+                return json_response({"name": group.name, "students": students})
+    return json_response({"error":"no current group"})
     
 @valid_key
 def student(request, user, session_key, course, id):
