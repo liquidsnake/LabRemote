@@ -72,7 +72,11 @@ def timetable(request, user, session_key):
         for c in assistant.courses.all():
             acts = Activity.objects.filter(course=c, day=i) 
             for a in acts:
-                activities[a.group.name] = a.interval
+                try:
+                    activities[a.interval].append(a.group.name)
+                except Exception:
+                    activities[a.interval] = []
+                activities[a.interval].append(a.group.name)
         timetable[day] = activities
     
     return json_response({"timetable" : timetable})
