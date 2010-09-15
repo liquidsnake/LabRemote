@@ -63,29 +63,28 @@ def login(request, qr_code):
     return json_response(response)
     
 @valid_key
-def timetable(request, user, session_key):
+def timetable(request, user, session_key, course):
     assistant = request.assistant
     timetable = dict()
     
     for (i, day) in enumerate(DAYS):
         activities = {}
-        for c in assistant.courses.all():
-            acts = Activity.objects.filter(course=c, day=i) 
-            for a in acts:
-                try:
-                    activities[a.interval].append(a.group.name)
-                except Exception:
-                    activities[a.interval] = []
+        acts = Activity.objects.filter(course__name=course).filter(day=i) 
+        for a in acts:
+            try:
                 activities[a.interval].append(a.group.name)
+            except Exception:
+                activities[a.interval] = []
+            activities[a.interval].append(a.group.name)
         timetable[day] = activities
     
     return json_response({"timetable" : timetable})
 
 @valid_key
-def group(request, user, session_key, name):
+def group(request, user, session_key, name, course):
     assistant = request.assistant
     
-    group = get_object_or_404(Group, name=name)
+    group = get_object_or_404(Group, name=name, course__name=course)
     students = [ {"name": s.name, 
                 "grade": 0, # TODO
                 "id": s.id,
@@ -94,15 +93,17 @@ def group(request, user, session_key, name):
     return json_response({"name": name, "students": students})
 
 @valid_key
-def current_group(request, user, session_key):
+def current_group(request, user, session_key, course):
     assistant = request.assistant
     now = datetime.datetime.now().time()
     
-    for group in assistant.groups.all():
+    for group in assistant.groups.filter(course__name=course):
         for act in group.activity_set.all():
+
             start = datetime.time(act.time_hour_start, act.time_minute_start)
             end = datetime.time(act.time_hour_end, act.time_minute_end)
-            if start <= now and now <= end:
+            today = datetime.date.today().weekday()
+            if today == act.day and start <= now and now <= end:
                 students = [ {"name": s.name, 
                     "grade": 0, # TODO
                     "id": s.id,
@@ -127,7 +128,7 @@ def student(request, user, session_key, course, id):
         "attendance": attendance})
         
 @valid_key
-def search(request, user, session_key, query):
+def search(request, user, session_key, course, query):
     """ Search for users having query in name.
     Returns a list of maximum 20 results """
     
@@ -137,8 +138,11 @@ def search(request, user, session_key, query):
     results = []
     for u in Student.objects.all():
         if query in u.name.lower():
-            results.append(u.info_dict())
-            if len(results) >= limit:
-                break
+            #check if the student is actually in one of the groups in our course
+            for group in u.virtual_group.all():
+                if group.course.name == course:
+                    results.append(u.info_dict())
+                    if len(results) >= limit:
+                        break
     
     return json_response(results)
