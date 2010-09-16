@@ -57,6 +57,7 @@ def students_list(request, getcourse):
 
 @login_required
 def groups_index(request, getcourse):
+    """ Show all grups """
     course = request.session.get('course', None)
     
     if not course or getcourse != course.name:
@@ -77,6 +78,7 @@ def timetable(request, getcourse):
     
     if not course or getcourse != course.name:
         return redirect('/course_select/')
+    #array for the days of the week
     days = [
             'Monday',
             'Tuesday',
@@ -87,8 +89,8 @@ def timetable(request, getcourse):
             'Sunday'
         ]
     
-    
-    activities = Activity.objects.filter(course=course).order_by('time_hour_end', 'time_hour_end', 'time_minute_start', 'time_minute_end')
+    #get all activities for the current course ordered by the time they take place
+    activities = Activity.objects.filter(course=course).order_by('time_hour_start', 'time_hour_end', 'time_minute_start', 'time_minute_end')
     activities_per_day = [(day,[]) for day in days]
     for act in activities:
         activities_per_day[act.day][1].append(act)
@@ -103,6 +105,12 @@ def timetable(request, getcourse):
 
 @login_required
 def form_success(request, object, operation, id):
+    """ Generic view to be shown after an opperation 
+    Arguments:
+    object -- type of object on which the operation was done
+    operation -- type of operation (create, update, delete)
+    id -- id of object affected (not used for delete)
+    """
     possible_objects={}
     possible_objects['Activity'] = Activity
     possible_objects['Group'] = Group
@@ -113,6 +121,7 @@ def form_success(request, object, operation, id):
     if object not in possible_objects or operation not in possible_operations:
         return redirect('/')
     
+    #show information regarding the object if the operation was not deletion
     obj = None
     if operation != 'delete':
         obj = get_object_or_404(possible_objects[object], pk=id)

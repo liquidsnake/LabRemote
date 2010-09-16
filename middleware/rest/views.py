@@ -33,7 +33,12 @@ def valid_key(view_func):
     return _decorated
 
 def get_object(request, object, id):
-    """ Generic dump json method """
+    """ Generic dump json method. Debug only.
+
+    Arguments:
+    object -- type of object to be requested
+    id -- id of the object
+    """
     if object not in ('student', 'course', 'activity', 'attendance'):
         raise Http404
 
@@ -51,7 +56,10 @@ def get_object(request, object, id):
     return HttpResponse(data, mimetype='application/json')
 
 def login(request, qr_code):
-    """ Validates a login request """
+    """ Validates a login request.
+    Arguments:
+    qr_code -- authentication code
+    """
     try:
         assistant = Assistant.objects.get(code=qr_code)
     except Assistant.DoesNotExist:
@@ -64,6 +72,7 @@ def login(request, qr_code):
     
 @valid_key
 def timetable(request, user, session_key, course):
+    """ Returns the timetable for the current course. """
     assistant = request.assistant
     timetable = dict()
     
@@ -82,6 +91,7 @@ def timetable(request, user, session_key, course):
 
 @valid_key
 def group(request, user, session_key, name, course):
+    """ Returns a certain group from a certain course """
     assistant = request.assistant
     
     group = get_object_or_404(Group, name=name, course__name=course)
@@ -94,12 +104,14 @@ def group(request, user, session_key, name, course):
 
 @valid_key
 def current_group(request, user, session_key, course):
+    """ Returns the current group for this course and assistant """
     assistant = request.assistant
     now = datetime.datetime.now().time()
     
+    #get all the where the user is an assistant for this course
     for group in assistant.groups.filter(course__name=course):
         for act in group.activity_set.all():
-
+            #see if the group activity is taking place now
             start = datetime.time(act.time_hour_start, act.time_minute_start)
             end = datetime.time(act.time_hour_end, act.time_minute_end)
             today = datetime.date.today().weekday()
@@ -113,6 +125,7 @@ def current_group(request, user, session_key, course):
     
 @valid_key
 def student(request, user, session_key, course, id):
+    """ Return a student and the attendances for this course"""
     student = get_object_or_404(Student, pk=id)
     course = get_object_or_404(Course, name=course)
     

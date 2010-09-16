@@ -11,6 +11,7 @@ urlpatterns = patterns('',
     url(r'^course/(?P<getcourse>[^/]+)/$', views.dashboard, name="course_selected"),
     (r'^course/(?P<getcourse>[^/]+)/students/$', views.students_list),
     (r'^course/(?P<getcourse>[^/]+)/timetable/$', views.timetable),
+    #generic view magic. Using generic views to add, update and delete the objects
     (r'^crud/add/activity/$', create_object, {
             'model': Activity, 
             'login_required': True, 
