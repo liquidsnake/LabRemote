@@ -23,13 +23,11 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
+import android.app.ListActivity;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -38,21 +36,20 @@ import android.preference.PreferenceManager;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
+import com.android.LabRemote.Utils.MListAdapter;
+import com.android.LabRemote.Utils.MListItem;
 
 /** 
  * Informations about a selected student
  */
-public class StudentView extends Activity {
-	private ListView attendance;
+public class StudentView extends ListActivity {
 	private String mName, mGroup, mDate, mID;
 	private JSONObject data;
-	private SimpleAdapter mAdapter;
+	private MListAdapter mAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -85,11 +82,11 @@ public class StudentView extends Activity {
 		TextView dateView = (TextView)findViewById(R.id.dateHeader);
 		dateView.setText(mDate);
 		mID = getIntent().getStringExtra("ID"); 
-		
+
 		/* From server */
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		String id = preferences.getString("userId", null);
-		String code = preferences.getString("code", null);
+		String code = preferences.getString("loginCode", null);
 		data = new Connection(this).getStudent(id, code, "USO", mID);
 		ImageView avatar = (ImageView)findViewById(R.id.individualPhoto);
 		avatar.setBackgroundResource(R.drawable.frame);
@@ -100,28 +97,22 @@ public class StudentView extends Activity {
 	 * Fill list with grades
 	 */
 	private void fillList() {
-		
-		List<HashMap<String, String>> contentMap = new ArrayList<HashMap<String, String>>();
-		attendance = (ListView)findViewById(R.id.individualList);
-		String[] from = new String[] {"index", "grade"};
-		int[] to = new int[] { R.id.labIndex, R.id.labGrade};
+		ArrayList<MListItem> items = new ArrayList<MListItem>();
 
 		try {
-			JSONObject grades = data.getJSONObject("attendance");
+			JSONObject grades = data.getJSONObject("attendance"); //TODO: sa nu le mai iau din JSON
 			for (int i = 1; i <= grades.length(); i++) {
-				HashMap<String, String> map = new HashMap<String, String>();
-				map.put("index", " L" + i);
-				map.put("grade", " " + grades.get(i+""));
-				contentMap.add(map);
+				items.add(new MListItem(null, i+"", 
+				grades.getJSONObject(i+"").getString("grade"), null));
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
-		mAdapter = new SimpleAdapter(this, contentMap, R.layout.individual_grade, from, to);
-		attendance.setAdapter(mAdapter);
+		mAdapter = new MListAdapter(this, items);
+		setListAdapter(mAdapter);
 	}
-	
+
 	public void setAvatar(ImageView avatar) {
 		try
 		{
@@ -142,5 +133,4 @@ public class StudentView extends Activity {
 			avatar.setImageBitmap(b);
 		}
 	}
-
 }

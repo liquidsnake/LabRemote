@@ -20,7 +20,12 @@
 package com.android.LabRemote.UI;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -45,28 +50,10 @@ public class TimeTable extends Activity {
 
 	private Intent groupIntent;
 	private ExpandableListView days;
+	private ArrayList<ArrayList<HashMap<String, String>>> children;
+	private ArrayList<Hashtable<String, List<String>>> mData;
 	private String[] week_day = { "Monday", "Tuesday", 
 			"Wednesday", "Thursday", "Friday" };
-
-	/** Test data */
-	private String[][] extendeData = {
-		{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
-			"333 CB S1 16:18", "331 CA S2 10:12" },
-		{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
-			"333 CB S1 16:18", "331 CA S2 10:12" },
-		{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
-			"333 CB S1 16:18", "331 CA S2 10:12" },
-		{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
-			"333 CB S1 16:18", "331 CA S2 10:12" },
-		{ "334 CB S1 8:10", "335 CA S2 12:14", "332 CC S2 14:16",
-			"333 CB S1 16:18", "331 CA S2 10:12" } };
-
-	private String[][] data = {
-			{ "334 CB", "335 CA", "332 CC", "333 CB", "331 CA" },
-			{ "334 CB", "335 CA", "332 CC", "333 CB", "331 CA" },
-			{ "334 CB", "335 CA", "332 CC", "333 CB", "331 CA" },
-			{ "334 CB", "335 CA", "332 CC", "333 CB", "331 CA" },
-			{ "334 CB", "335 CA", "332 CC", "333 CB", "331 CA" } };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -79,21 +66,22 @@ public class TimeTable extends Activity {
 		setContentView(R.layout.day_list);
 
 		/** Server request */
-		new Connection(this).getTimetable("1", "code"); 
+		mData = new Connection(this).getTimetable("1", "code"); 
+		//TODO: check null
 
 		setSingleExpandable();
 		groupIntent = new Intent(this, GroupView.class);
 
 		/** Init list */
 		SimpleExpandableListAdapter expListAdapter = fillList();
-		days.setAdapter( expListAdapter );
+		days.setAdapter(expListAdapter);
 
 		days.setOnChildClickListener(new OnChildClickListener() {
 			public boolean onChildClick(ExpandableListView parent, View v,
 					int groupPosition, int childPosition, long id) {
 
-				startGroupView(data[groupPosition][childPosition], 
-						CustomDate.getDate(groupPosition));
+				startGroupView(children.get(groupPosition).get(childPosition).
+						get("group"), CustomDate.getDate(groupPosition));
 				return false;
 
 			}
@@ -108,33 +96,41 @@ public class TimeTable extends Activity {
 
 		SimpleExpandableListAdapter expListAdapter;
 		ArrayList<HashMap<String, String>> parents;
-		ArrayList<ArrayList<HashMap<String, String>>> children;
 		ArrayList<HashMap<String, String>> subList;
 		HashMap<String, String> parentMap;
 		HashMap<String, String> childrenMap;
 
 		parents = new ArrayList<HashMap<String, String>>();
-		for (int i = 0; i < 5; ++i) {
+		for (int i = 0; i < mData.size(); ++i) {
 			parentMap = new HashMap<String, String>();
 			parentMap.put("day", week_day[i]);
 			parents.add(parentMap);
 		}
 
 		children = new ArrayList<ArrayList<HashMap<String, String>>>();
-		for (int i = 0; i < 5; ++i) {
+		for (int i = 0; i < mData.size(); ++i) { //for each day TODO: poate nu-s toate zilele
 			subList = new ArrayList<HashMap<String, String>>();
-			for (int j = 0; j < 5; ++j) {
-				childrenMap = new HashMap<String, String>();
-				childrenMap.put("group", extendeData[i][j]);
-				subList.add(childrenMap);
+			
+			Hashtable<String, List<String>> h = mData.get(i);
+			Vector v = new Vector(h.keySet());
+			Collections.sort(v);
+			Iterator<String> it = v.iterator();
+			while (it.hasNext()) { //for each interval
+				String interval =  (String)it.next();
+				for (int k = 0; k < h.get(interval).size(); k++) { //for each group in interval
+					childrenMap = new HashMap<String, String>();
+					childrenMap.put("group", h.get(interval).get(k));
+					childrenMap.put("interval", interval);
+					subList.add(childrenMap);
+				}
 			}
 			children.add(subList);
 		}
 
 		expListAdapter = new SimpleExpandableListAdapter(this, parents,
-				R.layout.exp_item, new String[] { "day" },
+				R.layout.exp_item, new String[] {"day"},
 				new int[] { R.id.exp_name }, children, R.layout.exp_child_item,
-				new String[] { "group" }, new int[] { R.id.exp_child_name });
+				new String[]{"group", "interval" }, new int[]{R.id.exp_child_group, R.id.exp_child_interval});
 
 		return expListAdapter;
 	}

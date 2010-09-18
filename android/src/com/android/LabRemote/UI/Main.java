@@ -26,7 +26,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.android.LabRemote.R;
@@ -38,11 +37,9 @@ import com.android.LabRemote.Utils.CustomDate;
  */
 public class Main extends Activity {
 
-	private Intent mTimetableIntent, mCurrentIntent;
-	private TextView mTimetableButton, mSearchButton;
+	private Intent mTimetableIntent, mCurrentIntent, mSettingsIntent;
+	private TextView mTimetableButton, mSearchButton, mSettingsButton;
 	private TextView mCurrentButton;
-	private Button mExitButton;
-	private String currentGroup = "312CAa";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -56,6 +53,7 @@ public class Main extends Activity {
 
 		mTimetableIntent = new Intent(this, TimeTable.class);
 		mCurrentIntent = new Intent(this, GroupView.class);
+		mSettingsIntent = new Intent(this, Settings.class);
 
 		initMenuButtons();
 	}
@@ -78,7 +76,8 @@ public class Main extends Activity {
 		mCurrentButton = (TextView) findViewById(R.id.currentCourseButton);
 		mCurrentButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				mCurrentIntent.putExtra("Group", currentGroup);
+				mCurrentIntent.putExtra("Group", "312CAa");
+				//mCurrentIntent.putExtra("Current", true); TODO
 				mCurrentIntent.putExtra("Date", CustomDate.getCurrentDate());
 				startActivity(mCurrentIntent);
 			}
@@ -91,12 +90,12 @@ public class Main extends Activity {
 				onSearchRequested();
 			}
 		});
-
-		/** Exit button */
-		mExitButton = (Button) findViewById(R.id.exitButton);
-		mExitButton.setOnClickListener(new OnClickListener() {
+		
+		/** Search button */
+		mSettingsButton = (TextView) findViewById(R.id.otherButton);
+		mSettingsButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				finish();
+				startActivity(mSettingsIntent);
 			}
 		});
 	}

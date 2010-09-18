@@ -19,12 +19,6 @@
 
 package com.android.LabRemote.Utils;
 
-/* 
- * 
- * Version: 1.0
- * 
- * Copyright (c) 2010 LabRemote team
- */
 import android.graphics.Bitmap;
 
 /**

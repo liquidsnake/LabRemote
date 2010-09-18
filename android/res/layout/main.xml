@@ -14,27 +14,40 @@
 	<TableLayout android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<TableRow android:layout_width="fill_parent"
-			android:layout_height="match_parent">
-			<TextView android:id="@+id/currentCourseButton" style="@style/MainButton"
-				android:text="Current">
+			android:layout_height="wrap_content">
+			<LinearLayout android:layout_width="fill_parent" android:layout_weight="1" android:layout_height="100dip"
+			android:orientation="vertical">
+			<TextView android:id="@+id/currentCourseButton" android:background="@drawable/user_group_48"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_gravity="center">
 			</TextView>
-			<TextView android:id="@+id/searchButton" style="@style/MainButton"
-				android:text="Search">
+			</LinearLayout>
+			<LinearLayout android:layout_width="fill_parent" android:layout_weight="1" android:layout_height="100dip"
+			android:orientation="vertical">
+			<TextView android:id="@+id/searchButton" android:background="@drawable/search_48"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_gravity="center">
 			</TextView>
+			</LinearLayout>
 		</TableRow>
 		<TableRow android:layout_width="fill_parent"
 			android:layout_height="wrap_content">
-			<TextView android:id="@+id/timetableButton" style="@style/MainButton" 
-				android:text="Timetable">
+			<LinearLayout android:layout_width="fill_parent" android:layout_weight="1" android:layout_height="wrap_content"
+			android:orientation="vertical">
+			<TextView android:id="@+id/timetableButton" android:background="@drawable/schedule"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_gravity="center">
 			</TextView>
-			<TextView android:id="@+id/otherButton" style="@style/MainButton"
-				android:text="Other">
+			</LinearLayout>
+			<LinearLayout android:layout_width="fill_parent" android:layout_weight="1" android:layout_height="wrap_content"
+			android:orientation="vertical">
+			<TextView android:id="@+id/otherButton" android:background="@drawable/configuration"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_gravity="center">
 			</TextView>
+			</LinearLayout>
 		</TableRow>
 	</TableLayout>
 
-	<Button android:id="@+id/exitButton" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:layout_margin="15dip"
-		android:text="Exit" />
 
 </LinearLayout>

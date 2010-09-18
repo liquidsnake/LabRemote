@@ -18,7 +18,7 @@
 	</TableLayout>
 	</android.gesture.GestureOverlayView>
 
-	<ListView android:id="@+id/studentsList" android:layout_width="fill_parent"
+	<ListView android:id="@android:id/list" android:layout_width="fill_parent"
 		android:layout_height="fill_parent" android:divider="@color/grey"
 		android:dividerHeight="2dip" android:background="@color/white"
 		android:orientation="vertical">

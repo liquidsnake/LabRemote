@@ -25,7 +25,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
+import android.app.ListActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -34,7 +34,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.LabRemote.R;
@@ -50,10 +49,9 @@ import com.android.LabRemote.Utils.ShowAvatar;
  * @see MListAdapter
  * @see MListItem
  */
-public class GroupView extends Activity implements AvatarCallback {
+public class GroupView extends ListActivity implements AvatarCallback {
 
 	private String mGroup, mDate;
-	private ListView mListView;
 	private ArrayList<MListItem> mList;
 	private Intent mIndividualIntent;
 	private JSONObject mData;
@@ -103,7 +101,7 @@ public class GroupView extends Activity implements AvatarCallback {
 	private void receiveData() {
 
 		/** Header informations */
-		mGroup = getIntent().getStringExtra("Group");
+		mGroup = getIntent().getStringExtra("Group"); //TODO: ia nume grup de la server
 		TextView groupText = (TextView) findViewById(R.id.classHeader);
 		groupText.setText(mGroup);
 		mDate = getIntent().getStringExtra("Date");
@@ -117,7 +115,10 @@ public class GroupView extends Activity implements AvatarCallback {
 		/** Data from the server */
 		String id = preferences.getString("userId", null);
 		String code = preferences.getString("loginCode", null);
-		mData = new Connection(this).getGroup(id, code, mGroup);
+		if (getIntent().getBooleanExtra("Current", false) == true)
+			mData = new Connection(this).getCurrentGroup(id, code);
+		else
+			mData = new Connection(this).getGroup(id, code, mGroup);
 
 	}
 
@@ -126,7 +127,7 @@ public class GroupView extends Activity implements AvatarCallback {
 	 */
 	private void fillList() {
 		JSONArray students;
-		mListView = (ListView)findViewById(R.id.studentsList);
+		//mListView = (ListView)findViewById(R.id.studentsList);
 		mList = new ArrayList<MListItem>();
 
 		try {
@@ -141,7 +142,7 @@ public class GroupView extends Activity implements AvatarCallback {
 		}
 
 		mAdapter = new MListAdapter(this, mList, this, onItemClick);
-		mListView.setAdapter(mAdapter);
+		setListAdapter(mAdapter);
 	}
 
 }
