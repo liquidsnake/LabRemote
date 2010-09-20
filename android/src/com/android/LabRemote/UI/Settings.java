@@ -149,10 +149,14 @@ public class Settings extends Activity {
 					LoginData result = checkLogin();
 					if (result.getError() != null) {
 						showLoginFailed(result.getError());
-					} else 
+					} else {
 						startActivity(mMain);
-				} else 
+						finish();
+					}
+				} else {
 					startActivity(mMain);
+					finish();
+				}
 			}
 		});
 			

@@ -75,6 +75,7 @@ public class Login extends Activity {
 			if (res.getError() == null) { 
 				mIntent = new Intent(this, Main.class);
 				startActivity(mIntent);
+				finish();
 			} else { 
 				mInvalidLogin.setMessage(res.getError());
 				mInvalidLogin.show();		

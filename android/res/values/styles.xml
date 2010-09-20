@@ -46,7 +46,6 @@
 	<style name="MainButton">
 		<item name="android:layout_height">wrap_content</item>
 		<item name="android:layout_width">wrap_content</item>
-		<item name="android:background">@drawable/butt</item>
 		<item name="android:padding">5dip</item>
 		<item name="android:textColor">@color/black</item>
 		<item name="android:gravity">center</item>

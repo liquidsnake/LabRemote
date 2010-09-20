@@ -87,11 +87,11 @@ public class MListAdapter extends BaseAdapter {
 			item = new GroupItemView(mContext, mItems.get(index));
 			if (it.getAvatar() == null)
 				new DownloadAvatar(it.getImgUrl(), mAvatarCallback, item);
-			item.setClickable(true);
 			item.setOnClickListener(mOnItemClick);
 		} else
 			item = new AttendanceItemView(mContext, mItems.get(index));
-		
+		item.setClickable(true);
+
 		return item;
 	}
 

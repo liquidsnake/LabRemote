@@ -27,12 +27,12 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.app.ListActivity;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -40,6 +40,7 @@ import android.widget.TextView;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
+import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.MListAdapter;
 import com.android.LabRemote.Utils.MListItem;
 
@@ -61,7 +62,6 @@ public class StudentView extends ListActivity {
 		setContentView(R.layout.individual_view);
 
 		receiveData();
-		fillList();
 	}
 
 	/**
@@ -83,14 +83,17 @@ public class StudentView extends ListActivity {
 		dateView.setText(mDate);
 		mID = getIntent().getStringExtra("ID"); 
 
-		/* From server */
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		String id = preferences.getString("userId", null);
-		String code = preferences.getString("loginCode", null);
-		data = new Connection(this).getStudent(id, code, "USO", mID);
-		ImageView avatar = (ImageView)findViewById(R.id.individualPhoto);
-		avatar.setBackgroundResource(R.drawable.frame);
-		setAvatar(avatar);
+		/** From server */
+		ServerResponse result = new Connection(this).getStudent(mID);
+		data = (JSONObject) result.getRespone();
+		if (data != null) {
+			ImageView avatar = (ImageView)findViewById(R.id.individualPhoto);
+			avatar.setBackgroundResource(R.drawable.frame);
+			setAvatar(avatar);
+			fillList();
+		}
+		else
+			exitServerError(result.getError());
 	}
 
 	/**
@@ -100,8 +103,8 @@ public class StudentView extends ListActivity {
 		ArrayList<MListItem> items = new ArrayList<MListItem>();
 
 		try {
-			JSONObject grades = data.getJSONObject("attendance"); //TODO: sa nu le mai iau din JSON
-			for (int i = 1; i <= grades.length(); i++) {
+			JSONObject grades = data.getJSONObject("attendance"); 
+			for (int i = 0; i < grades.length(); i++) {
 				items.add(new MListItem(null, i+"", 
 				grades.getJSONObject(i+"").getString("grade"), null));
 			}
@@ -132,5 +135,17 @@ public class StudentView extends ListActivity {
 			(getResources(), R.drawable.empty);
 			avatar.setImageBitmap(b);
 		}
+	}
+	
+	/**
+	 * If the server request failed the activity exists
+	 * returns an error message to the parent activity
+	 * @param error
+	 */
+	private void exitServerError(String error) {
+		Intent back = new Intent();
+		back.putExtra("serverError", error);
+		setResult(Activity.RESULT_CANCELED, back);
+		finish();
 	}
 }

@@ -25,6 +25,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -35,9 +36,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
+import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.AvatarCallback;
 import com.android.LabRemote.Utils.MListAdapter;
 import com.android.LabRemote.Utils.MListItem;
@@ -56,6 +59,7 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	private Intent mIndividualIntent;
 	private JSONObject mData;
 	private MListAdapter mAdapter;
+	public static final int REQUEST_FROM_SERVER = 3;
 
 	/**
 	 * Displays a newly downloaded avatar
@@ -76,7 +80,7 @@ public class GroupView extends ListActivity implements AvatarCallback {
 			mIndividualIntent.putExtra("Group", mGroup); 
 			mIndividualIntent.putExtra("Date", mDate); 
 			mIndividualIntent.putExtra("ID", ((ListItemView)v).getmId()); 
-			startActivity(mIndividualIntent);
+			startActivityForResult(mIndividualIntent, REQUEST_FROM_SERVER);
 		}
 	};
 
@@ -90,8 +94,6 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		setContentView(R.layout.group_view);
 
 		receiveData();
-		if (mData != null)
-			fillList();
 	}
 
 	/**
@@ -113,13 +115,17 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		cv.setText(course);
 
 		/** Data from the server */
-		String id = preferences.getString("userId", null);
-		String code = preferences.getString("loginCode", null);
+		ServerResponse response;
 		if (getIntent().getBooleanExtra("Current", false) == true)
-			mData = new Connection(this).getCurrentGroup(id, code);
+			response = new Connection(this).getCurrentGroup();
 		else
-			mData = new Connection(this).getGroup(id, code, mGroup);
-
+			response = new Connection(this).getGroup(mGroup);
+		
+		mData = (JSONObject) response.getRespone();
+		if (mData != null) 
+			fillList();
+		else
+			exitServerError(response.getError());
 	}
 
 	/**
@@ -127,11 +133,10 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	 */
 	private void fillList() {
 		JSONArray students;
-		//mListView = (ListView)findViewById(R.id.studentsList);
 		mList = new ArrayList<MListItem>();
-
+		
 		try {
-			students = mData.getJSONArray("students");
+			students = mData.getJSONArray("students"); //TODO: dc e gol ?
 			for (int i = 0; i < students.length(); i++) {
 				JSONObject stud = students.getJSONObject(i);
 				mList.add(new MListItem(stud.getString("avatar"), stud.getString("name"), 
@@ -143,6 +148,26 @@ public class GroupView extends ListActivity implements AvatarCallback {
 
 		mAdapter = new MListAdapter(this, mList, this, onItemClick);
 		setListAdapter(mAdapter);
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    if (resultCode == Activity.RESULT_CANCELED) 
+	    	if (data != null)
+	    		if (data.getStringExtra("serverError") != null)
+	    			Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
+	}
+	
+	/**
+	 * If the server request failed the activity exists
+	 * returns an error message to the parent activity
+	 * @param error
+	 */
+	private void exitServerError(String error) {
+		Intent back = new Intent();
+		back.putExtra("serverError", error);
+		setResult(Activity.RESULT_CANCELED, back);
+		finish();
 	}
 
 }

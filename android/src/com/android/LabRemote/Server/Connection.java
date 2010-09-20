@@ -23,10 +23,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -45,14 +41,16 @@ import android.preference.PreferenceManager;
 import com.android.LabRemote.Data.LoginData;
 
 //TODO: Treat errors and exceptions
-//TODO: No more session keys.. le ia direct din prefs
+//TODO: pun status in rasp 
+//TODO: object la search in loc de array
 
 public class Connection {
-	private static int ARRAY = 1;
-	private static int OBJECT = 0;
 	private SharedPreferences mPreferences;
+	private Context mContext;
 	private String mCode;
 	private String mHost;
+	private String mCourse;
+	private String mID;
 	private HttpClient mHttpClient;
 	
 	/** API Queries */
@@ -65,22 +63,26 @@ public class Connection {
 	
 	/** Error messages */
 	private static final String serverError = 
-		"There was a problem with the server. Would you like to try another host address?";
+		"There was a problem with the server or the request";
 	private static final String invalidLogin = 
-		"Invalid login.Would you like to change the host or load another code?";
+		"Invalid login. Would you like to change the host or load another code?";
 	private static final String invalidResponse = "Invalid response from the server";
-
+	
 	public Connection(Context context) {
-		mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+		mContext = context;
+		mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 		this.mCode = mPreferences.getString("loginCode", null);
 		this.mHost = mPreferences.getString("host", null);
+		this.mCourse = mPreferences.getString("course", null);
+		this.mID = mPreferences.getString("userId", null);
 		this.mHttpClient = new DefaultHttpClient();
 	}
 
 	/**
 	 * Generic http request
 	 * @param url
-	 * @return
+	 * @return Response string or null if there was a problem 
+	 * with the server or the request
 	 */
 	public String httpReq(String url) {
 		HttpGet httpget = new HttpGet(url); 
@@ -89,14 +91,16 @@ public class Connection {
 
 		try {
 			response = mHttpClient.execute(httpget);
+			int code = response.getStatusLine().getStatusCode();
+			if (code < 200 || code > 299) 
+				return null;			
+			
 			HttpEntity entity = response.getEntity();
-
 			if (entity != null) {
 				InputStream instream = entity.getContent();
 				result = convertStreamToString(instream);
 				instream.close();
 			}
-
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -105,7 +109,7 @@ public class Connection {
 
 		return result;
 	}
-
+	
 	/**
 	 * 
 	 * @param code
@@ -129,8 +133,9 @@ public class Connection {
 			SharedPreferences.Editor editor = mPreferences.edit();
 
 			String log = jObject.getString("login");
-			if (log == "invalid")
+			if (log == "invalid") {
 				return new LoginData(invalidLogin);
+			}
 
 			String user_id = jObject.getString("user");
 			JSONArray c = jObject.getJSONArray("courses");
@@ -158,89 +163,63 @@ public class Connection {
 	 * @param request
 	 * @param type
 	 * @return
+	 * TODO: daca imi pot trimite numai json object
 	 */
-	public Object get(String request, int type) {
-		Object jObject = null;
+	public ServerResponse get(String request) {
+		JSONObject jObject = null;
+		
+		/** HTTP error (server or client) */
 		String result = httpReq(request);
-		if (result == null)
-			return null;
+		if (result == null) 
+			return new ServerResponse(null, serverError); 
 
+		/** Invalid response from server */ //serverul nu stie api 
 		try {
-			if (type == ARRAY)
-				jObject = new JSONArray(result);
-			else if (type == OBJECT)
-				jObject = new JSONObject(result);
+			jObject = new JSONObject(result);
 		} catch (JSONException e) {
 			e.printStackTrace();
-			return null;
+			return new ServerResponse(null, invalidResponse); 
+		}
+		
+		//TODO: daca am status o sa-l verific aici inainte sa extrag err
+		/** Invalid request from client */
+		try {
+			String err = jObject.getString("error");
+			if (err != null) 
+				return new ServerResponse(null, err);
+		} catch (JSONException e) {
+			e.printStackTrace(); 
 		}
 
-		return jObject;
+		return new ServerResponse(jObject, null);
 	}
 
-	public JSONObject getGroup(String id, String session_key, String group) {
-		String request = mHost + groupQuery + id + "/" + session_key + "/" + group;
-		return (JSONObject) get(request, OBJECT);
+	public ServerResponse getGroup(String group) {
+		String request = mHost + groupQuery + mCourse + "/" + mID + "/" + mCode + "/" + group;
+		return get(request);
 	}
 	
-	public JSONObject getCurrentGroup(String id, String session_key) {
-		String request = mHost + currentQuery + id + "/" + session_key;
-		return (JSONObject) get(request, OBJECT);
+	public ServerResponse getCurrentGroup() {
+		String request = mHost + currentQuery + mCourse + "/" + mID + "/" + mCode;
+		return get(request);
 	}
 
-	public JSONArray getSearch(String id, String session_key, String query) {
-		String request = mHost + searchQuery + id + "/" + session_key + "/" + query;
-		return (JSONArray) get(request, ARRAY);
+	public ServerResponse getSearch(String query) {
+		String request = mHost + searchQuery + mID + "/" + mCode + "/" + query;
+		return get(request);
 	}
 
-	public JSONObject getStudent(String id, String session_key, String course, String studId) {
-		System.out.println("cu " + course + id); 
-		String request = mHost + individualQuery + id + "/" + session_key + "/" + course + "/" + studId;
-		return (JSONObject) get(request, OBJECT);
+	public ServerResponse getStudent(String id) {
+		String request = mHost + individualQuery + mCourse + "/" + mID + "/" + mCode + "/" + id;
+		return get(request);
 	}
 
-	public ArrayList<Hashtable<String, List<String>>> getTimetable(String id, String session_key) {
-		String request = mHost + timeQuery + id + "/" + session_key;
-		ArrayList<Hashtable<String, List<String>>> timetable = new ArrayList<Hashtable<String, List<String>>>();
-		JSONObject table;
-
-		try {
-			table = ((JSONObject)get(request, OBJECT)).getJSONObject("timetable"); //TODO: check null
-			timetable.add(getWeekDay(table, "monday")); //TODO: check null inainte de add
-			timetable.add(getWeekDay(table, "tuesday"));
-			timetable.add(getWeekDay(table, "wednesday"));
-			timetable.add(getWeekDay(table, "thursday"));
-			timetable.add(getWeekDay(table, "friday"));
-		} catch (JSONException e) {
-			e.printStackTrace();
-			return null;
-		}
-
-		return timetable;
+	public ServerResponse getTimetable() {
+		String request = mHost + timeQuery + mCourse + "/" + mID + "/" + mCode;
+		return get(request);
 	}
 
-	private Hashtable<String, List<String>> getWeekDay(JSONObject from, String when) {
-		Hashtable<String, List<String>> day = new Hashtable<String, List<String>>();
-		try {
-			JSONObject jDay = from.getJSONObject(when);
-			Iterator rez = jDay.keys();
-
-			while (rez.hasNext()) {
-				String key = (String) rez.next();
-				JSONArray val = (JSONArray) jDay.get(key);
-				ArrayList<String> vals = new ArrayList<String>();
-				for (int i = 0; i < val.length(); i++)
-					vals.add(val.getString(i));
-				day.put(key, vals);
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return day;
-	}
-
-
+	//TODO: si de aici ies pe probl de rasp de la server
 	private static String convertStreamToString(InputStream is) {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 		StringBuilder sb = new StringBuilder();

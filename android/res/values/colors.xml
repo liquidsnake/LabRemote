@@ -6,4 +6,6 @@
 <color name="header_color">#38B0DE</color>
 <color name="grey1">#FF909090</color>
 <color name="grey2">#BBBBBB</color>
+<color name="press">#28FFFFFF</color>
+<color name="normal">#50FFFFFF</color>
 </resources>

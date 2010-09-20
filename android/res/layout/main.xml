@@ -3,7 +3,7 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent" android:background="@color/white">
+	android:layout_height="fill_parent" android:background="@color/header_color">
 
 	<TextView android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:gravity="center_horizontal"
@@ -11,41 +11,40 @@
 		android:paddingTop="20dip" android:textSize="30sp" android:text="Lab Remote" />
 
 	<!-- Menu buttons -->
-	<TableLayout android:layout_width="fill_parent"
-		android:layout_height="wrap_content">
-		<TableRow android:layout_width="fill_parent"
+	<TableLayout android:layout_width="wrap_content"
+		android:layout_height="match_parent" android:layout_gravity="center">
+		<TableRow android:layout_width="wrap_content"
 			android:layout_height="wrap_content">
-			<LinearLayout android:layout_width="fill_parent" android:layout_weight="1" android:layout_height="100dip"
-			android:orientation="vertical">
-			<TextView android:id="@+id/currentCourseButton" android:background="@drawable/user_group_48"
+			<FrameLayout android:layout_width="wrap_content" android:layout_height="50dip" android:id="@+id/currentCourseButton"
+			android:orientation="vertical" android:background="@drawable/butt" android:layout_margin="2dip">
+			<TextView android:background="@drawable/user_group_48"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_gravity="center">
+			android:layout_gravity="right">
 			</TextView>
-			</LinearLayout>
-			<LinearLayout android:layout_width="fill_parent" android:layout_weight="1" android:layout_height="100dip"
-			android:orientation="vertical">
-			<TextView android:id="@+id/searchButton" android:background="@drawable/search_48"
+			</FrameLayout>
+			<FrameLayout android:layout_width="wrap_content" android:layout_height="50dip" android:id="@+id/searchButton"
+			android:orientation="vertical" android:background="@drawable/butt" android:layout_margin="2dip">
+			<TextView android:background="@drawable/search_48"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_gravity="center">
+			android:layout_gravity="left">
 			</TextView>
-			</LinearLayout>
+			</FrameLayout>
 		</TableRow>
-		<TableRow android:layout_width="fill_parent"
-			android:layout_height="wrap_content">
-			<LinearLayout android:layout_width="fill_parent" android:layout_weight="1" android:layout_height="wrap_content"
-			android:orientation="vertical">
-			<TextView android:id="@+id/timetableButton" android:background="@drawable/schedule"
+		<TableRow android:layout_width="wrap_content" android:layout_height="wrap_content">
+			<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/timetableButton"
+			android:orientation="vertical" android:background="@drawable/butt" android:layout_margin="2dip">
+			<TextView android:background="@drawable/schedule"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_gravity="center">
+			android:layout_gravity="right">
 			</TextView>
-			</LinearLayout>
-			<LinearLayout android:layout_width="fill_parent" android:layout_weight="1" android:layout_height="wrap_content"
-			android:orientation="vertical">
-			<TextView android:id="@+id/otherButton" android:background="@drawable/configuration"
+			</FrameLayout>
+			<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/otherButton"
+			android:orientation="vertical" android:background="@drawable/butt" android:layout_margin="2dip">
+			<TextView android:background="@drawable/configuration"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_gravity="center">
+			android:layout_gravity="left">
 			</TextView>
-			</LinearLayout>
+			</FrameLayout>
 		</TableRow>
 	</TableLayout>
 

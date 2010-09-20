@@ -26,7 +26,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
-import android.widget.TextView;
+import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Utils.CustomDate;
@@ -38,8 +39,10 @@ import com.android.LabRemote.Utils.CustomDate;
 public class Main extends Activity {
 
 	private Intent mTimetableIntent, mCurrentIntent, mSettingsIntent;
-	private TextView mTimetableButton, mSearchButton, mSettingsButton;
-	private TextView mCurrentButton;
+	private FrameLayout mTimetableButton, mSearchButton, mSettingsButton;
+	private FrameLayout mCurrentButton;
+	
+	public static final int REQUEST_FROM_SERVER = 1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -65,39 +68,47 @@ public class Main extends Activity {
 	private void initMenuButtons() {
 
 		/** Timetable button */
-		mTimetableButton = (TextView) findViewById(R.id.timetableButton);
+		mTimetableButton = (FrameLayout) findViewById(R.id.timetableButton);
 		mTimetableButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				startActivity(mTimetableIntent);
+				startActivityForResult(mTimetableIntent, REQUEST_FROM_SERVER);
 			}
 		});
 
 		/** Current course button */
-		mCurrentButton = (TextView) findViewById(R.id.currentCourseButton);
+		mCurrentButton = (FrameLayout) findViewById(R.id.currentCourseButton);
 		mCurrentButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				mCurrentIntent.putExtra("Group", "312CAa");
-				//mCurrentIntent.putExtra("Current", true); TODO
+				mCurrentIntent.putExtra("Group", "");
+				mCurrentIntent.putExtra("Current", true); 
 				mCurrentIntent.putExtra("Date", CustomDate.getCurrentDate());
-				startActivity(mCurrentIntent);
+				startActivityForResult(mCurrentIntent, REQUEST_FROM_SERVER);
 			}
 		});
 
 		/** Search button */
-		mSearchButton = (TextView) findViewById(R.id.searchButton);
+		mSearchButton = (FrameLayout) findViewById(R.id.searchButton);
 		mSearchButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				onSearchRequested();
 			}
 		});
 		
-		/** Search button */
-		mSettingsButton = (TextView) findViewById(R.id.otherButton);
+		/** Settings button */
+		mSettingsButton = (FrameLayout) findViewById(R.id.otherButton);
 		mSettingsButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				startActivity(mSettingsIntent);
 			}
 		});
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    if (resultCode == Activity.RESULT_CANCELED) 
+	    	if (data != null)
+	    		if (data.getStringExtra("serverError") != null)
+	    			Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
 	}
 
 	/** 
