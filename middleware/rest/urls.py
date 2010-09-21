@@ -12,5 +12,5 @@ urlpatterns = patterns('',
     (r'current_group/(?P<course>\w+)/(?P<user>\d+)/(?P<session_key>\w+)/', views.current_group),
     (r'student/(?P<course>\w+)/(?P<user>\d+)/(?P<session_key>\w+)/(?P<id>\d+)/', views.student),
     (r'search/(?P<course>\w+)/(?P<user>\d+)/(?P<session_key>\w+)/(?P<query>\w+)/', views.search),
-    (r'post/(?P<course>\w+)/(?P<user>\d+)/(?P<session_key>\w+)/$', views.post_data),
+    (r'post/$', views.post_data),
 )
