@@ -198,7 +198,7 @@ def search(request, user, session_key, course, query):
     return json_response({"students": results})
 
 def get_week(start_day):
-    delta = datetime.date.today() - start_day - datetime.timedelta(days=1)
+    delta = datetime.date.today() - start_day
     return delta.days / 7
 
 @csrf_exempt
@@ -224,24 +224,21 @@ def post_data(request):
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
 
-    try:
-        data = json.loads(request.POST['contents'])
-        if request.POST['type'] == 'group':
-            try:
-                act = Activity.objects.get(id = data['activity_id'])
-            except Activity.DoesNotExist:
-                return json_response({"error":"Activity not found"}, failed = True)
-            for student in data['students']:
-                try: 
-                    current_student = Student.objects.get(id = student['id'])
-                    attendance, created = Attendance.objects.get_or_create(course = course, student = current_student, activity = act, week = get_week(act.day_start), defaults={'grade': student['grade']})
-                    attendance.grade = student['grade']
-                    attendance.save()
-                except Student.DoesNotExist:
-                    return json_response({"error":"Student not found"}, failed = True)
-            return json_response({})
-        else:
-            return json_response({"error":"Wrong query type"}, failed = True)
-    except ValueError:
-        return json_response({"error":"Malformed post request"}, failed = True)
+    data = json.loads(request.POST['contents'])
+    if request.POST['type'] == 'group':
+        try:
+            act = Activity.objects.get(id = data['activity_id'])
+        except Activity.DoesNotExist:
+            return json_response({"error":"Activity not found"}, failed = True)
+        for student in data['students']:
+            try: 
+                current_student = Student.objects.get(id = student['id'])
+                attendance, created = Attendance.objects.get_or_create(course = course, student = current_student, activity = act, week = get_week(act.day_start), defaults={'grade': student['grade']})
+                attendance.grade = student['grade']
+                attendance.save()
+            except Student.DoesNotExist:
+                return json_response({"error":"Student not found"}, failed = True)
+        return json_response({})
+    else:
+        return json_response({"error":"Wrong query type"}, failed = True)
     
