@@ -234,7 +234,7 @@ def post_data(request):
             for student in data['students']:
                 try: 
                     current_student = Student.objects.get(id = student['id'])
-                    attendance = Attendance.objects.get_or_create(course = course, student = current_student, activity = act, week = get_week(act.day_start), defaults={'grade': student['grade']})
+                    attendance, created = Attendance.objects.get_or_create(course = course, student = current_student, activity = act, week = get_week(act.day_start), defaults={'grade': student['grade']})
                     attendance.grade = student['grade']
                     attendance.save()
                 except Student.DoesNotExist:
