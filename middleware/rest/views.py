@@ -144,7 +144,7 @@ def current_group(request, user, session_key, course):
                     "grade": 0, # TODO
                     "id": s.id,
                     "avatar": s.avatar} for s in group.students.all() ]    
-                return json_response({"name": group.name, "students": students})
+                return json_response({"name": group.name, "students": students, 'activity_id' : act.id})
     return json_response({"error":"no current group"}, failed = True)
     
 @valid_key
@@ -196,3 +196,51 @@ def search(request, user, session_key, course, query):
                         break
     
     return json_response({"students": results})
+
+def get_week(start_day):
+    delta = start_day - datetime.date.today()
+    return delta.days / 7
+
+@valid_key
+def post_data(request):
+    """ Returns the timetable for the current course. """
+    user = request.POST['user']
+    session_key = request.POST['session_key']
+    course = request.POST['course']
+
+    try:
+        assistant = Assistant.objects.get(pk=user)
+    except Assistant.DoesNotExist:
+        return json_response({"error":"no such user"}, failed = True)
+        
+    if assistant.get_session_key() != session_key:
+        return json_response({"error":"invalid session key"}, failed = True)
+        
+    try:
+        course = Course.objects.get(name=course)
+    except Course.DoesNotExist:
+        return json_response({"error":"No such course"}, failed = True)
+
+    try:
+        data = json.loads(request.POST['contents'])
+        if request.POST['type'] == 'group':
+            try:
+                act = Activity.objects.get(id = data['activity_id'])
+            except Activity.DoesNotExist:
+                return json_response({"error":"Activity not found"}, failed = True)
+            for student in data['students']:
+                try: 
+                    current_student = Student.objects.get(id = student['id'])
+                    attendance = Attendace.objects.get_or_create(course = course, student = current_student, activity = act)
+                    attendance.week = get_week(act.day_start)
+                    attendance.grade = student['grade']
+                    attendance.save()
+                except Student.DoesNotExist:
+                    return json_response({"error":"Student not found"}, failed = True)
+            
+    except TypeError:
+        return json_response({"error":"Malformed post request"}, failed = True)
+    
+    
+    
+    return json_response({"timetable" : timetable})

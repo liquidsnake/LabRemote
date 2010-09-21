@@ -91,6 +91,8 @@ class Activity(models.Model):
     time_minute_start = models.IntegerField(default=0)
     time_hour_end = models.IntegerField(default=10)
     time_minute_end = models.IntegerField(default=0)
+
+    day_start = models.DateField()
     
     @property
     def interval(self):
