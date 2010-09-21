@@ -194,4 +194,4 @@ def search(request, user, session_key, course, query):
                     if len(results) >= limit:
                         break
     
-    return json_response(results)
+    return json_response({"students": results})
