@@ -78,6 +78,11 @@ def login(request, qr_code):
 @valid_key
 def timetable(request, user, session_key, course):
     """ Returns the timetable for the current course. """
+    try:
+        course = Course.objects.get(name=course)
+    except Course.DoesNotExist:
+        return json_response({"error":"No such course"}, failed = True)
+
     assistant = request.assistant
     timetable = dict()
     
@@ -100,6 +105,11 @@ def group(request, user, session_key, name, course):
     assistant = request.assistant
     
     try:
+        course = Course.objects.get(name=course)
+    except Course.DoesNotExist:
+        return json_response({"error":"No such course"}, failed = True)
+    
+    try:
         group = Group.objects.get(name=name, course__name=course)
         
         students = [ {"name": s.name, 
@@ -116,6 +126,11 @@ def current_group(request, user, session_key, course):
     """ Returns the current group for this course and assistant """
     assistant = request.assistant
     now = datetime.datetime.now().time()
+
+    try:
+        course = Course.objects.get(name=course)
+    except Course.DoesNotExist:
+        return json_response({"error":"No such course"}, failed = True)
     
     #get all the where the user is an assistant for this course
     for group in assistant.groups.filter(course__name=course):
@@ -135,9 +150,16 @@ def current_group(request, user, session_key, course):
 @valid_key
 def student(request, user, session_key, course, id):
     """ Return a student and the attendances for this course"""
-    student = get_object_or_404(Student, pk=id)
-    course = get_object_or_404(Course, name=course)
-    
+    try:
+        student = Student.objects.get(pk=id)
+    except Student.DoesNotExist:
+        return json_response({"error":"No such student"}, failed = True)
+
+    try:
+        course = Course.objects.get(name=course)
+    except Course.DoesNotExist:
+        return json_response({"error":"No such course"}, failed = True)
+
     atts = Attendance.objects.filter(student=student, course=course)
     attendance = {}
     for a in atts:
@@ -153,6 +175,11 @@ def student(request, user, session_key, course, id):
 def search(request, user, session_key, course, query):
     """ Search for users having query in name.
     Returns a list of maximum 20 results """
+    
+    try:
+        course = Course.objects.get(name=course)
+    except Course.DoesNotExist:
+        return json_response({"error":"No such course"}, failed = True)
     
     limit = 20
     # TODO: query db, not this crap
