@@ -100,7 +100,7 @@ def timetable(request, user, session_key, course):
     return json_response({"timetable" : timetable})
 
 @valid_key
-def group(request, user, session_key, name, course):
+def group(request, user, session_key, name, course, activity_id):
     """ Returns a certain group from a certain course """
     assistant = request.assistant
     
@@ -119,7 +119,7 @@ def group(request, user, session_key, name, course):
     except Group.DoesNotExist:
         return json_response({"error": "No such group"}, failed = True)
                 
-    return json_response({"name": name, "students": students})
+    return json_response({"name": name, "students": students, "activity_id":activity_id})
 
 @valid_key
 def current_group(request, user, session_key, course):
