@@ -94,7 +94,7 @@ def timetable(request, user, session_key, course):
                 activities[a.interval].append({"name":a.group.name, "id":a.id})
             except Exception:
                 activities[a.interval] = []
-            activities[a.interval].append(a.group.name)
+            activities[a.interval].append({"name":a.group.name, "id":a.id})
         timetable[day] = activities
     
     return json_response({"timetable" : timetable})
