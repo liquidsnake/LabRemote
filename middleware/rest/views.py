@@ -5,7 +5,7 @@ from django.core import serializers
 from django.http import HttpResponse, Http404
 import json
 import datetime
-
+from django.views.decorators.csrf import csrf_exempt
 
 
 from models import *
@@ -201,10 +201,9 @@ def get_week(start_day):
     delta = start_day - datetime.date.today()
     return delta.days / 7
 
-@valid_key
+@csrf_exempt
 def post_data(request):
-    """ Returns the timetable for the current course. """
-    print "lalalal"
+    """ Handles the POST requests """
     user = request.POST['user']
     session_key = request.POST['session_key']
     course = request.POST['course']
@@ -240,10 +239,8 @@ def post_data(request):
                     attendance.save()
                 except Student.DoesNotExist:
                     return json_response({"error":"Student not found"}, failed = True)
-            
-    except TypeError:
+        else:
+            return json_response({"error":"Wrong query type"}, failed = True)
+    except Exception:
         return json_response({"error":"Malformed post request"}, failed = True)
     
-    
-    
-    return json_response({"timetable" : timetable})
