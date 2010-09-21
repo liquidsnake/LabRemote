@@ -177,7 +177,7 @@ def search(request, user, session_key, course, query):
     Returns a list of maximum 20 results """
     
     try:
-        course = Course.objects.get(name=course)
+        c = Course.objects.get(name=course)
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
     
@@ -189,7 +189,8 @@ def search(request, user, session_key, course, query):
         if query in u.name.lower():
             #check if the student is actually in one of the groups in our course
             for group in u.virtual_group.all():
-                if group.course.name == course:
+                print u, group
+                if group.course == c:
                     results.append(u.info_dict())
                     if len(results) >= limit:
                         break
