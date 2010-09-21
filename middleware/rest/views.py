@@ -228,7 +228,7 @@ def post_data(request):
         data = json.loads(request.POST['contents'])
         if request.POST['type'] == 'group':
             try:
-                act = Activity.objects.get(id = data['activity_id'])
+                act = Activity.objects.get(id = int(data['activity_id']))
             except Activity.DoesNotExist:
                 return json_response({"error":"Activity not found"}, failed = True)
             for student in data['students']:
@@ -244,4 +244,4 @@ def post_data(request):
         else:
             return json_response({"error":"Wrong query type"}, failed = True)
     except Exception:
-        return json_response({"error":"Wrong query type"}, failed = True)
+        return json_response({"error":"Malformed query"}, failed = True)
