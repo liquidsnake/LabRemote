@@ -235,6 +235,8 @@ def post_data(request):
                 try: 
                     current_student = Student.objects.get(id = student['id'])
                     attendance = Attendance.objects.get_or_create(course = course, student = current_student, activity = act, week = get_week(act.day_start), defaults={'grade': student['grade']})
+                    attendance.grade = student['grade']
+                    attendance.save()
                 except Student.DoesNotExist:
                     return json_response({"error":"Student not found"}, failed = True)
             return json_response({})
