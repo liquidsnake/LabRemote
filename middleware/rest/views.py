@@ -204,10 +204,14 @@ def get_week(start_day):
 @valid_key
 def post_data(request):
     """ Returns the timetable for the current course. """
+    print "lalalal"
     user = request.POST['user']
     session_key = request.POST['session_key']
     course = request.POST['course']
-
+    print user
+    print session_key
+    print course
+    print request.POST['data']
     try:
         assistant = Assistant.objects.get(pk=user)
     except Assistant.DoesNotExist:
