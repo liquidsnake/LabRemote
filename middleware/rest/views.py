@@ -198,15 +198,18 @@ def search(request, user, session_key, course, query):
     return json_response({"students": results})
 
 def get_week(start_day):
-    delta = start_day - datetime.date.today()
+    delta = datetime.date.today() - start_day - datetime.timedelta(days=1)
     return delta.days / 7
 
 @csrf_exempt
 def post_data(request):
     """ Handles the POST requests """
-    user = request.POST['user']
-    session_key = request.POST['session_key']
-    course = request.POST['course']
+    try:
+        user = request.POST['user']
+        session_key = request.POST['session_key']
+        course = request.POST['course']
+    except:
+        return json_response({"error":"Malformed post request"}, failed = True)
 
     try:
         assistant = Assistant.objects.get(pk=user)
@@ -231,13 +234,12 @@ def post_data(request):
             for student in data['students']:
                 try: 
                     current_student = Student.objects.get(id = student['id'])
-                    attendance = Attendace.objects.get_or_create(course = course, student = current_student, activity = act, week = get_week(act.day_start))
-                    attendance.grade = student['grade']
-                    attendance.save()
+                    attendance = Attendance.objects.get_or_create(course = course, student = current_student, activity = act, week = get_week(act.day_start), defaults={'grade': student['grade']})
                 except Student.DoesNotExist:
                     return json_response({"error":"Student not found"}, failed = True)
+            return json_response({})
         else:
             return json_response({"error":"Wrong query type"}, failed = True)
-    except Exception:
+    except ValueError:
         return json_response({"error":"Malformed post request"}, failed = True)
     
