@@ -110,10 +110,15 @@ def group(request, user, session_key, name, course, activity_id):
         return json_response({"error":"No such course"}, failed = True)
     
     try:
+        act = Activity.objects.get(id = activity_id)
+    except Activity.DoesNotExist:
+        return json_response({"error":"No such activity"}, failed = True)
+    
+    try:
         group = Group.objects.get(name=name, course__name=course)
-        
+        attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = get_week(act.day_start), defaults={'grade': 0})
         students = [ {"name": s.name, 
-                "grade": 0, # TODO
+                "grade": attendance.grade,
                 "id": s.id,
                 "avatar": s.avatar} for s in group.students.all() ]
     except Group.DoesNotExist:
@@ -140,8 +145,9 @@ def current_group(request, user, session_key, course):
             end = datetime.time(act.time_hour_end, act.time_minute_end)
             today = datetime.date.today().weekday()
             if today == act.day and start <= now and now <= end:
+                attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = get_week(act.day_start), defaults={'grade': 0})
                 students = [ {"name": s.name, 
-                    "grade": 0, # TODO
+                    "grade": attendance.grade,
                     "id": s.id,
                     "avatar": s.avatar} for s in group.students.all() ]    
                 return json_response({"name": group.name, "students": students, 'activity_id' : act.id})
