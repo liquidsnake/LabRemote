@@ -14,7 +14,7 @@
 		android:singleLine="true" android:layout_weight="0.5"
 		android:textColor="@color/black" />
 
-	<EditText android:id="@+id/labGrade" android:editable="true"
+	<TextView android:id="@+id/labGrade" android:editable="true"
 		android:clickable="true" android:singleLine="true" 
 		style="?android:attr/textViewStyle" android:background="@null"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"

@@ -25,20 +25,21 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.app.SearchManager;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
+import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.AvatarCallback;
 import com.android.LabRemote.Utils.MListAdapter;
 import com.android.LabRemote.Utils.MListItem;
@@ -54,6 +55,8 @@ import com.android.LabRemote.Utils.ShowAvatar;
 public class SearchActivity extends ListActivity implements AvatarCallback {
 	private ListView mListView;
 	private ArrayList<MListItem> mList;
+	private JSONObject mData;
+	public static final int REQUEST_FROM_SERVER = 4;
 
 	/**
 	 * Displays a newly downloaded avatar
@@ -71,7 +74,7 @@ public class SearchActivity extends ListActivity implements AvatarCallback {
 		public void onClick(View v) {
 			Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
 			individualIntent.putExtra("Name", ((ListItemView)v).getName().getText());
-			startActivity(individualIntent);
+			startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
 		}
 	};
 
@@ -107,14 +110,20 @@ public class SearchActivity extends ListActivity implements AvatarCallback {
 	 * @param query Search query typed by the user
 	 */
 	public void doSearch(String query) {
+		ServerResponse result = new Connection(this).getSearch(query); 
+		JSONObject mData = (JSONObject)result.getRespone();
 		
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		String id = preferences.getString("userId", null);
-		String code = preferences.getString("loginCode", null);
-		JSONArray ar = new Connection(this).getSearch(id, code, query); 
+		if (mData != null) 
+			fillList();
+		else
+			exitServerError(result.getError());
+	}
+	
+	private void fillList() {
 		mList = new ArrayList<MListItem>();
 
 		try {
+			JSONArray ar = mData.getJSONArray("students");
 			for(int i = 0; i < ar.length(); i++) {
 				JSONObject student = ar.getJSONObject(i);
 				mList.add(new MListItem(student.getString("avatar"), 
@@ -126,6 +135,26 @@ public class SearchActivity extends ListActivity implements AvatarCallback {
 
 		MListAdapter students = new MListAdapter(this, mList, this, onItemClick);
 		mListView.setAdapter(students);
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    if (resultCode == Activity.RESULT_CANCELED) 
+	    	if (data != null)
+	    		if (data.getStringExtra("serverError") != null)
+	    			Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
+	}
+	
+	/**
+	 * If the server request failed the activity exists
+	 * returns an error message to the parent activity
+	 * @param error
+	 */
+	private void exitServerError(String error) {
+		Intent back = new Intent();
+		back.putExtra("serverError", error);
+		setResult(Activity.RESULT_CANCELED, back);
+		finish();
 	}
 
 }

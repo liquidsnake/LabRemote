@@ -30,6 +30,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.android.LabRemote.R;
+import com.android.LabRemote.Data.LoginData;
 import com.android.LabRemote.Server.Connection;
 
 /** 
@@ -38,13 +39,9 @@ import com.android.LabRemote.Server.Connection;
  */
 public class Login extends Activity {
 
-	private static final String INTENT_SCAN = "com.google.zxing.client.android.SCAN";
-	private static final String SCAN_MODE = "SCAN_MODE";
-	private static final String QR_CODE_MODE = "QR_CODE_MODE";
-	private static final String SCAN_RESULT = "SCAN_RESULT";
-	private static final int REQCODE_SCAN = 0;
 	private SharedPreferences mPreferences;
-	private AlertDialog getCode;
+	private AlertDialog mInvalidLogin;
+	private Intent mIntent;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,68 +51,35 @@ public class Login extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.login);
-
-		/** Init get code dialog */
-		getCode = new AlertDialog.Builder(this).create();
-		getCode.setMessage("Invalid code. Do you want to load a valid one ?");
+		
+		/** Initialize invalid login dialog */
+		mInvalidLogin = new AlertDialog.Builder(this).create();
 		DialogInterface.OnClickListener lis = new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				/** Load scanner application */
-				Intent intent = new Intent(INTENT_SCAN);
-				intent.putExtra(SCAN_MODE, QR_CODE_MODE);
-				startActivityForResult(intent, REQCODE_SCAN);
-			}
-		};
-		getCode.setButton(AlertDialog.BUTTON_POSITIVE, "OK", lis);
-
-		/** Check log in */
-		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-		String code = mPreferences.getString("loginCode", null);
-		if (checkServerAuth(code)) {
-			Intent mIntent = new Intent(this, Main.class);
-			startActivity(mIntent);
-		}
-		else 
-			getCode.show();
-
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
-		if (requestCode == REQCODE_SCAN)
-		{
-			/** Check and store login code */
-			String result = null;
-			if (data != null)
-				result = data.getStringExtra(SCAN_RESULT);
-			if (checkServerAuth(result)) {
-				storeCode(result);
-				Intent mIntent = new Intent(this, Main.class);
+				mIntent = new Intent(getApplicationContext(), Settings.class);
 				startActivity(mIntent);
 			}
-			else {
-				getCode.show();
+		};
+		mInvalidLogin.setButton(AlertDialog.BUTTON_POSITIVE, "OK", lis);
+		
+		/** Check host and code */
+		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		String code = mPreferences.getString("loginCode", null);
+		String host = mPreferences.getString("host", null);
+
+		if (code == null || host == null) { /** Start Settings activity */
+			Intent mIntent = new Intent(this, Settings.class);
+			startActivity(mIntent);
+		} else { /** Check login */
+			LoginData res = new Connection(this).login();
+			if (res.getError() == null) { 
+				mIntent = new Intent(this, Main.class);
+				startActivity(mIntent);
+				finish();
+			} else { 
+				mInvalidLogin.setMessage(res.getError());
+				mInvalidLogin.show();		
 			}
 		}
-		else {
-			super.onActivityResult(requestCode, resultCode, data);
-		}
 	}
-
-	private void storeCode(String code) {
-		SharedPreferences.Editor editor = mPreferences.edit();
-		editor.putString("loginCode", code); 
-		editor.commit();
-	}
-
-	private boolean checkServerAuth(String code) {
-		//uc if (code == null)
-		//uc return false;
-		Connection con = new Connection(this);
-		return con.login("code", getApplicationContext()); //co
-		//uc return con.login(code, getApplicationContext());
-
-	}
-
 }

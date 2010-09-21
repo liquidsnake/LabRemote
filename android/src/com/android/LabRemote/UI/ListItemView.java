@@ -25,14 +25,18 @@ import android.graphics.BitmapFactory;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.PopupWindow.OnDismissListener;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Utils.MListItem;
@@ -43,45 +47,55 @@ import com.android.LabRemote.Utils.MListItem;
  */
 public class ListItemView extends LinearLayout {
 
-	private MListItem mItem; 
-	private ImageView mImg;
-	private TextView mName;
-	private EditText mGrade;
-	private GestureDetector mGestureDetector;
+	protected MListItem mItem; 
+	protected PopupWindow popupGrade;
+	protected EditText popupEdit;
+	protected ImageView mImg;
+	protected TextView mName;
+	protected TextView mGrade;
+	protected GestureDetector mGestureDetector;
+	protected Context mContext;
 
 	/**
 	 * Initializes the view with the data provided by item
 	 * @param item Contains strings that defines the view's image, name and/or grade
 	 */
-	public ListItemView(Context context, MListItem item) {
+	public ListItemView(Context context, MListItem item, int layout) {
 		super(context);
+		mContext = context;
 		mItem = item;
-
 		LayoutInflater layoutInflater = (LayoutInflater) 
 		getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		layoutInflater.inflate(R.layout.group_item, this, true);
-
-		/** Image */
-		mImg = (ImageView) findViewById(R.id.groupPhoto);
-		mImg.setBackgroundResource(R.drawable.frame);
-		Bitmap avatar = mItem.getAvatar();
-		setImage(avatar);
-
-		/** Name */
-		mName = (TextView) findViewById(R.id.groupName);
+		layoutInflater.inflate(layout, this, true);
+	}
+	
+	protected void initImage(int res) {
+			mImg = (ImageView) findViewById(res);
+			mImg.setBackgroundResource(R.drawable.frame);
+			Bitmap avatar = mItem.getAvatar();
+			setImage(avatar);
+	}
+	
+	protected void initName(int res) {
+		mName = (TextView) findViewById(res);
 		mName.setText(mItem.getName());
-
+	}
+	
+	protected void initGrade(int res) {
+		
 		/** Grade */ 
 		if (mItem.getGrade() != null) {
-			mGrade = (EditText) findViewById(R.id.groupGrade);
+			mGrade = (TextView) findViewById(res);
 			mGrade.setText(mItem.getGrade());
-			mGrade.addTextChangedListener(new TextWatcher() {
-				public void onTextChanged(CharSequence s, int start, int before, int count) {
-					mItem.setGrade(mGrade.getText().toString());
+			mGrade.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					int[] location 	= new int[2];
+					v.getLocationOnScreen(location);
+					initPopupEdit();
+					initPopupWindow();
+					popupGrade.showAtLocation(v, 
+							Gravity.NO_GRAVITY, location[0], location[1]);
 				}
-				public void afterTextChanged(Editable s) {}
-				public void beforeTextChanged(CharSequence s, int start,
-						int count, int after) {}
 			});
 		}
 
@@ -99,13 +113,56 @@ public class ListItemView extends LinearLayout {
 			setOnTouchListener(gestureListener);
 		}
 	}
+	
+	protected void initPopupEdit() {
+		popupEdit = new EditText(mContext);
+		popupEdit.setTextColor(R.color.black);
+		popupEdit.setText(mGrade.getText().toString());
+		popupEdit.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+		popupEdit.addTextChangedListener(new TextWatcher() {
+			public void afterTextChanged(Editable s) {
+				popupGrade.update(ViewGroup.LayoutParams.WRAP_CONTENT, 
+						ViewGroup.LayoutParams.WRAP_CONTENT);
+				setGrade(popupEdit.getText().toString());
+			}
+			public void onTextChanged(CharSequence s, int start, int before, int count) {}
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+		});
+		popupEdit.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				popupGrade.dismiss();
+			}
+		});
+	}
+	
+	protected void initPopupWindow() {
+		popupGrade = new PopupWindow(popupEdit, ViewGroup.LayoutParams.WRAP_CONTENT, 
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		popupGrade.setFocusable(true);
+		popupGrade.setTouchable(true);
+		popupGrade.setOutsideTouchable(true);
+		popupGrade.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
+		popupGrade.setTouchInterceptor(new OnTouchListener() {
+			public boolean onTouch(View v, MotionEvent event) {
+				popupGrade.dismiss();
+				return true;
+			}
+		});
+		popupGrade.setOnDismissListener(new OnDismissListener() {
+			public void onDismiss() {
+				String rez = popupEdit.getText().toString().
+				replaceAll("^\\s+", "").replaceAll("\\s+$", "");
+				setGrade((rez == "") ? "0" : rez);
+		    }
+		});
+	}
 
 
 	/**
 	 * Gesture detector class that handles finger gestures
 	 * Used to detect fling gesture that increases/decreases a grade
 	 */
-	class MyGestureDetector extends SimpleOnGestureListener {
+	protected class MyGestureDetector extends SimpleOnGestureListener {
 
 		@Override
 		public boolean onFling(MotionEvent e1, MotionEvent e2, 
@@ -153,7 +210,7 @@ public class ListItemView extends LinearLayout {
 		return mImg;
 	}
 
-	public EditText getGrade() {
+	public TextView getGrade() {
 		return mGrade;
 	}
 

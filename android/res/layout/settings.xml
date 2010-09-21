@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent" android:layout_height="fill_parent"
+  android:background="@color/white" android:orientation="vertical">
+  
+  <TextView android:layout_width="fill_parent" android:layout_height="wrap_content"
+  	android:text="@string/settings" android:textColor="@color/black" android:gravity="center"
+  	android:padding="10dip" android:textSize="25dip" android:background="@color/header_color"/>
+  	
+  <LinearLayout
+	android:id="@+id/horizontalLine"
+	android:layout_width="fill_parent"
+	android:layout_height="2dip"
+	android:background="@color/grey"
+	/>
+  	
+  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content">
+  	<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+  		android:text="Host:" android:textColor="@color/black" android:padding="10dip"
+  		android:textSize="20dip" />
+  	<EditText android:id="@+id/serverHost" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  		android:textColor="@color/black" android:background="@color/white" 
+  		android:layout_marginRight="20dip"
+  		android:layout_marginBottom="10dip" android:hint="@string/insert_host"/>
+  </LinearLayout>
+  
+    <LinearLayout
+	android:id="@+id/horizontalLine"
+	android:layout_width="fill_parent"
+	android:layout_height="2dip"
+	android:layout_marginLeft="10dip" android:layout_marginRight="10dip"
+	android:background="@color/grey"
+	/>
+  
+  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content">
+  	<TextView android:id="@+id/loadCode" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  		android:text="@string/load_code" android:textColor="@color/black" 
+  		android:padding="10dip" android:textSize="20dip" />
+  	<CheckBox android:id="@+id/codeChecked" android:layout_width="wrap_content" 
+  		android:layout_height="wrap_content" android:clickable="false" />
+  </LinearLayout>
+  
+    <LinearLayout
+	android:id="@+id/horizontalLine"
+	android:layout_width="fill_parent"
+	android:layout_height="2dip"
+	android:layout_marginLeft="10dip" android:layout_marginRight="10dip"
+	android:background="@color/grey"
+	/>
+  
+  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
+   	android:orientation="vertical">
+   	<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+  		android:text="@string/select_course" android:textColor="@color/black" 
+  		android:padding="10dip" android:textSize="20dip" />
+  	<Spinner android:id="@+id/selectCourseSpinner" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  		android:layout_margin="10dip" android:prompt="@string/select_course" 
+  		android:drawSelectorOnTop="true" android:visibility="gone"/>
+  	<LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+  		android:background="@color/grey" android:layout_marginLeft="10dip">
+  		<TextView android:id="@+id/selectCourse" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  			android:text="Click here to select a course" android:layout_margin="5dip"
+  			android:textColor="@color/black" android:background="@color/white"/>
+  	</LinearLayout>
+  </LinearLayout>
+  <LinearLayout android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_gravity="right">
+  <Button android:id="@+id/doneButton" android:layout_gravity="bottom" 
+  	android:layout_width="wrap_content" android:layout_height="wrap_content"
+  	android:text="DONE" />
+  </LinearLayout>
+  
+</LinearLayout>

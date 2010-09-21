@@ -4,4 +4,8 @@
     <string name="search_hint">Search for student</string>
     <string name="select_day">Select day of the week</string>
     <string name="select_interval">Tuesday - Select interval</string>
+	<string name="settings">LabRemote Settings</string>
+	<string name="load_code">Load login code</string>
+	<string name="insert_host">Insert server address</string>
+<string name="select_course">Current course</string>
 </resources>
