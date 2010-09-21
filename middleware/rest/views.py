@@ -236,7 +236,8 @@ def post_data(request):
                     attendance.save()
                 except Student.DoesNotExist:
                     return json_response({"error":"Student not found"}, failed = True)
-        else return json_response({"error":"Wrong query type"}, failed = True)
+        else:
+            return json_response({"error":"Wrong query type"}, failed = True)
     except Exception:
         return json_response({"error":"Malformed post request"}, failed = True)
     
