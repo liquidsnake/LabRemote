@@ -91,7 +91,7 @@ def timetable(request, user, session_key, course):
         acts = Activity.objects.filter(course__name=course).filter(day=i) 
         for a in acts:
             try:
-                activities[a.interval].append(a.group.name)
+                activities[a.interval].append({"name":a.group.name, "id":a.id})
             except Exception:
                 activities[a.interval] = []
             activities[a.interval].append(a.group.name)
@@ -231,8 +231,7 @@ def post_data(request):
             for student in data['students']:
                 try: 
                     current_student = Student.objects.get(id = student['id'])
-                    attendance = Attendace.objects.get_or_create(course = course, student = current_student, activity = act)
-                    attendance.week = get_week(act.day_start)
+                    attendance = Attendace.objects.get_or_create(course = course, student = current_student, activity = act, week = get_week(act.day_start))
                     attendance.grade = student['grade']
                     attendance.save()
                 except Student.DoesNotExist:
