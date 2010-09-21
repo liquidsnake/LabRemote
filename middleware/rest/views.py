@@ -12,9 +12,14 @@ from models import *
 
 DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"]
 
-def json_response(obj):
+def json_response(dct, failed = False):
     """ A shorthand for dumping json data """
-    data = json.dumps(obj)
+    if failed:
+        dct['status'] = 'failed'
+    else:
+        dct['status'] = 'success'
+
+    data = json.dumps(dct)
     return HttpResponse(data, mimetype='application/json')
     
 def valid_key(view_func):
@@ -23,10 +28,10 @@ def valid_key(view_func):
         try:
             assistant = Assistant.objects.get(pk=user)
         except Assistant.DoesNotExist:
-            return json_response({"error":"no such user"})
+            return json_response({"error":"no such user"}, failed = True)
             
         if assistant.get_session_key() != session_key:
-            return json_response({"error":"invalid session key"})
+            return json_response({"error":"invalid session key"}, failed = True)
             
         request.assistant = assistant
         return view_func(request, user, session_key, *args, **kwargs)
@@ -63,10 +68,10 @@ def login(request, qr_code):
     try:
         assistant = Assistant.objects.get(code=qr_code)
     except Assistant.DoesNotExist:
-        return json_response({"login": "invalid"})
+        return json_response({"error": "Invalid code"}, failed = True)
 
     courses = [c.name for c in assistant.courses.all()]
-    response = {"login": "ok", "user": assistant.id, "name": assistant.name, "courses": courses}
+    response = {"user": assistant.id, "name": assistant.name, "courses": courses}
     
     return json_response(response)
     
@@ -94,11 +99,15 @@ def group(request, user, session_key, name, course):
     """ Returns a certain group from a certain course """
     assistant = request.assistant
     
-    group = get_object_or_404(Group, name=name, course__name=course)
-    students = [ {"name": s.name, 
+    try:
+        group = Group.objects.get(name=name, course__name=course)
+        
+        students = [ {"name": s.name, 
                 "grade": 0, # TODO
                 "id": s.id,
                 "avatar": s.avatar} for s in group.students.all() ]
+    except Group.DoesNotExist:
+        return json_response({"error": "No such group"}, failed = True)
                 
     return json_response({"name": name, "students": students})
 
@@ -121,7 +130,7 @@ def current_group(request, user, session_key, course):
                     "id": s.id,
                     "avatar": s.avatar} for s in group.students.all() ]    
                 return json_response({"name": group.name, "students": students})
-    return json_response({"error":"no current group"})
+    return json_response({"error":"no current group"}, failed = True)
     
 @valid_key
 def student(request, user, session_key, course, id):
