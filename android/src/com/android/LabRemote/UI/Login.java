@@ -30,8 +30,8 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.android.LabRemote.R;
-import com.android.LabRemote.Data.LoginData;
 import com.android.LabRemote.Server.Connection;
+import com.android.LabRemote.Server.ServerResponse;
 
 /** 
  * Application's login activity 
@@ -70,8 +70,9 @@ public class Login extends Activity {
 		if (code == null || host == null) { /** Start Settings activity */
 			Intent mIntent = new Intent(this, Settings.class);
 			startActivity(mIntent);
+			finish();
 		} else { /** Check login */
-			LoginData res = new Connection(this).login();
+			ServerResponse res = new Connection(this).login();
 			if (res.getError() == null) { 
 				mIntent = new Intent(this, Main.class);
 				startActivity(mIntent);

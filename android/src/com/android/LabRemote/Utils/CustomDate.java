@@ -23,6 +23,7 @@ import java.util.Calendar;
 
 /** 
  * Custom date format for the application header
+ * TODO: testat bine
  */
 public class CustomDate {
 	public static final String[] week_day = { "Monday", "Tuesday", "Wednesday",

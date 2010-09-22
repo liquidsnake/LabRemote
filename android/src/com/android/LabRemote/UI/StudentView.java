@@ -30,9 +30,11 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -41,6 +43,7 @@ import android.widget.TextView;
 import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
+import com.android.LabRemote.Utils.CustomDate;
 import com.android.LabRemote.Utils.MListAdapter;
 import com.android.LabRemote.Utils.MListItem;
 
@@ -48,7 +51,8 @@ import com.android.LabRemote.Utils.MListItem;
  * Informations about a selected student
  */
 public class StudentView extends ListActivity {
-	private String mName, mGroup, mDate, mID;
+	private String mName, mGroup, mDate, mID, mCaller;
+	private ArrayList<MListItem> mItems;
 	private JSONObject data;
 	private MListAdapter mAdapter;
 
@@ -70,28 +74,22 @@ public class StudentView extends ListActivity {
 	 */
 	private void receiveData() {
 
-		mName = getIntent().getStringExtra("Name"); 
-		TextView nameView = (TextView)findViewById(R.id.individualName);
-		nameView.setText(mName);
-		mGroup = getIntent().getStringExtra("Group"); 
-		TextView groupView = (TextView)findViewById(R.id.classHeader);
-		groupView.setText(mGroup);
-		TextView groupStudentView = (TextView)findViewById(R.id.individualGroup);
-		groupStudentView.setText(mGroup);
-		mDate = getIntent().getStringExtra("Date"); 
+		/** Header information */
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		String course = preferences.getString("course", null);
+		TextView cv = (TextView) findViewById(R.id.courseName);
+		cv.setText(course);
+		mDate = CustomDate.getCurrentDate();
 		TextView dateView = (TextView)findViewById(R.id.dateHeader);
 		dateView.setText(mDate);
 		mID = getIntent().getStringExtra("ID"); 
+		mCaller = getIntent().getStringExtra("AID");
 
 		/** From server */
 		ServerResponse result = new Connection(this).getStudent(mID);
 		data = (JSONObject) result.getRespone();
-		if (data != null) {
-			ImageView avatar = (ImageView)findViewById(R.id.individualPhoto);
-			avatar.setBackgroundResource(R.drawable.frame);
-			setAvatar(avatar);
+		if (data != null) 
 			fillList();
-		}
 		else
 			exitServerError(result.getError());
 	}
@@ -100,26 +98,42 @@ public class StudentView extends ListActivity {
 	 * Fill list with grades
 	 */
 	private void fillList() {
-		ArrayList<MListItem> items = new ArrayList<MListItem>();
+		mItems = new ArrayList<MListItem>();
 
 		try {
 			JSONObject grades = data.getJSONObject("attendance"); 
 			for (int i = 0; i < grades.length(); i++) {
-				items.add(new MListItem(null, i+"", 
+				mItems.add(new MListItem(null, i+"", 
 				grades.getJSONObject(i+"").getString("grade"), null));
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+		
+		try {
+			mName = data.getString("name"); 
+			TextView nameView = (TextView)findViewById(R.id.individualName);
+			nameView.setText(mName);
+			mGroup = data.getString("group");
+			TextView groupView = (TextView)findViewById(R.id.classHeader);
+			groupView.setText(mGroup);
+			TextView groupStudentView = (TextView)findViewById(R.id.individualGroup);
+			groupStudentView.setText(mGroup);
+			ImageView avatar = (ImageView)findViewById(R.id.individualPhoto);
+			avatar.setBackgroundResource(R.drawable.frame);
+			String avatarUrl = data.getString("avatar");
+			setAvatar(avatar, avatarUrl);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 
-		mAdapter = new MListAdapter(this, items);
+		mAdapter = new MListAdapter(this, mItems);
 		setListAdapter(mAdapter);
 	}
 
-	public void setAvatar(ImageView avatar) {
+	public void setAvatar(ImageView avatar, String avatarUrl) {
 		try
 		{
-			String avatarUrl = data.getString("avatar");
 			HttpURLConnection con = (HttpURLConnection)(new URL(avatarUrl)).openConnection();
 			con.connect();
 			Bitmap b = BitmapFactory.decodeStream(con.getInputStream());
@@ -128,15 +142,34 @@ public class StudentView extends ListActivity {
 			e.printStackTrace();
 		} catch (NullPointerException e) {
 			e.printStackTrace();
-		} catch (JSONException e) {
-			e.printStackTrace();
 		} finally {
 			Bitmap b = BitmapFactory.decodeResource
 			(getResources(), R.drawable.empty);
 			avatar.setImageBitmap(b);
 		}
 	}
-	
+		
+	@Override
+	protected void onPause() {
+
+		JSONObject result = new JSONObject();
+		try {
+			result.put("group", mGroup);
+			result.put("id", mID);
+			result.put("name", mName);
+			JSONObject attendance = new JSONObject();
+			for (int i = 0; i < mItems.size(); i++) {
+				attendance.put(i+"", mItems.get(i).getGrade());
+			}			
+			new Connection(this).post(result, "student");
+			result.put("attendance", attendance);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		super.onPause();
+
+	}
+
 	/**
 	 * If the server request failed the activity exists
 	 * returns an error message to the parent activity

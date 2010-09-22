@@ -46,7 +46,7 @@ import com.android.LabRemote.Utils.MListAdapter;
 import com.android.LabRemote.Utils.MListItem;
 import com.android.LabRemote.Utils.ShowAvatar;
 
-/** 
+/** TODO: cum ma intorc
  * Lists the students of a specific group
  * @see ListItemView
  * @see MListAdapter
@@ -54,7 +54,7 @@ import com.android.LabRemote.Utils.ShowAvatar;
  */
 public class GroupView extends ListActivity implements AvatarCallback {
 
-	private String mGroup, mDate;
+	private String mGroup, mDate, mAID;
 	private ArrayList<MListItem> mList;
 	private Intent mIndividualIntent;
 	private JSONObject mData;
@@ -77,9 +77,8 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		public void onClick(View v) {
 			mIndividualIntent = new Intent(getApplicationContext(), StudentView.class);
 			mIndividualIntent.putExtra("Name", ((ListItemView)v).getName().getText()); 
-			mIndividualIntent.putExtra("Group", mGroup); 
-			mIndividualIntent.putExtra("Date", mDate); 
 			mIndividualIntent.putExtra("ID", ((ListItemView)v).getmId()); 
+			mIndividualIntent.putExtra("AID", mAID); 
 			startActivityForResult(mIndividualIntent, REQUEST_FROM_SERVER);
 		}
 	};
@@ -103,23 +102,24 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	private void receiveData() {
 
 		/** Header informations */
-		mGroup = getIntent().getStringExtra("Group"); //TODO: ia nume grup de la server
-		TextView groupText = (TextView) findViewById(R.id.classHeader);
-		groupText.setText(mGroup);
 		mDate = getIntent().getStringExtra("Date");
 		TextView dateText = (TextView) findViewById(R.id.dateHeader);
-		dateText.setText(mDate);
+		dateText.setText(mDate); 
+		mAID = getIntent().getStringExtra("AID");
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		String course = preferences.getString("course", null);
 		TextView cv = (TextView) findViewById(R.id.courseName);
 		cv.setText(course);
+		mGroup = getIntent().getStringExtra("Group");
 
 		/** Data from the server */
 		ServerResponse response;
-		if (getIntent().getBooleanExtra("Current", false) == true)
+		if (getIntent().getBooleanExtra("Current", false) == true) {
 			response = new Connection(this).getCurrentGroup();
+			System.out.println("cer current group " + response.getError());
+		}
 		else
-			response = new Connection(this).getGroup(mGroup);
+			response = new Connection(this).getGroup(mGroup, mAID);
 		
 		mData = (JSONObject) response.getRespone();
 		if (mData != null) 
@@ -136,7 +136,7 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		mList = new ArrayList<MListItem>();
 		
 		try {
-			students = mData.getJSONArray("students"); //TODO: dc e gol ?
+			students = mData.getJSONArray("students"); 
 			for (int i = 0; i < students.length(); i++) {
 				JSONObject stud = students.getJSONObject(i);
 				mList.add(new MListItem(stud.getString("avatar"), stud.getString("name"), 
@@ -145,11 +145,42 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-
+			
+		try {
+			mGroup = mData.getString("name");
+			TextView groupText = (TextView) findViewById(R.id.classHeader);
+			groupText.setText(mGroup);
+			mAID = mData.getString("activity_id");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+			
 		mAdapter = new MListAdapter(this, mList, this, onItemClick);
 		setListAdapter(mAdapter);
 	}
 	
+	@Override
+	protected void onPause() {
+		JSONObject result = new JSONObject();
+		try {
+			result.put("name", mGroup);
+			result.put("activity_id", mAID);
+			JSONArray students = new JSONArray();
+			for (int i = 0; i < mList.size(); i++) {
+				JSONObject stud = new JSONObject();
+				stud.put("id", mList.get(i).getID());
+				stud.put("name", mList.get(i).getName());
+				stud.put("grade", mList.get(i).getGrade());
+				students.put(stud);
+			}			
+			result.put("students", students);
+			new Connection(this).post(result, "group");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		super.onPause();
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    if (resultCode == Activity.RESULT_CANCELED) 

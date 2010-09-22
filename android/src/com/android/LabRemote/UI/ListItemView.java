@@ -42,7 +42,8 @@ import com.android.LabRemote.R;
 import com.android.LabRemote.Utils.MListItem;
 
 /**
- * View that gives the layout for an item in a list of students
+ * View that gives the layout for an item in a list 
+ * of students or grades
  * @see MListItem
  */
 public class ListItemView extends LinearLayout {
@@ -68,21 +69,21 @@ public class ListItemView extends LinearLayout {
 		getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		layoutInflater.inflate(layout, this, true);
 	}
-	
+
 	protected void initImage(int res) {
-			mImg = (ImageView) findViewById(res);
-			mImg.setBackgroundResource(R.drawable.frame);
-			Bitmap avatar = mItem.getAvatar();
-			setImage(avatar);
+		mImg = (ImageView) findViewById(res);
+		mImg.setBackgroundResource(R.drawable.frame);
+		Bitmap avatar = mItem.getAvatar();
+		setImage(avatar);
 	}
-	
+
 	protected void initName(int res) {
 		mName = (TextView) findViewById(res);
 		mName.setText(mItem.getName());
 	}
-	
+
 	protected void initGrade(int res) {
-		
+
 		/** Grade */ 
 		if (mItem.getGrade() != null) {
 			mGrade = (TextView) findViewById(res);
@@ -113,7 +114,7 @@ public class ListItemView extends LinearLayout {
 			setOnTouchListener(gestureListener);
 		}
 	}
-	
+
 	protected void initPopupEdit() {
 		popupEdit = new EditText(mContext);
 		popupEdit.setTextColor(R.color.black);
@@ -134,7 +135,7 @@ public class ListItemView extends LinearLayout {
 			}
 		});
 	}
-	
+
 	protected void initPopupWindow() {
 		popupGrade = new PopupWindow(popupEdit, ViewGroup.LayoutParams.WRAP_CONTENT, 
 				ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -153,7 +154,7 @@ public class ListItemView extends LinearLayout {
 				String rez = popupEdit.getText().toString().
 				replaceAll("^\\s+", "").replaceAll("\\s+$", "");
 				setGrade((rez == "") ? "0" : rez);
-		    }
+			}
 		});
 	}
 

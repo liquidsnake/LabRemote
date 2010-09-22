@@ -46,7 +46,7 @@ import com.android.LabRemote.Utils.MListItem;
 import com.android.LabRemote.Utils.ShowAvatar;
 
 
-/** 
+/** TODO: cum ret eroare
  * Activity that handles search query and lists the results
  * @see ListItemView
  * @see MListAdapter
@@ -74,6 +74,7 @@ public class SearchActivity extends ListActivity implements AvatarCallback {
 		public void onClick(View v) {
 			Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
 			individualIntent.putExtra("Name", ((ListItemView)v).getName().getText());
+			individualIntent.putExtra("ID", ((ListItemView)v).getmId());
 			startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
 		}
 	};
@@ -111,7 +112,7 @@ public class SearchActivity extends ListActivity implements AvatarCallback {
 	 */
 	public void doSearch(String query) {
 		ServerResponse result = new Connection(this).getSearch(query); 
-		JSONObject mData = (JSONObject)result.getRespone();
+		mData = (JSONObject)result.getRespone();
 		
 		if (mData != null) 
 			fillList();
@@ -127,7 +128,7 @@ public class SearchActivity extends ListActivity implements AvatarCallback {
 			for(int i = 0; i < ar.length(); i++) {
 				JSONObject student = ar.getJSONObject(i);
 				mList.add(new MListItem(student.getString("avatar"), 
-						student.getString("name"), student.getString("id")));
+						student.getString("name"), null, student.getString("id")));
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();

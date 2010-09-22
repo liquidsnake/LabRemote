@@ -44,9 +44,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.LabRemote.R;
-import com.android.LabRemote.Data.LoginData;
 import com.android.LabRemote.Server.Connection;
+import com.android.LabRemote.Server.ServerResponse;
 
+//TODO: dialog error + gui
 /** 
  * Application's settings activity
  * Allows the users to set the middleware's host, load the login code
@@ -126,9 +127,9 @@ public class Settings extends Activity {
 		mSelectCourse.setText((course != null) ? course : defSelect);
 		mSelectCourse.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				LoginData result = checkLogin();
+				ServerResponse result = checkLogin();
 				if (result.getError() == null) {
-					showSelect(result.getCourses());
+					showSelect((String[])result.getRespone());
 					login = true;
 				} else 
 					showLoginFailed(result.getError());		
@@ -146,7 +147,7 @@ public class Settings extends Activity {
 		mDone.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				if (login == false) {
-					LoginData result = checkLogin();
+					ServerResponse result = checkLogin();
 					if (result.getError() != null) {
 						showLoginFailed(result.getError());
 					} else {
@@ -181,7 +182,7 @@ public class Settings extends Activity {
 		}
 	}
 	
-	private LoginData checkLogin() {
+	private ServerResponse checkLogin() {
 		return new Connection(this).login();
 	}
 	

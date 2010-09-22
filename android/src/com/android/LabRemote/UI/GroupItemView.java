@@ -4,7 +4,9 @@ import android.content.Context;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Utils.MListItem;
-
+/**
+ * List item view with avatar, name and/or grade
+ */
 public class GroupItemView extends ListItemView {
 	
 	public GroupItemView(Context context, MListItem item) {
