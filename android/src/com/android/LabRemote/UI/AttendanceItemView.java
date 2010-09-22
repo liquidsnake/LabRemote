@@ -5,6 +5,9 @@ import android.content.Context;
 import com.android.LabRemote.R;
 import com.android.LabRemote.Utils.MListItem;
 
+/**
+ * List item view with name and grade
+ */
 public class AttendanceItemView extends ListItemView {
 	public AttendanceItemView(Context context, MListItem item) {
 		super(context, item, R.layout.individual_grade);

@@ -19,10 +19,18 @@
 
 package com.android.LabRemote.Utils;
 
+import com.android.LabRemote.UI.GroupView;
+import com.android.LabRemote.UI.SearchActivity;
+import com.android.LabRemote.UI.StudentView;
+
 import android.graphics.Bitmap;
 
 /**
- * Data structure that maintains an item from a list of students
+ * Data structure that maintains an item from a list 
+ * of students or grades
+ * @see GroupView
+ * @see SearchActivity
+ * @see StudentView
  */
 public class MListItem {
 
@@ -36,14 +44,6 @@ public class MListItem {
 		mImgUrl = img;
 		mName = name;
 		mGrade = grade;
-		mAvatar = null;
-		mID = id;
-	}
-
-	public MListItem(String img, String name, String id) {
-		mImgUrl = img;
-		mName = name;
-		mGrade = null;
 		mAvatar = null;
 		mID = id;
 	}

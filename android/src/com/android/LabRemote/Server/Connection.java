@@ -23,13 +23,23 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,12 +48,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.android.LabRemote.Data.LoginData;
-
 //TODO: Treat errors and exceptions
-//TODO: pun status in rasp 
-//TODO: object la search in loc de array
 
+/**
+ * Handles communication with the server: API posts and request
+ */
 public class Connection {
 	private SharedPreferences mPreferences;
 	private Context mContext;
@@ -64,8 +73,6 @@ public class Connection {
 	/** Error messages */
 	private static final String serverError = 
 		"There was a problem with the server or the request";
-	private static final String invalidLogin = 
-		"Invalid login. Would you like to change the host or load another code?";
 	private static final String invalidResponse = "Invalid response from the server";
 	
 	public Connection(Context context) {
@@ -80,7 +87,7 @@ public class Connection {
 
 	/**
 	 * Generic http request
-	 * @param url
+	 * @param url Server address
 	 * @return Response string or null if there was a problem 
 	 * with the server or the request
 	 */
@@ -111,59 +118,49 @@ public class Connection {
 	}
 	
 	/**
-	 * 
-	 * @param code
-	 * @param context
-	 * @return
+	 * Handles login queries and saves informations received from 
+	 * the server in the application's private data
+	 * @return A server response with available courses or 
+	 * error message if login failed
 	 */
-	public LoginData login() {
-		LoginData res;
+	public ServerResponse login() {
+		ServerResponse res;
 		JSONObject jObject = null;
 		String[] courses;	
 		
-		/** Http request */
+		/** Server request */
 		String request = mHost + logQuery + mCode;
-		String result = httpReq(request);
-		if (result == null) 
-			return new LoginData(serverError);
+		res = get(request);
+		jObject = (JSONObject) res.getRespone();
+		if (jObject == null)
+			return res;
 
 		/** Parse response */
 		try {
-			jObject = new JSONObject(result);
 			SharedPreferences.Editor editor = mPreferences.edit();
-
-			String log = jObject.getString("login");
-			if (log == "invalid") {
-				return new LoginData(invalidLogin);
-			}
-
 			String user_id = jObject.getString("user");
 			JSONArray c = jObject.getJSONArray("courses");
 			courses = new String[c.length()];
 			for (int i = 0; i < c.length(); i++)
 				courses[i] = c.getString(i);
 
-			editor.putString("userId", user_id); 
 			if (c.length() > 0)
 				editor.putString("course", courses[0]); 
+			editor.putString("userId", user_id); 
 			editor.commit();
 		} catch (JSONException e) {
 			e.printStackTrace();
-			return new LoginData(invalidResponse);
+			return new ServerResponse(null, invalidResponse);
 		}
 
 		/** Successful login */
-		res = new LoginData(null);
-		res.addCourses(courses);
-		return res;
+		return new ServerResponse(courses, null);
 	}
 
 	/**
 	 * Generic data request
 	 * @param request
-	 * @param type
 	 * @return
-	 * TODO: daca imi pot trimite numai json object
 	 */
 	public ServerResponse get(String request) {
 		JSONObject jObject = null;
@@ -173,29 +170,21 @@ public class Connection {
 		if (result == null) 
 			return new ServerResponse(null, serverError); 
 
-		/** Invalid response from server */ //serverul nu stie api 
+		/** Invalid response from server or error */  
 		try {
 			jObject = new JSONObject(result);
+			if (jObject.getString("status").equals("failed"))
+				return new ServerResponse(null, jObject.getString("error")); 
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return new ServerResponse(null, invalidResponse); 
-		}
-		
-		//TODO: daca am status o sa-l verific aici inainte sa extrag err
-		/** Invalid request from client */
-		try {
-			String err = jObject.getString("error");
-			if (err != null) 
-				return new ServerResponse(null, err);
-		} catch (JSONException e) {
-			e.printStackTrace(); 
 		}
 
 		return new ServerResponse(jObject, null);
 	}
 
-	public ServerResponse getGroup(String group) {
-		String request = mHost + groupQuery + mCourse + "/" + mID + "/" + mCode + "/" + group;
+	public ServerResponse getGroup(String group, String aid) {
+		String request = mHost + groupQuery + mCourse + "/" + mID + "/" + mCode + "/" + group + "/" + aid;
 		return get(request);
 	}
 	
@@ -205,7 +194,7 @@ public class Connection {
 	}
 
 	public ServerResponse getSearch(String query) {
-		String request = mHost + searchQuery + mID + "/" + mCode + "/" + query;
+		String request = mHost + searchQuery + mCourse + "/" + mID + "/" + mCode + "/" + query;
 		return get(request);
 	}
 
@@ -217,6 +206,58 @@ public class Connection {
 	public ServerResponse getTimetable() {
 		String request = mHost + timeQuery + mCourse + "/" + mID + "/" + mCode;
 		return get(request);
+	}
+	
+	public HttpResponse post(JSONObject data, String type) {
+		String url = mHost + "/api/post/";
+		HttpPost httpost = new HttpPost(url);
+        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(5);  
+        StringEntity se;
+        
+		try {
+	        nameValuePairs.add(new BasicNameValuePair("user", mID));  
+	        nameValuePairs.add(new BasicNameValuePair("course", mCourse));  
+	        nameValuePairs.add(new BasicNameValuePair("session_key", mCode));  
+	        nameValuePairs.add(new BasicNameValuePair("type", type));
+	        nameValuePairs.add(new BasicNameValuePair("contents", data.toString()));  
+	        System.out.println(nameValuePairs);
+	        httpost.setEntity(new UrlEncodedFormEntity(nameValuePairs)); 
+			//se = new StringEntity(data.toString());
+			//httpost.setHeader("Accept", "application/json");
+			//httpost.setHeader("Content-type", "application/json");
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+			return null;
+		}
+
+		//ResponseHandler responseHandler = new BasicResponseHandler();
+		HttpResponse res = null;
+		try {
+			res = mHttpClient.execute(httpost);
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		HttpEntity entity = res.getEntity();
+		if (entity != null) {
+			InputStream instream;
+			try {
+				instream = entity.getContent();
+				String rez = convertStreamToString(instream);
+				System.out.println("raspuns " + rez);
+				instream.close();
+			} catch (IllegalStateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+		return res;
 	}
 
 	//TODO: si de aici ies pe probl de rasp de la server
