@@ -185,6 +185,7 @@ def student(request, user, session_key, course, id):
         "grade": 0, #TODO
         "id": student.id,
         "avatar": student.avatar,
+        "virtual_group": student.virtual_group.name,
         "activities": acts})
         
 @valid_key
