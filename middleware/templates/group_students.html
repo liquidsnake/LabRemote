@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Group Students{% endblock %}
+
+{% block content %}
+<h2>{% block content_title %}Group Students{% endblock %}</h2>
+
+<table width="100%">
+    <tr>
+        <td width="50%" valign="top"> 
+Available ({{ group.parent_group }}):
+<table class="object_list">
+    <tr>
+       <th>student</th>
+    </tr>
+{% for d in available_students %}
+    <tr>
+        <td>{{ d.name }}</td>
+        <td><a href='{% url middleware.frontend.views.group_students_add request.session.course group.id d.id %}'>add</a></td>
+    </tr>
+{% endfor %}
+</table>
+        </td>
+        <td width="50%" valign="top">
+Group {{ group.name }}:
+<table class="object_list">
+    <tr>
+       <th>student</th>
+    </tr>
+{% for d in group.students.all %}
+    <tr>
+        <td>{{ d.name }}</td>
+        <td><a href='{% url middleware.frontend.views.group_students_rem request.session.course group.id d.id %}'>remove</a></td>
+    </tr>
+{% endfor %}
+</table>
+            
+        </td>
+    </tr>
+</table>
+
+<a href='/crud/update/group/{{ group.id }}/'>Edit group info</a> <br/>
+<a href='{% url middleware.frontend.views.groups_index request.session.course %}'>Back to groups</a>
+{% endblock %}
+

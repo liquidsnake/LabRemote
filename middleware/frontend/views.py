@@ -87,7 +87,40 @@ def groups_index(request, getcourse):
         {'moodle_groups': moodle_groups,
         'groups': groups},
         context_instance=RequestContext(request),
-        )    
+        )  
+        
+@login_required
+@course_required
+def group_students(request, getcourse, group_id):
+    group = Group.objects.get(id=group_id)
+    students = Student.objects.filter(group=group.parent_group).all()
+    
+    # Remove existing from available
+    available_students = []
+    for a in students:
+        if a not in group.students.all():
+            available_students.append(a)
+            
+    return render_to_response('group_students.html',
+        {'group': group, 'available_students': available_students},
+        context_instance=RequestContext(request),
+        )
+        
+@login_required
+@course_required
+def group_students_add(request, getcourse, group_id, stud_id):
+    group = Group.objects.get(id=group_id)
+    student = Student.objects.get(id=stud_id)
+    group.students.add(student)
+    return redirect(reverse(group_students, args=[getcourse, group_id]))
+
+@login_required
+@course_required    
+def group_students_rem(request, getcourse, group_id, stud_id):
+    group = Group.objects.get(id=group_id)
+    student = Student.objects.get(id=stud_id)
+    group.students.remove(student)
+    return redirect(reverse(group_students, args=[getcourse, group_id]))
 
 @login_required
 @course_required

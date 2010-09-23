@@ -32,6 +32,7 @@ LabRemote:
         <td>{{ d.name }}</td>
         <td>
             <a href='/crud/update/group/{{ d.id }}/'>Edit</a>
+            <a href='{% url middleware.frontend.views.group_students request.session.course d.id %}'>Students</a>
             <a href='/crud/delete/group/{{ d.id }}/'>Delete</a>
         </td>
     </tr>

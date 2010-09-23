@@ -3,6 +3,7 @@ import middleware.frontend.views as views
 from django.views.generic.create_update import create_object, update_object, delete_object
 from django.views.generic.simple import direct_to_template
 from middleware.core.models import Activity, Group
+from middleware.frontend.forms import GroupForm
 
 urlpatterns = patterns('',
     url(r'^course_select(/(?P<course>\d+))?/$', views.course_select, name="course_select"),
@@ -12,6 +13,10 @@ urlpatterns = patterns('',
     (r'^course/(?P<getcourse>[^/]+)/students/$', views.students_list),
     (r'^course/(?P<getcourse>[^/]+)/timetable/$', views.timetable),
     (r'^course/(?P<getcourse>[^/]+)/groups/$', views.groups_index), 
+    (r'^course/(?P<getcourse>[^/]+)/group_students/(?P<group_id>\d+)/$', views.group_students), 
+    (r'^course/(?P<getcourse>[^/]+)/group_student_add/(?P<group_id>\d+)/(?P<stud_id>\d+)/$', views.group_students_add), 
+    (r'^course/(?P<getcourse>[^/]+)/group_student_rem/(?P<group_id>\d+)/(?P<stud_id>\d+)/$', views.group_students_rem), 
+    
     #generic view magic. Using generic views to add, update and delete the objects
     (r'^crud/add/activity/$', create_object, {
             'model': Activity, 
@@ -35,14 +40,14 @@ urlpatterns = patterns('',
         }
     ),
     (r'^crud/add/group/$', create_object, {
-            'model': Group, 
+            'form_class': GroupForm, 
             'login_required': True, 
             'template_name': 'object_form.html', 
             'post_save_redirect': '/form_success/Group/create/%(id)s/', 
         }
     ),
     (r'^crud/update/group/(?P<object_id>\d+)/$', update_object, {
-            'model': Group, 
+            'form_class': GroupForm, 
             'login_required': True, 
             'template_name': 'object_form.html', 
             'post_save_redirect': '/form_success/Group/update/%(id)s/', 
