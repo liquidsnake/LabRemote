@@ -3,6 +3,7 @@ from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.template import RequestContext
 from django.views.generic.list_detail import object_list
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
 import views
 from django.core.urlresolvers import reverse
 
@@ -55,8 +56,23 @@ def course_select(request, course):
 def students_list(request, getcourse):
     course = request.session.get('course', None)
     
-    students_list_info['queryset'] = Student.objects.filter(course=course)
-    return object_list(request, **students_list_info)
+    students_list = Student.objects.filter(course=course)
+    paginator = Paginator(students_list, 25) # Show 25 contacts per page
+
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+
+    try:
+        students = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        students = paginator.page(paginator.num_pages)
+
+    print students.object_list[0].groups
+    return render_to_response('students_list.html', 
+            {"students": students},
+            context_instance=RequestContext(request),)
 
 @login_required
 @course_required

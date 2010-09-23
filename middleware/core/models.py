@@ -16,6 +16,11 @@ class Student(models.Model):
     avatar = models.URLField(verify_exists=False, default='', blank=True)
     
     @property
+    def groups(self):
+        """ Return a list of groups for printing """
+        return self.virtual_group.all()
+        
+    @property
     def name(self):
         return u'%s %s' % (self.first_name, self.last_name)
         
