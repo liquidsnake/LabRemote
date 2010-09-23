@@ -170,23 +170,30 @@ def student(request, user, session_key, course, id):
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
 
-    acts = {}
-    activities = student.virtual_group.activity_set.all().order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start')    
+    try:
+        my_group = student.virtual_group.get(course=course)
+    except Group.DoesNotExist:
+        return json_response({"error":"No such course"}, failed = True)
+        
+    
+    attendances = {}
+    activities = my_group.activity_set.all().order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start')    
     for i,act in enumerate(activities):
         current_act = {"activity_id":act.id, "activity_day": act.day, "activity_interval":act.interval}
         atts = act.attendance_set.filter(student=student, course=course)
-        attendance = {}
         for a in atts:
-            attendance[a.week] = {"attendance_id": a.id, "grade": a.grade}
-        current_act["attendance"]=attendance
-        acts[i] = current_act
+            if a.week in attendances:
+                attendances[a.week]['grade'] += a.grade
+                attendances[a.week]['grades'].append(a.grade)
+            else:
+                attendances[a.week] = {"grade":a.grade, "grades": [a.grade]}
     
     return json_response({"name": student.name,
         "grade": 0, #TODO
         "id": student.id,
         "avatar": student.avatar,
-        "virtual_group": student.virtual_group.name,
-        "activities": acts})
+        "virtual_group": my_group.name,
+        "attendances": attendances})
         
 @valid_key
 def search(request, user, session_key, course, query):
