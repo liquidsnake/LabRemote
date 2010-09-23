@@ -11,11 +11,14 @@ urlpatterns = patterns('',
     (r'^form_success/(?P<object>[^/]+)/(?P<operation>[^/]+)(/(?P<id>\d+))?/$', views.form_success),
     url(r'^course/(?P<getcourse>[^/]+)/$', views.dashboard, name="course_selected"),
     (r'^course/(?P<getcourse>[^/]+)/students/$', views.students_list),
+    (r'^course/(?P<getcourse>[^/]+)/student/(?P<stud_id>\d+)/$', views.student_profile),
     (r'^course/(?P<getcourse>[^/]+)/timetable/$', views.timetable),
     (r'^course/(?P<getcourse>[^/]+)/groups/$', views.groups_index), 
     (r'^course/(?P<getcourse>[^/]+)/group_students/(?P<group_id>\d+)/$', views.group_students), 
     (r'^course/(?P<getcourse>[^/]+)/group_student_add/(?P<group_id>\d+)/(?P<stud_id>\d+)/$', views.group_students_add), 
     (r'^course/(?P<getcourse>[^/]+)/group_student_rem/(?P<group_id>\d+)/(?P<stud_id>\d+)/$', views.group_students_rem), 
+    
+    (r'^course/(?P<getcourse>[^/]+)/assistants/$', views.assistants),
     
     #generic view magic. Using generic views to add, update and delete the objects
     (r'^crud/add/activity/$', create_object, {

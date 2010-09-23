@@ -65,3 +65,10 @@ table.object_list th {
 table.weekdays table.object_list {
     min-width: 400px;
 }
+
+sup.new {
+    background-color: red;
+    border-radius: 5px;
+    padding: 2px;
+    color: white;
+    font-size: 6pt;

@@ -213,7 +213,7 @@ def search(request, user, session_key, course, query):
         if query in u.name.lower():
             #check if the student is actually in one of the groups in our course
             for group in u.virtual_group.all():
-                print u, group
+                #print u, group
                 if group.course == c:
                     results.append(u.info_dict())
                     if len(results) >= limit:

@@ -6,8 +6,10 @@ from django.views.generic.list_detail import object_list
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 import views
 from django.core.urlresolvers import reverse
+from django import forms
 
-from middleware.core.models import Student, Group, Course, Activity
+from middleware.core.models import *
+from middleware.frontend.forms import RegistrationForm
 
 students_list_info = {
     'queryset' :   Student.objects.all(),
@@ -68,10 +70,28 @@ def students_list(request, getcourse):
         students = paginator.page(page)
     except (EmptyPage, InvalidPage):
         students = paginator.page(paginator.num_pages)
-
-    print students.object_list[0].groups
+    
     return render_to_response('students_list.html', 
             {"students": students},
+            context_instance=RequestContext(request),)
+            
+@login_required
+@course_required
+def student_profile(request, getcourse, stud_id):
+    course = request.session.get('course', None)
+    
+    student = Student.objects.get(id=stud_id)
+    return render_to_response('student_profile.html', 
+            {"student": student},
+            context_instance=RequestContext(request),)
+            
+@login_required
+@course_required
+def assistants(request, getcourse):
+    assistants = Assistant.objects.all()
+    
+    return render_to_response('assistants.html', 
+            {"assistants": assistants},
             context_instance=RequestContext(request),)
 
 @login_required
@@ -182,3 +202,30 @@ def form_success(request, object, operation, id):
         },
         context_instance=RequestContext(request),
         )    
+
+
+def register(request):
+    """ User registration """
+    if request.user.is_authenticated():
+        return redirect('/')
+        
+    manipulator = RegistrationForm()
+    if request.POST:
+        new_data = request.POST.copy()
+        errors = manipulator.get_validation_errors(new_data)
+        if not errors:
+            # Save the user                                                                                                                                                 
+            manipulator.do_html2python(new_data)
+            new_user = manipulator.save(new_data)
+            
+            # Create and save their profile                                                                                                                                 
+            #new_profile = UserProfile(user=new_user,
+            #                          activation_key=activation_key,
+            #                          key_expires=key_expires)
+            #new_profile.save()
+            
+            return render_to_response('register.html', {'created': True})
+    else:
+        errors = new_data = {}
+    form = forms.FormWrapper(manipulator, new_data, errors)
+    return render_to_response('register.html', {'form': form})

@@ -12,10 +12,12 @@ Available ({{ group.parent_group }}):
 <table class="object_list">
     <tr>
        <th>student</th>
+       <th>group</th>
     </tr>
 {% for d in available_students %}
     <tr>
         <td>{{ d.name }}</td>
+        <td>{{ d.group }}</td>
         <td><a href='{% url middleware.frontend.views.group_students_add request.session.course group.id d.id %}'>add</a></td>
     </tr>
 {% endfor %}
@@ -26,10 +28,12 @@ Group {{ group.name }}:
 <table class="object_list">
     <tr>
        <th>student</th>
+       <th>group</th>
     </tr>
 {% for d in group.students.all %}
     <tr>
         <td>{{ d.name }}</td>
+        <td>{{ d.group }}</td>
         <td><a href='{% url middleware.frontend.views.group_students_rem request.session.course group.id d.id %}'>remove</a></td>
     </tr>
 {% endfor %}

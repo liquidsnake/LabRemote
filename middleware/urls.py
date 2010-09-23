@@ -9,6 +9,8 @@ urlpatterns = patterns('',
     (r'^', include('middleware.frontend.urls')),
     (r'^api/', include('middleware.rest.urls')),
 
+    (r'^register/$', 'middleware.frontend.views.register'),
+    
     # Contrib:
     (r'^accounts/login/$', 'django.contrib.auth.views.login',
                 {'template_name': 'accounts/login.html'}),

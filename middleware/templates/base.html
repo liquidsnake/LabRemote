@@ -20,6 +20,11 @@
  <a href="{% url middleware.frontend.views.students_list request.session.course %}">Students</a>
  <a href="{% url middleware.frontend.views.groups_index request.session.course %}">Groups</a>
  <a href="{% url middleware.frontend.views.timetable request.session.course %}">Timetable</a>
+ {% if user.get_profile.assistant.is_updater %}<a href="{% url middleware.frontend.views.assistants request.session.course %}">Assistants</a>
+    {% if user.get_profile.get_new_count %}
+        <sup class="new">{{ user.get_profile.get_new_count }} new</sup>
+    {% endif %}
+ {% endif %}
  {% endif %}
  </div>
  

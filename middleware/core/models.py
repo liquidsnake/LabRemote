@@ -5,8 +5,12 @@ from django.contrib.auth.models import User
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)    
     
+    def get_new_count(self):
+        """ Utility used in template """
+        return UserProfile.objects.filter(approved=False).count()
     assistant = models.ForeignKey('Assistant', default=None, blank=True, null=True)
-
+    approved = models.BooleanField(default=False)
+    
 class Student(models.Model):
     external_id = models.IntegerField(default=0)
     first_name = models.CharField(max_length=64)
@@ -19,6 +23,11 @@ class Student(models.Model):
     def groups(self):
         """ Return a list of groups for printing """
         return self.virtual_group.all()
+        
+    @property
+    def attendance(self):
+        """ Return a list of attendancies """
+        return Attendance.objects.filter(student=self).all()
         
     @property
     def name(self):

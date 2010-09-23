@@ -25,11 +25,13 @@ LabRemote:
 <table class="object_list">
     <tr>
        <th>group</th>
+       <th>students</th>
        <th></th>
     </tr>
 {% for d in groups %}
     <tr>
         <td>{{ d.name }}</td>
+        <td align="center">{{ d.students.all|length }}</td>
         <td>
             <a href='/crud/update/group/{{ d.id }}/'>Edit</a>
             <a href='{% url middleware.frontend.views.group_students request.session.course d.id %}'>Students</a>
