@@ -13,7 +13,6 @@ class Student(models.Model):
     last_name = models.CharField(default='', max_length=64, blank=True)
     
     group = models.CharField(default='', blank=True, max_length=20)
-    virtual_group = models.ForeignKey('Group', related_name="students", blank=True, null=True)
     avatar = models.URLField(verify_exists=False, default='', blank=True)
     
     @property
@@ -65,7 +64,8 @@ class Group(models.Model):
     parent_group = models.CharField(default='', max_length=64, blank=True)
     name = models.CharField(max_length=64)
     course = models.ForeignKey(Course)
-    
+   
+    students = models.ManyToManyField(Student,related_name='virtual_group', blank=True)  
     
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.parent_group)
