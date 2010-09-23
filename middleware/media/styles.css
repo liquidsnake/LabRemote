@@ -22,7 +22,6 @@ a:hover {text-decoration: underline;}
     border-right: 1px solid #888;
 }
 #header {
-    border-bottom: 1px solid #ccc;
     margin-bottom: 10px;
 }
 #user_bar {
@@ -30,7 +29,10 @@ a:hover {text-decoration: underline;}
     font-size: 0.8em;
 }
 #menu {
-    margin: 10px
+    margin: 10px;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
 }
 #menu a {
     margin: 10px;

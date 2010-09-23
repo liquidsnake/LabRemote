@@ -11,6 +11,7 @@ urlpatterns = patterns('',
     url(r'^course/(?P<getcourse>[^/]+)/$', views.dashboard, name="course_selected"),
     (r'^course/(?P<getcourse>[^/]+)/students/$', views.students_list),
     (r'^course/(?P<getcourse>[^/]+)/timetable/$', views.timetable),
+    (r'^course/(?P<getcourse>[^/]+)/groups/$', views.groups_index), 
     #generic view magic. Using generic views to add, update and delete the objects
     (r'^crud/add/activity/$', create_object, {
             'model': Activity, 
@@ -54,5 +55,4 @@ urlpatterns = patterns('',
             'post_delete_redirect': '/form_success/Group/delete/', 
         }
     ),
-    (r'^(?P<getcourse>[^/]+)/groups/$', views.groups_index), # TODO
 )

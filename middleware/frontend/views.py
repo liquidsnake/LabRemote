@@ -16,13 +16,18 @@ students_list_info = {
     }
 }
 
+def course_required(function):
+    def _decorated(request, getcourse='', **kwargs):
+        course = request.session.get('course', None)
+        if not course:
+            return redirect(reverse(views.course_select))
+        return function(request, getcourse, **kwargs)
+    return _decorated
+        
 @login_required
+@course_required
 def dashboard(request, getcourse=''):
     """ Show client dashboard or redirect to select client page"""
-    course = request.session.get('course', None)
-    if not course:
-        return redirect(reverse(views.course_select))
-    
     return render_to_response('dashboard.html', 
         context_instance=RequestContext(request),
         )      
@@ -46,22 +51,18 @@ def course_select(request, course):
     return redirect(reverse("course_selected", args=[course.name]))
     
 @login_required
+@course_required
 def students_list(request, getcourse):
     course = request.session.get('course', None)
     
-    if not course or getcourse != course.name:
-        return redirect('/course_select/')
-        
     students_list_info['queryset'] = Student.objects.filter(course=course)
     return object_list(request, **students_list_info)
 
 @login_required
+@course_required
 def groups_index(request, getcourse):
     """ Show all grups """
     course = request.session.get('course', None)
-    
-    if not course or getcourse != course.name:
-        return redirect('/course_select/')
         
     moodle_groups = course.get_groups()
     groups = list(Group.objects.filter(course=course))
@@ -73,11 +74,10 @@ def groups_index(request, getcourse):
         )    
 
 @login_required
+@course_required
 def timetable(request, getcourse):
     course = request.session.get('course', None)
-    
-    if not course or getcourse != course.name:
-        return redirect('/course_select/')
+   
     #array for the days of the week
     days = [
             'Monday',
