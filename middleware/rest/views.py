@@ -120,7 +120,7 @@ def group(request, user, session_key, name, course, activity_id):
         for s in group.students.all():
             attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = get_week(act.day_start), defaults={'grade': 0})
             students.append({"name": s.name, 
-                "grade": attendance.grade,
+                "grade": int(attendance.grade),
                 "id": s.id,
                 "avatar": s.avatar})
     except Group.DoesNotExist:
@@ -151,7 +151,7 @@ def current_group(request, user, session_key, course):
                 for s in group.students.all(): 
                     attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = get_week(act.day_start), defaults={'grade': 0})
                     students.append({"name": s.name, 
-                        "grade": attendance.grade,
+                        "grade": int(attendance.grade),
                         "id": s.id,
                         "avatar": s.avatar})
                 return json_response({"name": group.name, "students": students, 'activity_id' : act.id})
@@ -182,14 +182,14 @@ def student(request, user, session_key, course, id):
         current_act = {"activity_id":act.id, "activity_day": act.day, "activity_interval":act.interval}
         atts = act.attendance_set.filter(student=student, course=course)
         for a in atts:
+            grd = int(a.grade)
             if a.week in attendances:
-                attendances[a.week]['grade'] += a.grade
-                attendances[a.week]['grades'].append(a.grade)
+                attendances[a.week]['grade'] += grd
+                attendances[a.week]['grades'].append(grd)
             else:
-                attendances[a.week] = {"grade":a.grade, "grades": [a.grade]}
+                attendances[a.week] = {"grade":grd, "grades": [grd]}
     
     return json_response({"name": student.name,
-        "grade": 0, #TODO
         "id": student.id,
         "avatar": student.avatar,
         "virtual_group": my_group.name,
