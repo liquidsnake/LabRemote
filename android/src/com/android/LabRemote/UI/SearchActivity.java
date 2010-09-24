@@ -29,13 +29,17 @@ import android.app.Activity;
 import android.app.ListActivity;
 import android.app.SearchManager;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
@@ -44,6 +48,7 @@ import com.android.LabRemote.Utils.AvatarCallback;
 import com.android.LabRemote.Utils.MListAdapter;
 import com.android.LabRemote.Utils.MListItem;
 import com.android.LabRemote.Utils.ShowAvatar;
+import com.android.LabRemote.Utils.StudentProvider;
 
 
 /** TODO: cum ret eroare
@@ -98,12 +103,19 @@ public class SearchActivity extends ListActivity implements AvatarCallback {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.search);
 
-		mListView = (ListView) findViewById(android.R.id.list);	    	    
+		mListView = (ListView) findViewById(android.R.id.list);	 
 		Intent intent = getIntent();
-		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-			String query = intent.getStringExtra(SearchManager.QUERY);
-			doSearch(query);
-		}
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+    		Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
+			individualIntent .putExtra("ID", intent.getDataString());
+			startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
+         //   finish();
+        } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            // handles a search query
+            String query = intent.getStringExtra(SearchManager.QUERY);
+			showResults(query);
+        }
+        //onSearchRequested();
 	}
 
 	/**
@@ -116,9 +128,41 @@ public class SearchActivity extends ListActivity implements AvatarCallback {
 		
 		if (mData != null) 
 			fillList();
-		else
-			exitServerError(result.getError());
+		else {
+			System.out.println("aiiici");
+			Toast.makeText(getApplicationContext(), result.getError(), 1).show();
+			finish();
+			//exitServerError(result.getError());
+		}
 	}
+	
+    private void showResults(String query) {
+
+        Cursor cursor = managedQuery(StudentProvider.CONTENT_URI, null, null,
+                                new String[] {query}, null);
+
+        if (cursor == null) {
+        } else {
+            int count = cursor.getCount();
+
+            String[] from = new String[] { SearchManager.SUGGEST_COLUMN_TEXT_1};
+
+            int[] to = new int[] { R.id.groupName};
+
+            SimpleCursorAdapter words = new SimpleCursorAdapter(this,
+                                          R.layout.group_item, cursor, from, to);
+            setListAdapter(words);
+
+            mListView.setOnItemClickListener(new OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                	Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
+        			individualIntent.putExtra("ID", String.valueOf(id));
+        			startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
+                	System.out.println("ce " + String.valueOf(id)); //TODO: documentat daca asta e mereu bun 
+                }
+            });
+        }
+    }
 	
 	private void fillList() {
 		mList = new ArrayList<MListItem>();
@@ -146,16 +190,4 @@ public class SearchActivity extends ListActivity implements AvatarCallback {
 	    			Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
 	}
 	
-	/**
-	 * If the server request failed the activity exists
-	 * returns an error message to the parent activity
-	 * @param error
-	 */
-	private void exitServerError(String error) {
-		Intent back = new Intent();
-		back.putExtra("serverError", error);
-		setResult(Activity.RESULT_CANCELED, back);
-		finish();
-	}
-
 }

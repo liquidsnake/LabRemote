@@ -90,6 +90,8 @@ public class Main extends Activity {
 		mSearchButton = (FrameLayout) findViewById(R.id.searchButton);
 		mSearchButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				Intent test = new Intent(getApplicationContext(), SearchActivity.class);
+				//startActivity(test);
 				onSearchRequested();
 			}
 		});

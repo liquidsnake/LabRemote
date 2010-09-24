@@ -35,6 +35,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,6 +56,7 @@ import com.android.LabRemote.Utils.ShowAvatar;
 public class GroupView extends ListActivity implements AvatarCallback {
 
 	private String mGroup, mDate, mAID;
+	private AvatarCallback ava;
 	private ArrayList<MListItem> mList;
 	private Intent mIndividualIntent;
 	private JSONObject mData;
@@ -91,6 +93,22 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.group_view);
+		
+		/** Test schimbare saptamana */
+		//TODO: post daca schimb saptamana
+		ava = this;
+		TableLayout he = (TableLayout) findViewById(R.id.header);
+		he.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				ArrayList<MListItem> nou = new ArrayList<MListItem>();
+				nou.add(mList.get(0));
+				nou.add(mList.get(1));
+				nou.add(mList.get(2));
+				nou.add(mList.get(3));
+				mAdapter = new MListAdapter(getApplicationContext(), nou, ava, onItemClick);
+				setListAdapter(mAdapter);				
+			}
+		});
 
 		receiveData();
 	}
@@ -114,10 +132,8 @@ public class GroupView extends ListActivity implements AvatarCallback {
 
 		/** Data from the server */
 		ServerResponse response;
-		if (getIntent().getBooleanExtra("Current", false) == true) {
+		if (getIntent().getBooleanExtra("Current", false) == true) 
 			response = new Connection(this).getCurrentGroup();
-			System.out.println("cer current group " + response.getError());
-		}
 		else
 			response = new Connection(this).getGroup(mGroup, mAID);
 		
@@ -169,7 +185,6 @@ public class GroupView extends ListActivity implements AvatarCallback {
 			for (int i = 0; i < mList.size(); i++) {
 				JSONObject stud = new JSONObject();
 				stud.put("id", mList.get(i).getID());
-				stud.put("name", mList.get(i).getName());
 				stud.put("grade", mList.get(i).getGrade());
 				students.put(stud);
 			}			

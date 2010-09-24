@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,23 +40,21 @@ import android.preference.PreferenceManager;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.CustomDate;
-import com.android.LabRemote.Utils.MListAdapter;
-import com.android.LabRemote.Utils.MListItem;
 
 /** 
  * Informations about a selected student
  */
 public class StudentView extends ListActivity {
-	private String mName, mGroup, mDate, mID, mCaller;
-	private ArrayList<MListItem> mItems;
+	private String mName, mGroup, mDate, mID;
 	private JSONObject data;
-	private MListAdapter mAdapter;
+	private SimpleAdapter mAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +83,6 @@ public class StudentView extends ListActivity {
 		TextView dateView = (TextView)findViewById(R.id.dateHeader);
 		dateView.setText(mDate);
 		mID = getIntent().getStringExtra("ID"); 
-		mCaller = getIntent().getStringExtra("AID");
 
 		/** From server */
 		ServerResponse result = new Connection(this).getStudent(mID);
@@ -98,23 +97,29 @@ public class StudentView extends ListActivity {
 	 * Fill list with grades
 	 */
 	private void fillList() {
-		mItems = new ArrayList<MListItem>();
-
+		List<HashMap<String, String>> contentMap = new ArrayList<HashMap<String, String>>();
+	    String[] from = new String[] {"index", "grade"};
+        int[] to = new int[] { R.id.labIndex, R.id.labGrade};
+		int gradeSum = 0;
+		
 		try {
-			JSONObject grades = data.getJSONObject("attendance"); 
-			for (int i = 0; i < grades.length(); i++) {
-				mItems.add(new MListItem(null, i+"", 
-				grades.getJSONObject(i+"").getString("grade"), null));
-			}
+			JSONObject grades = data.getJSONObject("attendances"); 
+            for(int i = 0; i < grades.length(); i++) {
+                 HashMap<String, String> map = new HashMap<String, String>();
+                 map.put("index", " L" + i);
+                 map.put("grade", " " + grades.getJSONObject(i+"").getString("grade"));
+                 gradeSum += Integer.parseInt(grades.getJSONObject(i+"").getString("grade"));
+                 contentMap.add(map);
+            }
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
+
 		try {
 			mName = data.getString("name"); 
 			TextView nameView = (TextView)findViewById(R.id.individualName);
 			nameView.setText(mName);
-			mGroup = data.getString("group");
+			mGroup = data.getString("virtual_group");
 			TextView groupView = (TextView)findViewById(R.id.classHeader);
 			groupView.setText(mGroup);
 			TextView groupStudentView = (TextView)findViewById(R.id.individualGroup);
@@ -127,49 +132,29 @@ public class StudentView extends ListActivity {
 			e.printStackTrace();
 		}
 
-		mAdapter = new MListAdapter(this, mItems);
-		setListAdapter(mAdapter);
+        mAdapter = new SimpleAdapter(this, contentMap, R.layout.individual_grade, from, to);
+        setListAdapter(mAdapter);
+		TextView gr = (TextView) findViewById(R.id.individualGrade);
+		gr.setText(gradeSum + " p.");
 	}
 
 	public void setAvatar(ImageView avatar, String avatarUrl) {
+		Bitmap b = BitmapFactory.decodeResource
+		(getResources(), R.drawable.empty);
+		avatar.setImageBitmap(b);
 		try
 		{
 			HttpURLConnection con = (HttpURLConnection)(new URL(avatarUrl)).openConnection();
 			con.connect();
-			Bitmap b = BitmapFactory.decodeStream(con.getInputStream());
+			b = BitmapFactory.decodeStream(con.getInputStream());
 			avatar.setImageBitmap(b);
-		}  catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NullPointerException e) {
 			e.printStackTrace();
-		} finally {
-			Bitmap b = BitmapFactory.decodeResource
-			(getResources(), R.drawable.empty);
-			avatar.setImageBitmap(b);
-		}
+		} 
 	}
 		
-	@Override
-	protected void onPause() {
-
-		JSONObject result = new JSONObject();
-		try {
-			result.put("group", mGroup);
-			result.put("id", mID);
-			result.put("name", mName);
-			JSONObject attendance = new JSONObject();
-			for (int i = 0; i < mItems.size(); i++) {
-				attendance.put(i+"", mItems.get(i).getGrade());
-			}			
-			new Connection(this).post(result, "student");
-			result.put("attendance", attendance);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		super.onPause();
-
-	}
-
 	/**
 	 * If the server request failed the activity exists
 	 * returns an error message to the parent activity

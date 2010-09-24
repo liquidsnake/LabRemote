@@ -61,13 +61,16 @@ public class ListItemView extends LinearLayout {
 	 * Initializes the view with the data provided by item
 	 * @param item Contains strings that defines the view's image, name and/or grade
 	 */
-	public ListItemView(Context context, MListItem item, int layout) {
+	public ListItemView(Context context, MListItem item) {
 		super(context);
 		mContext = context;
 		mItem = item;
 		LayoutInflater layoutInflater = (LayoutInflater) 
 		getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		layoutInflater.inflate(layout, this, true);
+		layoutInflater.inflate(R.layout.group_item, this, true);
+		initImage(R.id.groupPhoto);
+		initName(R.id.groupName);
+		initGrade(R.id.groupGrade);
 	}
 
 	protected void initImage(int res) {
@@ -169,7 +172,7 @@ public class ListItemView extends LinearLayout {
 		public boolean onFling(MotionEvent e1, MotionEvent e2, 
 				float velocityX, float velocityY) {
 
-			float newGrade = Float.parseFloat(mGrade.getText().toString());
+			int newGrade = Integer.parseInt(mGrade.getText().toString());
 			if (e2.getX() > e1.getX()) {
 				newGrade++;
 				setGrade(new String(newGrade + ""));

@@ -32,8 +32,6 @@ import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.BaseAdapter;
 
-import com.android.LabRemote.UI.AttendanceItemView;
-import com.android.LabRemote.UI.GroupItemView;
 import com.android.LabRemote.UI.GroupView;
 import com.android.LabRemote.UI.ListItemView;
 import com.android.LabRemote.UI.SearchActivity;
@@ -54,8 +52,6 @@ public class MListAdapter extends BaseAdapter {
 	private AvatarCallback mAvatarCallback;
 	/** Called when a list item is clicked */
 	private OnClickListener mOnItemClick;
-	/** True if the list items have avatar */
-	private boolean hasAvatar = true; 
 	private Context mContext;
 
 	public MListAdapter(Context context, ArrayList<MListItem> items, 
@@ -64,12 +60,6 @@ public class MListAdapter extends BaseAdapter {
 		mOnItemClick = onItemClick;
 		mContext = context;
 		mItems = items;
-	}
-	
-	public MListAdapter(Context context, ArrayList<MListItem> items) {
-		mContext = context;
-		mItems = items;
-		hasAvatar = false;
 	}
 
 	public int getCount() {
@@ -88,13 +78,10 @@ public class MListAdapter extends BaseAdapter {
 		ListItemView item;
 		MListItem it = mItems.get(index);
 		
-		if (hasAvatar == true) {
-			item = new GroupItemView(mContext, mItems.get(index));
-			//if (it.getAvatar() == null)
-				//new DownloadAvatar(it.getImgUrl(), mAvatarCallback, item);
-			item.setOnClickListener(mOnItemClick);
-		} else
-			item = new AttendanceItemView(mContext, mItems.get(index));
+		item = new ListItemView(mContext, mItems.get(index));
+		if (it.getAvatar() == null)
+			new DownloadAvatar(it.getImgUrl(), mAvatarCallback, item);
+		item.setOnClickListener(mOnItemClick);
 		item.setClickable(true);
 
 		return item;

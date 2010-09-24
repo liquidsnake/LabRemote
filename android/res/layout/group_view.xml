@@ -19,8 +19,9 @@
 	</android.gesture.GestureOverlayView>
 
 	<ListView android:id="@android:id/list" android:layout_width="fill_parent"
-		android:layout_height="fill_parent" android:divider="@color/header_color"
-		android:dividerHeight="4dip" android:background="@color/header_color"
+		android:layout_height="fill_parent" android:divider="@color/grey"
+		android:dividerHeight="1dip" android:background="@color/white"
+		android:paddingTop="5dip"
 		android:orientation="vertical" android:listSelector="#00000000">
 	</ListView>
     <TextView android:id="@id/android:empty"

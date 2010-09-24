@@ -30,6 +30,8 @@
 		 <meta-data 
      			android:name="android.app.default_searchable"
      			android:value=".UI.SearchActivity" />
+        <provider android:name=".Utils.StudentProvider"
+                  android:authorities="com.android.LabRemote.Utils.StudentProvider" />
     </application>
     <uses-sdk android:minSdkVersion="8" />
 
