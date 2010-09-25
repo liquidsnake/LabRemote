@@ -136,7 +136,7 @@ class Attendance(models.Model):
     course = models.ForeignKey(Course)
     activity = models.ForeignKey(Activity)
     grade = models.FloatField(default=0, blank=True)
-    week = models.IntegerField(default=0, blank=True)
+    week = models.PositiveIntegerField(default=0, blank=True)
     
     def __unicode__(self):
         return u"%s, %s week: %d" % (self.student, self.course, self.week)

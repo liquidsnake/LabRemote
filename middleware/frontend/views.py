@@ -6,10 +6,16 @@ from django.views.generic.list_detail import object_list
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 import views
 from django.core.urlresolvers import reverse
+from django.template.defaultfilters import slugify
+from django.db.models import Max, Sum
 from django import forms
+from django.http import HttpResponse
 
 from middleware.core.models import *
 from middleware.frontend.forms import RegistrationForm
+
+import csv
+import unicodedata
 
 students_list_info = {
     'queryset' :   Student.objects.all(),
@@ -229,3 +235,53 @@ def register(request):
         errors = new_data = {}
     form = forms.FormWrapper(manipulator, new_data, errors)
     return render_to_response('register.html', {'form': form})
+
+
+@login_required
+@course_required
+def export_group_csv(request, getcourse, group_id):
+    #TODO: check for inexistent group
+    group = Group.objects.get(id=group_id)
+    response = HttpResponse(mimetype='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=%s-group.csv' % slugify(group.name)
+
+    writer = csv.writer(response, delimiter=',')
+
+    writer.writerow(['Group %s' % group.name])
+
+    students = group.students.all() 
+    activities = group.activity_set.order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start').all()
+    for activity in activities:
+        writer.writerow(["Activity during %s on %s" % (activity.interval, activity.day_of_the_week)])
+        #get the maximum attendance week
+        max = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        l = range(max+1)
+        l[0] = ''
+        l.extend(['', 'Sum'])
+        writer.writerow(l)
+        for student in students:
+            attendances = Attendance.objects.filter(student = student, course__name = getcourse, activity = activity)
+            #grades for this student for this activity
+            atts = [unicodedata.normalize('NFKD', student.name).encode('ascii','ignore')]
+            sum = 0
+            for i in range(1, max+1):
+                try:
+                    grade = attendances.get(week = i).grade
+                    atts.append(grade)
+                    sum += grade
+                except Attendance.DoesNotExist:
+                    atts.append(0)
+            atts.extend(['', sum])
+            writer.writerow(atts)
+        writer.writerow([])
+    
+    writer.writerow(['Sum during all the activities'])
+    for student in students:
+        grade = Attendance.objects.filter(student = student, course__name = getcourse).aggregate(Sum('grade'))['grade__sum']
+        if grade == None:
+            grade = 0
+        atts = [unicodedata.normalize('NFKD', student.name).encode('ascii','ignore'), grade]
+        writer.writerow(atts)
+    writer.writerow([])
+                    
+    return response
