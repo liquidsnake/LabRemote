@@ -19,7 +19,8 @@
 			android:layout_height="wrap_content" android:layout_weight="1">
 			<ImageView android:id="@+id/individualPhoto"
 				android:layout_width="wrap_content" android:layout_margin="2dip"
-				android:layout_height="wrap_content" />
+				android:layout_height="wrap_content" android:shadowColor="#00ccff"  
+       			android:shadowRadius="1.5" android:shadowDx="1" android:shadowDy="1" />
 		</FrameLayout>
 		<FrameLayout android:layout_width="fill_parent"
 			android:layout_height="fill_parent" android:layout_weight="1">
@@ -36,14 +37,10 @@
 		</FrameLayout>
 		<FrameLayout android:layout_width="fill_parent"
 			android:layout_height="fill_parent" android:layout_weight="1">
-			<FrameLayout android:padding="1dip" android:background="@color/black"
-				android:layout_width="wrap_content" android:layout_height="wrap_content"
-				android:layout_gravity="center">
-				<TextView android:id="@+id/individualGrade" android:text="35 p."
-					android:background="@color/white" android:textColor="@color/black"
-					android:layout_width="wrap_content" android:layout_height="wrap_content">
-				</TextView>
-			</FrameLayout>
+			<TextView android:id="@+id/individualGrade" android:text="35 p." android:layout_gravity="center"
+				android:background="@layout/round_grey" android:textColor="@color/black"
+				android:layout_width="wrap_content" android:layout_height="wrap_content">
+			</TextView>
 		</FrameLayout>
 	</LinearLayout>
 

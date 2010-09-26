@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Application login layout -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent" android:background="@color/white">
 
 	<TextView android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:gravity="center_horizontal"
-		android:textColor="@color/black" android:paddingBottom="20dip"
-		android:paddingTop="20dip" android:textSize="30sp" android:text="Lab Remote" />
+		android:textColor="@color/black" android:paddingTop="20dip" 
+		android:textSize="30sp" android:text="@string/app_name" />
 		
 </LinearLayout>

@@ -1,55 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Application main layout, after autentification -->
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent" 
-	android:layout_height="fill_parent" android:background="@drawable/bg">
-
-	<TextView android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:gravity="center_horizontal"
-		android:textColor="@color/black" android:paddingBottom="90dip"
-		android:paddingTop="20dip" android:textSize="30sp"/>
+	android:layout_height="fill_parent" android:background="@drawable/background">
 
 	<!-- Menu buttons -->
-	<TableLayout android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:layout_gravity="center">
-		<TableRow android:layout_width="wrap_content"
-			android:layout_height="wrap_content">
-			<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/currentCourseButton"
-			android:orientation="vertical" android:background="@drawable/butt" android:layout_margin="2dip">
-			<TextView android:background="@drawable/button_groups"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_gravity="right">
-			</TextView>
+	<TableLayout android:layout_width="wrap_content" 
+		android:layout_height="wrap_content" android:layout_centerInParent="true">
+		<TableRow android:layout_width="wrap_content" android:layout_height="wrap_content">
+			<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:id="@+id/currentCourseButton" android:orientation="vertical" 
+				android:background="@drawable/menu_button" android:layout_margin="2dip">
+				<ImageView android:background="@drawable/button_groups" android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" android:layout_gravity="right"/>
 			</FrameLayout>
-			<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/searchButton"
-			android:orientation="vertical" android:background="@drawable/butt" android:layout_margin="2dip">
-			<TextView android:background="@drawable/button_search"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_gravity="left">
-			</TextView>
+			<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" 
+				android:id="@+id/searchButton" android:orientation="vertical" 
+				android:background="@drawable/menu_button" android:layout_margin="2dip">
+				<ImageView android:background="@drawable/button_search" android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" android:layout_gravity="left"/>
 			</FrameLayout>
 		</TableRow>
 		<TableRow android:layout_width="wrap_content" android:layout_height="wrap_content">
-			<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/timetableButton"
-			android:orientation="vertical" android:background="@drawable/butt" android:layout_margin="2dip">
-			<TextView android:background="@drawable/button_timetable" 
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_gravity="right">
-			</TextView>
+			<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" 
+				android:id="@+id/timetableButton" android:orientation="vertical" 
+				android:background="@drawable/menu_button" android:layout_margin="2dip">
+				<ImageView android:background="@drawable/button_timetable" android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" android:layout_gravity="right"/>
 			</FrameLayout>
-			<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/otherButton"
-			android:orientation="vertical" android:background="@drawable/butt" android:layout_margin="2dip">
-			<TextView android:background="@drawable/button_settings"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_gravity="left">
-			</TextView>
+			<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" 
+				android:id="@+id/otherButton" android:orientation="vertical" 
+				android:background="@drawable/menu_button" android:layout_margin="2dip">
+				<ImageView android:background="@drawable/button_settings" android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" android:layout_gravity="left"/>
 			</FrameLayout>
 		</TableRow>
 	</TableLayout>
 	
-	<LinearLayout android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_gravity="center_horizontal">
-	<ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_horizontal"
-			android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="15dip" android:background="@drawable/ll"/>
-	</LinearLayout>
-</LinearLayout>
+	<ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" 
+		android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" 
+		android:layout_marginBottom="15dip" android:background="@drawable/logo"/>
+</RelativeLayout>

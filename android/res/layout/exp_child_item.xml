@@ -8,10 +8,10 @@
 	<TextView android:layout_width="wrap_content" android:id="@+id/exp_child_group"
 		android:focusable="false" android:layout_height="wrap_content"
 		android:padding="4dip" android:layout_gravity="right"
-		android:layout_marginLeft="100dip" android:textSize="15dip"
+		android:layout_marginLeft="100dip" android:textSize="15sp"
 		android:textColor="@color/black"/>
 	<TextView android:layout_width="wrap_content" android:id="@+id/exp_child_interval"
 		android:focusable="false" android:layout_height="wrap_content"
 		android:padding="4dip" android:layout_gravity="left"
-		android:textSize="15dip" android:textColor="@color/black"/>
+		android:textSize="15sp" android:textColor="@color/black"/>
 </LinearLayout>

@@ -47,7 +47,7 @@ import com.android.LabRemote.Utils.MListAdapter;
 import com.android.LabRemote.Utils.MListItem;
 import com.android.LabRemote.Utils.ShowAvatar;
 
-/** TODO: cum ma intorc
+/** 
  * Lists the students of a specific group
  * @see ListItemView
  * @see MListAdapter

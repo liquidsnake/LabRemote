@@ -26,37 +26,33 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.Window;
-import android.view.WindowManager;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 
 /** 
- * Application's login activity 
+ * Application's login activity <br>
  * Checks authentification
  */
 public class Login extends Activity {
 
+	/** Reads login code and host from the application's private data */
 	private SharedPreferences mPreferences;
+	/** Displayed when login failed */
 	private AlertDialog mInvalidLogin;
-	private Intent mIntent;
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.login);
 		
 		/** Initialize invalid login dialog */
 		mInvalidLogin = new AlertDialog.Builder(this).create();
 		DialogInterface.OnClickListener lis = new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				mIntent = new Intent(getApplicationContext(), Settings.class);
+				Intent mIntent = new Intent(getApplicationContext(), Settings.class);
 				startActivity(mIntent);
 			}
 		};
@@ -74,7 +70,7 @@ public class Login extends Activity {
 		} else { /** Check login */
 			ServerResponse res = new Connection(this).login();
 			if (res.getError() == null) { 
-				mIntent = new Intent(this, Main.class);
+				Intent mIntent = new Intent(this, Main.class);
 				startActivity(mIntent);
 				finish();
 			} else { 

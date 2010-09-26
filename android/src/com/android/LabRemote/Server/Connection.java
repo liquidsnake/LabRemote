@@ -19,6 +19,24 @@
 
 package com.android.LabRemote.Server;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,29 +44,6 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-
-//TODO: Treat errors and exceptions
 
 /**
  * Handles communication with the server: API posts and request
@@ -71,9 +66,8 @@ public class Connection {
 	private static final String currentQuery = "/api/current_group/";
 	
 	/** Error messages */
-	private static final String serverError = 
-		"There was a problem with the server or the request";
 	private static final String invalidResponse = "Invalid response from the server";
+	private static final String serverError = "There was a problem with the server or the request";
 	
 	public Connection(Context context) {
 		mContext = context;
@@ -120,8 +114,7 @@ public class Connection {
 	/**
 	 * Handles login queries and saves informations received from 
 	 * the server in the application's private data
-	 * @return A server response with available courses or 
-	 * error message if login failed
+	 * @return {@link ServerResponse}
 	 */
 	public ServerResponse login() {
 		ServerResponse res;
@@ -160,7 +153,7 @@ public class Connection {
 	/**
 	 * Generic data request
 	 * @param request
-	 * @return
+	 * @return {@link ServerResponse}
 	 */
 	public ServerResponse get(String request) {
 		JSONObject jObject = null;
@@ -184,7 +177,8 @@ public class Connection {
 	}
 
 	public ServerResponse getGroup(String group, String aid) {
-		String request = mHost + groupQuery + mCourse + "/" + mID + "/" + mCode + "/" + group + "/" + aid;
+		String request = mHost + groupQuery + mCourse + "/" + mID + "/" 
+				+ mCode + "/" + group + "/" + aid;
 		return get(request);
 	}
 	
@@ -208,59 +202,50 @@ public class Connection {
 		return get(request);
 	}
 	
-	public HttpResponse post(JSONObject data, String type) {
+	//TODO: parse post result
+	public String post(JSONObject data, String type) {
 		String url = mHost + "/api/post/";
 		HttpPost httpost = new HttpPost(url);
+		HttpResponse res = null;
+		String result = "ok";
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(5);  
-        StringEntity se;
         
+        nameValuePairs.add(new BasicNameValuePair("user", mID));  
+        nameValuePairs.add(new BasicNameValuePair("course", mCourse));  
+        nameValuePairs.add(new BasicNameValuePair("session_key", mCode));  
+        nameValuePairs.add(new BasicNameValuePair("type", type));
+        nameValuePairs.add(new BasicNameValuePair("contents", data.toString()));  
+        
+        /** Send post */
 		try {
-	        nameValuePairs.add(new BasicNameValuePair("user", mID));  
-	        nameValuePairs.add(new BasicNameValuePair("course", mCourse));  
-	        nameValuePairs.add(new BasicNameValuePair("session_key", mCode));  
-	        nameValuePairs.add(new BasicNameValuePair("type", type));
-	        nameValuePairs.add(new BasicNameValuePair("contents", data.toString()));  
-	        System.out.println(nameValuePairs);
 	        httpost.setEntity(new UrlEncodedFormEntity(nameValuePairs)); 
-			//se = new StringEntity(data.toString());
-			//httpost.setHeader("Accept", "application/json");
-			//httpost.setHeader("Content-type", "application/json");
+			res = mHttpClient.execute(httpost);
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
-			return null;
-		}
-
-		//ResponseHandler responseHandler = new BasicResponseHandler();
-		HttpResponse res = null;
-		try {
-			res = mHttpClient.execute(httpost);
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
+		/** Read post result */
 		HttpEntity entity = res.getEntity();
 		if (entity != null) {
 			InputStream instream;
 			try {
 				instream = entity.getContent();
-				String rez = convertStreamToString(instream);
-				System.out.println("raspuns " + rez);
+				//String rez = convertStreamToString(instream);
 				instream.close();
 			} catch (IllegalStateException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 		}
-		return res;
+		return result;
 	}
 
-	//TODO: si de aici ies pe probl de rasp de la server
 	private static String convertStreamToString(InputStream is) {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 		StringBuilder sb = new StringBuilder();
@@ -272,6 +257,7 @@ public class Connection {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+			return null;
 		} finally {
 			try {
 				is.close();
@@ -281,5 +267,4 @@ public class Connection {
 		}
 		return sb.toString();
 	}
-
 }

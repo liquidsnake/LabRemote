@@ -19,11 +19,8 @@
 
 package com.android.LabRemote.UI;
 
-import java.util.List;
-
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -40,6 +37,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,36 +45,45 @@ import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 
-//TODO: dialog error + gui
+import java.util.List;
+
 /** 
- * Application's settings activity
+ * Application's settings activity. <br>
  * Allows the users to set the middleware's host, load the login code
  * and switch between courses.
  */
 public class Settings extends Activity {
-	private boolean login;
+
+	/** Shows if login was checked or not */
+	private boolean mLogin;
+	/** Reads application's private data: host, login code and course */
 	private SharedPreferences mPreferences;
+	/** Writes application's private data: host, login code and course */
 	private SharedPreferences.Editor mEditor;
-	private static String defServer = "Insert server address";
-	private static String defSelect = "Click here to select course";
+	/** Default value for select course button when no course is selected */
+	private static String sDefSelect = "Click for course";
 
-	
-	/** UI content */
+	/** Edit text box where user inserts the server's address */
 	private EditText mHost;
-	private TextView mLoadCode, mSelectCourse;
+	/** When this layout is clicked, the Barcode Scanner application is loaded */
+	private LinearLayout mLoadCode;
+	/** Displays the current course and allows the user to change it on click */
+	private TextView mSelectCourse;
+	/** Checked if there is a login code stored in the application's data */
 	private CheckBox mCodeChecked;
+	/** On click, checks login and loads the main menu activity */
 	private Button mDone;
-	private Intent mMain;
+	/** Dialog that allows the user to select a course */
 	private AlertDialog.Builder mSelCourseDialog;
-	private Dialog mLoginFailedDialog;
+	/** Dialog that displays an error when login fails */
+	private AlertDialog.Builder mLoginFailedDialog;
 
-	/** Barcode Scanner */
 	private static final String INTENT_SCAN = "com.google.zxing.client.android.SCAN";
 	private static final String SCAN_MODE = "SCAN_MODE";
 	private static final String QR_CODE_MODE = "QR_CODE_MODE";
 	private static final String SCAN_RESULT = "SCAN_RESULT";
 	private static final int REQCODE_SCAN = 0;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -84,35 +91,35 @@ public class Settings extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.settings);
-		
+
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-		mMain = new Intent(getApplicationContext(), Main.class);
 		mEditor = mPreferences.edit(); 
-		login = false;
-		
+		mLogin = false;
+
 		/** Server address */
 		mHost = (EditText)findViewById(R.id.serverHost);
 		String host = mPreferences.getString("host", null);
-		mHost.setText((host == null) ? defServer : host);
+		mHost.setText((host == null) ? "" : host);
 		mHost.addTextChangedListener(new TextWatcher() {
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				mEditor.putString("host", mHost.getText().toString()); 
+				String address = parseAddress(mHost.getText().toString());
+				mEditor.putString("host", address); 
 				mEditor.commit();
 				invalidateLogin();
 			}
-			public void beforeTextChanged(CharSequence s, int start, int count,	int after) {}
-			public void afterTextChanged(Editable s) {}
+			public void beforeTextChanged(CharSequence s, int start, int count, int after){}
+			public void afterTextChanged(Editable s){}
 		});
-		
+
 		/** Login code */
 		mCodeChecked = (CheckBox)findViewById(R.id.codeChecked);
-		mLoadCode = (TextView)findViewById(R.id.loadCode);
+		mLoadCode = (LinearLayout)findViewById(R.id.loadCode);
 		mCodeChecked.setChecked(mPreferences.getString("loginCode", null) != null);
 		mLoadCode.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				if (checkBarcodeScanner() == false)
 					Toast.makeText(v.getContext(), 
-					"You must install Barcode scanner app first", 1).show();
+							"You must install Barcode scanner app first", 1).show();
 				else {
 					Intent intent = new Intent(INTENT_SCAN);
 					intent.putExtra(SCAN_MODE, QR_CODE_MODE);
@@ -120,49 +127,47 @@ public class Settings extends Activity {
 				}
 			}
 		});	
-		
+
 		/** Select course */
 		mSelectCourse = (TextView)findViewById(R.id.selectCourse);
 		String course = mPreferences.getString("course", null);
-		mSelectCourse.setText((course != null) ? course : defSelect);
+		mSelectCourse.setText((course != null) ? course : sDefSelect);
 		mSelectCourse.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				ServerResponse result = checkLogin();
 				if (result.getError() == null) {
 					showSelect((String[])result.getRespone());
-					login = true;
+					mLogin = true;
 				} else 
 					showLoginFailed(result.getError());		
 			}
 		});
-		
+
 		/** Dialogs */
 		mSelCourseDialog = new AlertDialog.Builder(this);
 		mSelCourseDialog.setTitle("Select a course");
-		mLoginFailedDialog = new Dialog(this);
-		mLoginFailedDialog.setCanceledOnTouchOutside(true);
-		
+		mLoginFailedDialog = new AlertDialog.Builder(this);
+		mLoginFailedDialog.setTitle("Login failed");
+		mLoginFailedDialog.setCancelable(true);
+
 		/** Done button */
 		mDone = (Button)findViewById(R.id.doneButton);
 		mDone.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (login == false) {
+				if (mLogin == false) {
 					ServerResponse result = checkLogin();
 					if (result.getError() != null) {
 						showLoginFailed(result.getError());
-					} else {
-						startActivity(mMain);
-						finish();
-					}
-				} else {
-					startActivity(mMain);
-					finish();
+						return;
+					} 
 				}
+				Intent mIntent = new Intent(getApplicationContext(), Main.class);
+				startActivity(mIntent);
+				finish();
 			}
 		});
-			
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
 	{
@@ -181,41 +186,41 @@ public class Settings extends Activity {
 			super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
-	
+
 	private ServerResponse checkLogin() {
 		return new Connection(this).login();
 	}
-	
+
 	/**
 	 * Shows select courses dialog
 	 */
 	private void showSelect(String[] courses) {
 		final String[] values = courses;
 		mSelCourseDialog.setItems(courses, new DialogInterface.OnClickListener() {
-		    public void onClick(DialogInterface dialog, int item) {
-		    	mEditor.putString("course", values[item]);
-		    	mSelectCourse.setText(values[item]);
-		    }
+			public void onClick(DialogInterface dialog, int item) {
+				mEditor.putString("course", values[item]);
+				mSelectCourse.setText(values[item]);
+			}
 		});
 		mSelCourseDialog.create().show();		
 	}
-	
+
 	private void showLoginFailed(String error) {
-		mLoginFailedDialog.setTitle(error);
+		mLoginFailedDialog.setMessage(error);
 		mLoginFailedDialog.show();		
 	}
-	
+
 	/**
 	 * Checks if Barcode Scanner application is installed
 	 */
 	private boolean checkBarcodeScanner() {
-	    final PackageManager packageManager = this.getPackageManager();
-	    final Intent intent = new Intent("com.google.zxing.client.android.SCAN");
-	    List<ResolveInfo> list = packageManager.queryIntentActivities(intent,
-	                   PackageManager.MATCH_DEFAULT_ONLY);
-	    return list.size() > 0;
+		final PackageManager packageManager = this.getPackageManager();
+		final Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+		List<ResolveInfo> list = packageManager.queryIntentActivities(intent,
+				PackageManager.MATCH_DEFAULT_ONLY);
+		return list.size() > 0;
 	}
-	
+
 	/**
 	 * Stores new code in the application's private data
 	 */
@@ -226,16 +231,24 @@ public class Settings extends Activity {
 			mCodeChecked.setChecked(true);
 		}
 	}
-	
+
 	/**
 	 * Invalidates login data when the user 
 	 * changes host or login code
 	 */
 	private void invalidateLogin() {
-		mSelectCourse.setText("Click here to select course");
+		mSelectCourse.setText(sDefSelect);
 		mEditor.putString("course", null);
 		mEditor.commit();
-		login = false;
+		mLogin = false;
+	}
+
+	/**
+	 * Manages server address
+	 */
+	private String parseAddress(String host) {
+		String result = host.replaceAll("^\\s+", "").replaceAll("\\s+$", "");
+		return (result.startsWith("http://") ? result : "http://" + result);
 	}
 
 }

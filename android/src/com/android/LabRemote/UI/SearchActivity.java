@@ -19,12 +19,6 @@
 
 package com.android.LabRemote.UI;
 
-import java.util.ArrayList;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.ListActivity;
 import android.app.SearchManager;
@@ -32,9 +26,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -42,152 +33,62 @@ import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.android.LabRemote.R;
-import com.android.LabRemote.Server.Connection;
-import com.android.LabRemote.Server.ServerResponse;
-import com.android.LabRemote.Utils.AvatarCallback;
-import com.android.LabRemote.Utils.MListAdapter;
-import com.android.LabRemote.Utils.MListItem;
-import com.android.LabRemote.Utils.ShowAvatar;
 import com.android.LabRemote.Utils.StudentProvider;
 
-
-/** TODO: cum ret eroare
+/**
  * Activity that handles search query and lists the results
- * @see ListItemView
- * @see MListAdapter
- * @see MListItem
+ * @see StudentProvider
  */
-public class SearchActivity extends ListActivity implements AvatarCallback {
+public class SearchActivity extends ListActivity {
 	private ListView mListView;
-	private ArrayList<MListItem> mList;
-	private JSONObject mData;
 	public static final int REQUEST_FROM_SERVER = 4;
-
-	/**
-	 * Displays a newly downloaded avatar
-	 * @see ShowAvatar
-	 */
-	public void onImageReceived(ShowAvatar displayer) {
-		this.runOnUiThread(displayer);
-	}
-
-	/**
-	 * On click on a list item, opens individual activity for the selected student
-	 * @see StudentView
-	 */
-	private OnClickListener onItemClick = new OnClickListener() {
-		public void onClick(View v) {
-			Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
-			individualIntent.putExtra("Name", ((ListItemView)v).getName().getText());
-			individualIntent.putExtra("ID", ((ListItemView)v).getmId());
-			startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
-		}
-	};
-
-	@Override
-	public void onNewIntent(final Intent newIntent) {
-		super.onNewIntent(newIntent);
-
-		final Intent queryIntent = getIntent();
-		final String queryAction = queryIntent.getAction();
-		if (Intent.ACTION_SEARCH.equals(queryAction)) {
-			doSearch("onNewIntent()");
-		}
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE); 
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		setContentView(R.layout.search);
-
+		setContentView(R.layout.search_result);
 		mListView = (ListView) findViewById(android.R.id.list);	 
+
 		Intent intent = getIntent();
-        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-    		Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
+		if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+			Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
 			individualIntent .putExtra("ID", intent.getDataString());
 			startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
-         //   finish();
-        } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            // handles a search query
-            String query = intent.getStringExtra(SearchManager.QUERY);
-			showResults(query);
-        }
-        //onSearchRequested();
-	}
-
-	/**
-	 * Sends search query to the server and lists the resulting students
-	 * @param query Search query typed by the user
-	 */
-	public void doSearch(String query) {
-		ServerResponse result = new Connection(this).getSearch(query); 
-		mData = (JSONObject)result.getRespone();
-		
-		if (mData != null) 
-			fillList();
-		else {
-			System.out.println("aiiici");
-			Toast.makeText(getApplicationContext(), result.getError(), 1).show();
 			finish();
-			//exitServerError(result.getError());
+		} else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+			String query = intent.getStringExtra(SearchManager.QUERY);
+			showResults(query);
 		}
 	}
-	
-    private void showResults(String query) {
 
-        Cursor cursor = managedQuery(StudentProvider.CONTENT_URI, null, null,
-                                new String[] {query}, null);
+	private void showResults(String query) {
+		Cursor cursor = managedQuery(StudentProvider.CONTENT_URI, 
+				null, null, new String[] {query}, null);
 
-        if (cursor == null) {
-        } else {
-            int count = cursor.getCount();
+		if (cursor != null) {
+			String[] from = new String[] {SearchManager.SUGGEST_COLUMN_TEXT_1};
+			int[] to = new int[] {R.id.groupName};
 
-            String[] from = new String[] { SearchManager.SUGGEST_COLUMN_TEXT_1};
+			SimpleCursorAdapter words = new SimpleCursorAdapter(this,
+					R.layout.group_item, cursor, from, to);
+			setListAdapter(words);
 
-            int[] to = new int[] { R.id.groupName};
-
-            SimpleCursorAdapter words = new SimpleCursorAdapter(this,
-                                          R.layout.group_item, cursor, from, to);
-            setListAdapter(words);
-
-            mListView.setOnItemClickListener(new OnItemClickListener() {
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                	Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
-        			individualIntent.putExtra("ID", String.valueOf(id));
-        			startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
-                	System.out.println("ce " + String.valueOf(id)); //TODO: documentat daca asta e mereu bun 
-                }
-            });
-        }
-    }
-	
-	private void fillList() {
-		mList = new ArrayList<MListItem>();
-
-		try {
-			JSONArray ar = mData.getJSONArray("students");
-			for(int i = 0; i < ar.length(); i++) {
-				JSONObject student = ar.getJSONObject(i);
-				mList.add(new MListItem(student.getString("avatar"), 
-						student.getString("name"), null, student.getString("id")));
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} 
-
-		MListAdapter students = new MListAdapter(this, mList, this, onItemClick);
-		mListView.setAdapter(students);
+			mListView.setOnItemClickListener(new OnItemClickListener() {
+				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+					Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
+					individualIntent.putExtra("ID", String.valueOf(id));
+					startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
+					//TODO: documentat daca id e mereu bun 
+				}
+			});
+		}
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (resultCode == Activity.RESULT_CANCELED) 
-	    	if (data != null)
-	    		if (data.getStringExtra("serverError") != null)
-	    			Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
+		if (resultCode == Activity.RESULT_CANCELED) 
+			if (data != null)
+				if (data.getStringExtra("serverError") != null)
+					Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
 	}
-	
 }

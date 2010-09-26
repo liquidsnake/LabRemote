@@ -3,9 +3,11 @@
     <string name="app_name">LabRemote</string>
     <string name="search_hint">Search for student</string>
     <string name="select_day">Select day of the week</string>
-    <string name="select_interval">Tuesday - Select interval</string>
 	<string name="settings">LabRemote Settings</string>
-	<string name="load_code">Load login code</string>
+	<string name="load_code">Login code</string>
 	<string name="insert_host">Insert server address</string>
-<string name="select_course">Current course</string>
+	<string name="select_course">Current course</string>
+	<string name="load_text">Click here to load a new code.</string>
+	<string name="host">Host Address</string>
+	<string name="change_course">Click for course</string>
 </resources>

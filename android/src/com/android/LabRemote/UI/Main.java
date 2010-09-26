@@ -23,8 +23,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -33,33 +31,28 @@ import com.android.LabRemote.R;
 import com.android.LabRemote.Utils.CustomDate;
 
 /** 
- * Application's main menu layout 
+ * Application's main menu layout <br>
  * Appears after autentification and lets us choose a specific view
  */
 public class Main extends Activity {
 
-	private Intent mTimetableIntent, mCurrentIntent, mSettingsIntent;
-	private FrameLayout mTimetableButton, mSearchButton, mSettingsButton;
-	private FrameLayout mCurrentButton;
-	
+	/** Requests that a child activity returns with error message 
+	 * if there was a server communication error during its initialization */
 	public static final int REQUEST_FROM_SERVER = 1;
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-
-		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
-		setContentView(R.layout.main);
-
-		mTimetableIntent = new Intent(this, TimeTable.class);
-		mCurrentIntent = new Intent(this, GroupView.class);
-		mSettingsIntent = new Intent(this, Settings.class);
-
-		initMenuButtons();
-	}
+	/** Starts current group activity on click */
+	private FrameLayout mCurrentButton;
+	/** Starts current timetable activity on click */
+	private FrameLayout mTimetableButton;
+	/** Starts current search activity on click */
+	private FrameLayout mSearchButton;
+	/** Starts current settings activity on click */
+	private FrameLayout mSettingsButton;
+	/** Intent for timetable activity */
+	private Intent mTimetableIntent;
+	/** Intent for current group activity */
+	private Intent mCurrentIntent;
+	/** Intent for settings activity */
+	private Intent mSettingsIntent;
 
 	/**
 	 * Initialize menu buttons
@@ -90,8 +83,6 @@ public class Main extends Activity {
 		mSearchButton = (FrameLayout) findViewById(R.id.searchButton);
 		mSearchButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				Intent test = new Intent(getApplicationContext(), SearchActivity.class);
-				//startActivity(test);
 				onSearchRequested();
 			}
 		});
@@ -111,6 +102,20 @@ public class Main extends Activity {
 	    	if (data != null)
 	    		if (data.getStringExtra("serverError") != null)
 	    			Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+
+		super.onCreate(savedInstanceState);
+		setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
+		setContentView(R.layout.main);
+
+		mTimetableIntent = new Intent(this, TimeTable.class);
+		mCurrentIntent = new Intent(this, GroupView.class);
+		mSettingsIntent = new Intent(this, Settings.class);
+
+		initMenuButtons();
 	}
 
 	/** 

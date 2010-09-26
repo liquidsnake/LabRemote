@@ -19,18 +19,6 @@
 
 package com.android.LabRemote.UI;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -38,8 +26,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Pair;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
@@ -52,50 +38,63 @@ import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.CustomDate;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 /** 
  * Select a class group based on a specific day and a time interval
  */
 public class TimeTable extends Activity {
 
-	private Intent groupIntent;
-	private ExpandableListView days;
-	private ArrayList<ArrayList<HashMap<String, String>>> children;
+	/** Starts group view activity */
+	private Intent mGroupIntent;
+	/** Expandable list view of week days */
+	private ExpandableListView mDays;
+	/** Unparsed JSON data received from server */
 	private JSONObject mData;
-	private String mDate;
+	/** A matrix with timetable's items. Each week day has a list of sorted 
+	 * intervals, each interval has a group and its activity id */
+	private ArrayList<ArrayList<HashMap<String, String>>> mListItems;
+	/** Requests that a child activity returns with error message 
+	 * if there was a server communication error during its initialization */
 	public static final int REQUEST_FROM_SERVER = 2;
-	private ArrayList<Hashtable<String, List<Pair<String, String>>>> mParsedData;
-	private String[] week_day = { "Monday", "Tuesday", 
-			"Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+	/** Array with string representations of the timetable's week days */
+	private static final String[] week_day = { "Monday", "Tuesday", 
+		"Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE); 
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
-		setContentView(R.layout.day_list);
-		
-		setSingleExpandable();
-		groupIntent = new Intent(this, GroupView.class);
+		setContentView(R.layout.timetable);
 
-		days.setOnChildClickListener(new OnChildClickListener() {
+		setSingleExpandable();
+		mGroupIntent = new Intent(this, GroupView.class);
+
+		mDays.setOnChildClickListener(new OnChildClickListener() {
 			public boolean onChildClick(ExpandableListView parent, View v,
 					int groupPosition, int childPosition, long id) {
 
-				startGroupView(children.get(groupPosition).get(childPosition).get("group"), 
-						children.get(groupPosition).get(childPosition).get("aid"), 
+				startGroupView(mListItems.get(groupPosition).get(childPosition).get("group"), 
+						mListItems.get(groupPosition).get(childPosition).get("aid"), 
 						CustomDate.getDate(groupPosition));
 				return false;
 
 			}
 		});
-		
 
 		/** Header informations */
-		mDate = CustomDate.getCurrentDate();
+		String mDate = CustomDate.getCurrentDate();
 		TextView dateText = (TextView) findViewById(R.id.dateHeader);
 		dateText.setText(mDate); 
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -112,21 +111,21 @@ public class TimeTable extends Activity {
 			exitServerError(result.getError());
 	}
 
-	
 	/**
 	 * Fills the timetable with data
-	 * @return The adapter that controls the list's content
 	 */
 	public void fillTable() {
+		ArrayList<Hashtable<String, List<Pair<String, String>>>> mParsedData;
 		SimpleExpandableListAdapter expListAdapter;
 		ArrayList<HashMap<String, String>> parents;
 		ArrayList<HashMap<String, String>> subList;
 		HashMap<String, String> parentMap;
 		HashMap<String, String> childrenMap;
-		
+
 		/** Parse data from server */
-		mParsedData = getTimetable(); 
-		
+		mParsedData = parseTimetable(); 
+
+		/** Week days list */
 		parents = new ArrayList<HashMap<String, String>>();
 		for (int i = 0; i < mParsedData.size(); ++i) {
 			parentMap = new HashMap<String, String>();
@@ -134,17 +133,20 @@ public class TimeTable extends Activity {
 			parents.add(parentMap);
 		}
 
-		children = new ArrayList<ArrayList<HashMap<String, String>>>();
+		/** Groups list sorted by interval */
+		mListItems = new ArrayList<ArrayList<HashMap<String, String>>>();
 		for (int i = 0; i < mParsedData.size(); ++i) { 
 			subList = new ArrayList<HashMap<String, String>>();
-			
+
 			Hashtable<String, List<Pair<String, String>>> h = mParsedData.get(i);
 			Vector<String> v = new Vector<String>(h.keySet());
 			Collections.sort(v);
 			Iterator<String> it = v.iterator();
-			while (it.hasNext()) { //for each interval
+			while (it.hasNext()) { 
+				/** for each interval */
 				String interval =  (String)it.next();
-				for (int k = 0; k < h.get(interval).size(); k++) { //for each group in interval
+				for (int k = 0; k < h.get(interval).size(); k++) { 
+					/** for each group in interval */
 					childrenMap = new HashMap<String, String>();
 					childrenMap.put("group", h.get(interval).get(k).first);
 					childrenMap.put("interval", interval);
@@ -152,23 +154,24 @@ public class TimeTable extends Activity {
 					subList.add(childrenMap);
 				}
 			}
-			children.add(subList);
+			mListItems.add(subList);
 		}
 
 		expListAdapter = new SimpleExpandableListAdapter(this, parents,
-				R.layout.exp_item, new String[] {"day"},
-				new int[] { R.id.exp_name }, children, R.layout.exp_child_item,
-				new String[]{"group", "interval" }, new int[]{R.id.exp_child_group, R.id.exp_child_interval});
-
-		days.setAdapter(expListAdapter);
+				R.layout.exp_item, new String[] {"day"}, new int[] {R.id.exp_name}, 
+				mListItems, R.layout.exp_child_item, new String[]{"group", "interval"}, 
+				new int[]{R.id.exp_child_group, R.id.exp_child_interval});
+		mDays.setAdapter(expListAdapter);
 	}
-	
+
 	/**
 	 * Gets timetable from the server and parses the result
-	 * @return
+	 * @return A list of week days, represented as hashtables
+	 * @see getWeekDay
 	 */
-	private ArrayList<Hashtable<String, List<Pair<String, String>>>> getTimetable() {
-		ArrayList<Hashtable<String, List<Pair<String, String>>>> timetable = new ArrayList<Hashtable<String, List<Pair<String, String>>>>();
+	private ArrayList<Hashtable<String, List<Pair<String, String>>>> parseTimetable() {
+		ArrayList<Hashtable<String, List<Pair<String, String>>>> timetable = 
+			new ArrayList<Hashtable<String, List<Pair<String, String>>>>();
 		JSONObject table;
 
 		try {
@@ -186,18 +189,20 @@ public class TimeTable extends Activity {
 
 		return timetable;
 	}
-	
+
 	/**
-	 * Empty day if tag wasn't present
-	 * @param from
-	 * @param when
-	 * @return
+	 * Parses a week day from a JSON object
+	 * @param from The unparsed JSON object
+	 * @param day The requested week day
+	 * @return A hashtable where an interval is the key for a list of groups 
 	 */
-	private Hashtable<String, List<Pair<String, String>>> getWeekDay(JSONObject from, String when) {
-		Hashtable<String, List<Pair<String, String>>> day = new Hashtable<String, List<Pair<String, String>>>();
+	private Hashtable<String, List<Pair<String, String>>> getWeekDay(JSONObject from, String day) {
+		Hashtable<String, List<Pair<String, String>>> wDay = 
+			new Hashtable<String, List<Pair<String, String>>>();
+
 		try {
-			JSONObject jDay = from.getJSONObject(when);
-			Iterator rez = (Iterator)jDay.keys();
+			JSONObject jDay = from.getJSONObject(day);
+			Iterator<?> rez = jDay.keys();
 
 			while (rez.hasNext()) {
 				String key = (String) rez.next();
@@ -207,25 +212,24 @@ public class TimeTable extends Activity {
 					JSONObject in = val.getJSONObject(i);
 					vals.add(new Pair<String, String>(in.getString("name"), in.getString("id")));
 				}
-				day.put(key, vals);
+				wDay.put(key, vals);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace(); 
 		}
-		return day;
+		return wDay;
 	}
 
 	/**
 	 * Only one item can be expanded at a time 
 	 */
 	private void setSingleExpandable() {
-
-		days = (ExpandableListView) findViewById(R.id.exp_list);
-		days.setOnGroupExpandListener(new OnGroupExpandListener() {
+		mDays = (ExpandableListView) findViewById(R.id.exp_list);
+		mDays.setOnGroupExpandListener(new OnGroupExpandListener() {
 			public void onGroupExpand(int groupPosition) {
 				for (int i = 0; i < 5; i++)
 					if (i != groupPosition)
-						days.collapseGroup(i);
+						mDays.collapseGroup(i);
 			}
 		});
 	}
@@ -237,20 +241,20 @@ public class TimeTable extends Activity {
 	 * @see GroupView
 	 */
 	private void startGroupView(String group, String aid, String date) {
-		groupIntent.putExtra("Group", group);
-		groupIntent.putExtra("Date", date);
-		groupIntent.putExtra("AID", aid);
-		startActivityForResult(groupIntent, REQUEST_FROM_SERVER);
+		mGroupIntent.putExtra("Group", group);
+		mGroupIntent.putExtra("Date", date);
+		mGroupIntent.putExtra("AID", aid);
+		startActivityForResult(mGroupIntent, REQUEST_FROM_SERVER);
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (resultCode == Activity.RESULT_CANCELED) 
-	    	if (data != null)
-	    		if (data.getStringExtra("serverError") != null)
-	    			Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
+		if (resultCode == Activity.RESULT_CANCELED) 
+			if (data != null)
+				if (data.getStringExtra("serverError") != null)
+					Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
 	}
-	
+
 	/**
 	 * If the server request failed the activity exists
 	 * returns an error message to the parent activity

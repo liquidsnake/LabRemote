@@ -9,10 +9,9 @@
 		android:layout_height="wrap_content" android:layout_weight="1"
 		android:textColor="@color/black" />
 
-	<TextView android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:text="-----------------------"
-		android:singleLine="true" android:layout_weight="0.5"
-		android:textColor="@color/black" />
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:layout_gravity="center"
+		android:layout_weight="0.5" android:background="@layout/attendance_dots"/>
 
 	<TextView android:id="@+id/labGrade" android:editable="true"
 		android:clickable="true" android:singleLine="true" 

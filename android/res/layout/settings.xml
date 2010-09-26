@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Application's settings activity -->
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="fill_parent" android:layout_height="fill_parent"
@@ -6,68 +7,62 @@
   
   <TextView android:layout_width="fill_parent" android:layout_height="wrap_content"
   	android:text="@string/settings" android:textColor="@color/black" android:gravity="center"
-  	android:padding="10dip" android:textSize="25dip" android:background="@color/header_color"/>
-  	
-  <LinearLayout
-	android:id="@+id/horizontalLine"
-	android:layout_width="fill_parent"
-	android:layout_height="2dip"
-	android:background="@color/grey"
-	/>
-  	
-  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content">
+  	android:padding="10dip" android:textSize="25sp" android:background="@color/header_color"/>
+  
+  <!-- Server address -->
+  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content" 
+  	android:orientation="vertical" android:padding="10dip">
   	<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-  		android:text="Host:" android:textColor="@color/black" android:padding="10dip"
-  		android:textSize="20dip" />
-  	<EditText android:id="@+id/serverHost" android:layout_width="wrap_content" android:layout_height="wrap_content"
-  		android:textColor="@color/black" android:background="@color/white" 
-  		android:layout_marginRight="20dip"
-  		android:layout_marginBottom="10dip" android:hint="@string/insert_host"/>
+  		android:text="@string/host" android:textColor="@color/black" android:textSize="20sp" 
+  		android:paddingTop="10dip" android:paddingLeft="5dip"/>
+  	<EditText android:id="@+id/serverHost" android:layout_width="fill_parent" android:layout_height="wrap_content"
+  		android:textColor="@color/black" android:background="@layout/round_grey" android:paddingLeft="4dip"
+  		android:singleLine="true" android:hint="@string/insert_host"/>
   </LinearLayout>
   
-    <LinearLayout
-	android:id="@+id/horizontalLine"
-	android:layout_width="fill_parent"
-	android:layout_height="2dip"
-	android:layout_marginLeft="10dip" android:layout_marginRight="10dip"
-	android:background="@color/grey"
-	/>
+  <LinearLayout android:id="@+id/horizontalLine" android:layout_width="fill_parent"
+	android:layout_height="2dip" android:background="@color/grey" 
+	android:layout_marginLeft="10dip" android:layout_marginRight="10dip"/>
   
-  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content">
-  	<TextView android:id="@+id/loadCode" android:layout_width="wrap_content" android:layout_height="wrap_content"
-  		android:text="@string/load_code" android:textColor="@color/black" 
-  		android:padding="10dip" android:textSize="20dip" />
-  	<CheckBox android:id="@+id/codeChecked" android:layout_width="wrap_content" 
-  		android:layout_height="wrap_content" android:clickable="false" />
-  </LinearLayout>
-  
-    <LinearLayout
-	android:id="@+id/horizontalLine"
-	android:layout_width="fill_parent"
-	android:layout_height="2dip"
-	android:layout_marginLeft="10dip" android:layout_marginRight="10dip"
-	android:background="@color/grey"
-	/>
-  
-  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
-   	android:orientation="vertical">
-   	<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-  		android:text="@string/select_course" android:textColor="@color/black" 
-  		android:padding="10dip" android:textSize="20dip" />
-  	<Spinner android:id="@+id/selectCourseSpinner" android:layout_width="wrap_content" android:layout_height="wrap_content"
-  		android:layout_margin="10dip" android:prompt="@string/select_course" 
-  		android:drawSelectorOnTop="true" android:visibility="gone"/>
-  	<LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-  		android:background="@color/grey" android:layout_marginLeft="10dip">
-  		<TextView android:id="@+id/selectCourse" android:layout_width="wrap_content" android:layout_height="wrap_content"
-  			android:text="Click here to select a course" android:layout_margin="5dip"
-  			android:textColor="@color/black" android:background="@color/white"/>
+  <!-- Load login code -->
+  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content" 
+  	android:id="@+id/loadCode" android:padding="10dip">
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical">
+ 	<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" 
+ 		android:text="@string/load_code" android:textColor="@color/black" android:textSize="20sp"/>
+  	<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+  		android:textColor="@color/black" android:text="@string/load_text"/>
+  	</LinearLayout>
+  	<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="right">
+  		<CheckBox android:id="@+id/codeChecked" android:layout_width="wrap_content" 
+  			android:layout_height="wrap_content" android:clickable="false"/>
   	</LinearLayout>
   </LinearLayout>
+  
+  <LinearLayout android:id="@+id/horizontalLine" android:layout_width="fill_parent"
+	android:layout_height="2dip" android:background="@color/grey" 
+	android:layout_marginLeft="10dip" android:layout_marginRight="10dip"/>
+  
+  <!-- Select course -->
+  <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+   	android:orientation="vertical" android:padding="10dip">
+   	<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+  		android:text="@string/select_course" android:textColor="@color/black" 
+  		android:paddingLeft="5dip" android:paddingRight="10dip" android:textSize="20dip" />
+	<TextView android:id="@+id/selectCourse" android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" android:text="@string/change_course" 
+		android:padding="3dip" android:gravity="center" android:singleLine="true"
+		android:textColor="@color/black" android:background="@layout/round_grey"/>
+  </LinearLayout>
+  
+  <LinearLayout android:id="@+id/horizontalLine" android:layout_width="fill_parent"
+	android:layout_height="2dip" android:background="@color/grey" 
+	android:layout_marginLeft="10dip" android:layout_marginRight="10dip"/>
+  
+  <!-- Done button -->
   <LinearLayout android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_gravity="right">
-  <Button android:id="@+id/doneButton" android:layout_gravity="bottom" 
-  	android:layout_width="wrap_content" android:layout_height="wrap_content"
-  	android:text="DONE" />
+ 	 <Button android:id="@+id/doneButton" android:layout_gravity="bottom" 
+  		android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Done" />
   </LinearLayout>
   
 </LinearLayout>
