@@ -316,7 +316,7 @@ def register(request):
             assistant.save()
             profile.assistant = assistant
             profile.save()
-            print "profile", profile, assistant, profile.assistant
+            #print "profile", profile, assistant, profile.assistant
             return HttpResponseRedirect("/accounts/created/")
     else:
         form = RegisterForm()
