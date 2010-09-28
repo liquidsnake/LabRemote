@@ -18,8 +18,8 @@
  <h1><img src="/media/labremote.png" width="300" align="baseline" /></h1>
  </div>
  
- <div id="menu">
  {% if request.session.course %}
+ <div id="menu">
  <a href="{% url middleware.frontend.views.dashboard request.session.course %}" id="menu-dashboard">Dashboard</a>
  <a href="{% url middleware.frontend.views.students_list request.session.course %}" id="menu-students">Students</a>
  <a href="{% url middleware.frontend.views.groups_index request.session.course %}" id="menu-groups">Groups</a>
@@ -30,9 +30,9 @@
     {% endif %}
     </a>
  {% endif %}
- {% endif %}
  </div>
- 
+ {% endif %}
+  
   <div id="content">
  {% block content %}
  {% endblock %}

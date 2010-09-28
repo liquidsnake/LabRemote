@@ -8,11 +8,10 @@ import views
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from django.db.models import Max, Sum
-from django import forms
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 from middleware.core.models import *
-from middleware.frontend.forms import RegistrationForm
+from middleware.frontend.forms import RegisterForm
 
 import csv
 import unicodedata
@@ -45,7 +44,14 @@ def dashboard(request, getcourse=''):
 def course_select(request, course):
     """ List clients and select one """
     if not course:
-        courses = Course.objects.all()
+        assistant = request.user.get_profile().assistant
+        if assistant:
+            courses = assistant.courses.all()
+            # TODO: if there's only one course, redirect to it
+        elif request.user.is_staff:
+            courses = Course.objects.all()
+        else:
+            courses = []
         return render_to_response('course_select.html',
             {'courses': courses},
             context_instance=RequestContext(request))
@@ -53,7 +59,7 @@ def course_select(request, course):
     course = get_object_or_404(Course, pk=course)
     if not request.user.is_staff:
         profile = request.user.get_profile()
-        if not profile.assistant or (course not in profile.assistant.courses):
+        if not profile.assistant or (course not in profile.assistant.courses.all()):
             return redirect('/dev-null') # TODO error
     
     request.session['course'] = course
@@ -209,34 +215,6 @@ def form_success(request, object, operation, id):
         context_instance=RequestContext(request),
         )    
 
-
-def register(request):
-    """ User registration """
-    if request.user.is_authenticated():
-        return redirect('/')
-        
-    manipulator = RegistrationForm()
-    if request.POST:
-        new_data = request.POST.copy()
-        errors = manipulator.get_validation_errors(new_data)
-        if not errors:
-            # Save the user                                                                                                                                                 
-            manipulator.do_html2python(new_data)
-            new_user = manipulator.save(new_data)
-            
-            # Create and save their profile                                                                                                                                 
-            #new_profile = UserProfile(user=new_user,
-            #                          activation_key=activation_key,
-            #                          key_expires=key_expires)
-            #new_profile.save()
-            
-            return render_to_response('register.html', {'created': True})
-    else:
-        errors = new_data = {}
-    form = forms.FormWrapper(manipulator, new_data, errors)
-    return render_to_response('register.html', {'form': form})
-
-
 @login_required
 @course_required
 def export_group_csv(request, getcourse, group_id):
@@ -285,3 +263,36 @@ def export_group_csv(request, getcourse, group_id):
     writer.writerow([])
                     
     return response
+
+def register(request):
+    """ Handle user registration """
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            newuser = User.objects.create_user(username=data['username'],
+                        password=data['password1'],
+                        email=data['email'])
+            newuser.first_name=data['first_name']
+            newuser.last_name=data['last_name']
+            newuser.save()
+            profile = newuser.get_profile()
+            # Attach an assistant
+            assistant = Assistant(first_name=data['first_name'],
+                        last_name=data['last_name'])
+            assistant.save()
+            profile.assistant = assistant
+            profile.save()
+            print "profile", profile, assistant, profile.assistant
+            return HttpResponseRedirect("/accounts/created/")
+    else:
+        form = RegisterForm()
+
+    return render_to_response("accounts/register.html", {
+        'form' : form
+        },
+        context_instance=RequestContext(request)
+    )
+
+def created(request):
+    return render_to_response("accounts/created.html")

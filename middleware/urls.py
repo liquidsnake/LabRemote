@@ -9,7 +9,8 @@ urlpatterns = patterns('',
     (r'^', include('middleware.frontend.urls')),
     (r'^api/', include('middleware.rest.urls')),
 
-    (r'^register/$', 'middleware.frontend.views.register'),
+    (r'^accounts/register/$', 'middleware.frontend.views.register'),
+    (r'^accounts/created/$', 'middleware.frontend.views.created'),
     
     # Contrib:
     (r'^accounts/login/$', 'django.contrib.auth.views.login',

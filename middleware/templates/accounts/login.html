@@ -5,6 +5,11 @@
 {% block branding %}{% endblock %}
 
 {% block content_title %}
-<center>LabRemote</center>
+<center>LabRemote | Login</center>
 {% endblock %}
 
+{% block content %}
+{{ block.super }}
+<center>&nbsp;<br/>
+or <a href="{% url middleware.frontend.views.register %}">create an account</a>
+</center>{% endblock %}

@@ -11,6 +11,9 @@ class UserProfile(models.Model):
     assistant = models.ForeignKey('Assistant', default=None, blank=True, null=True)
     approved = models.BooleanField(default=False)
     
+    def __unicode__(self):
+        return u"profile: %s, %s" % (self.assistant, self.approved)
+    
 class Student(models.Model):
     external_id = models.IntegerField(default=0)
     first_name = models.CharField(max_length=64)
