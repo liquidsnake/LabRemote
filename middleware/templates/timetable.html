@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}{% endblock %}
+{% block title %}Timetable{% endblock %}
+
+{% block css %}#menu-timetable {background-color: #eee;}{% endblock %}
 
 {% block content %}
-<h2>{% block content_title %}{% endblock %}</h2>
+<h2>{% block content_title %}Timetable{% endblock %}</h2>
 
 <table class="weekdays">
     {% for day, activities in activities_per_day %}

@@ -6,11 +6,14 @@ body {
     background-color: #eee;
     margin: 0px;
 }
+td {
+    font-size: 0.9em;
+}
 label {
     font-size: 0.9em;
 }
-a, a:visited { color: #000;}
-a:hover {text-decoration: underline;}
+a, a:visited { color: #030; text-decoration: none;}
+a:hover {text-decoration: underline; color: #040;}
 
 #container {
     width: 900px;
@@ -24,6 +27,9 @@ a:hover {text-decoration: underline;}
 #header {
     margin-bottom: 10px;
 }
+#header h1  {
+    margin-top: -10px;
+}
 #user_bar {
     text-align: right;
     font-size: 0.8em;
@@ -35,7 +41,16 @@ a:hover {text-decoration: underline;}
     border-bottom: 1px solid #ccc;
 }
 #menu a {
-    margin: 10px;
+    padding: 10px;
+    display: inline;
+    width: 100px;
+}
+#menu a:hover {
+    text-decoration: none !important;
+    background-color: #f1f1f1;
+}
+#content {
+    padding: 0px 10px 0px 10px;
 }
 #footer {
     padding-top: 10px;
@@ -46,6 +61,7 @@ div.login_code {
     float: right;
     font-size: 0.7em;
     text-align: center;
+    margin-top: -30px;
 }
 table.object_list {
     background-color: #eee;
