@@ -16,6 +16,7 @@ urlpatterns = patterns('',
     (r'^course/(?P<getcourse>[^/]+)/groups/$', views.groups_index), 
     (r'^course/(?P<getcourse>[^/]+)/group_students/(?P<group_id>\d+)/$', views.group_students), 
     (r'^course/(?P<getcourse>[^/]+)/export_group_csv/(?P<group_id>\d+)/$', views.export_group_csv), 
+    (r'^public/(?P<getcourse>[^/]+)/group/(?P<group_id>\d+)/$', views.public_group_link), 
     (r'^course/(?P<getcourse>[^/]+)/group_student_add/(?P<group_id>\d+)/(?P<stud_id>\d+)/$', views.group_students_add), 
     (r'^course/(?P<getcourse>[^/]+)/group_student_rem/(?P<group_id>\d+)/(?P<stud_id>\d+)/$', views.group_students_rem), 
     

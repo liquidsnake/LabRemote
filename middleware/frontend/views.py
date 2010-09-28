@@ -252,7 +252,7 @@ def form_success(request, object, operation, id):
 @course_required
 def export_group_csv(request, getcourse, group_id):
     #TODO: check for inexistent group
-    group = Group.objects.get(id=group_id)
+    group = get_object_or_404(Group, id=group_id)
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=%s-group.csv' % slugify(group.name)
 
@@ -296,6 +296,55 @@ def export_group_csv(request, getcourse, group_id):
     writer.writerow([])
                     
     return response
+
+def public_group_link(request, getcourse, group_id):
+    group = get_object_or_404(Group, id=group_id)
+
+    students = group.students.all() 
+    activities = group.activity_set.order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start').all()
+    saved_activities = []
+    for activity in activities:
+        saved_activity = {}
+        saved_activity['interval'] = activity.interval
+        saved_activity['day'] = activity.day_of_the_week
+        #get the maximum attendance week
+        max = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        saved_activity['weeks'] = range(1, max+1)
+        saved_activity['students'] = []
+        for student in students:
+            attendances = Attendance.objects.filter(student = student, course__name = getcourse, activity = activity)
+            #grades for this student for this activity
+            atts = []
+            sum = 0
+            for i in range(1, max+1):
+                try:
+                    grade = attendances.get(week = i).grade
+                    atts.append(grade)
+                    sum += grade
+                except Attendance.DoesNotExist:
+                    atts.append(0)
+            print atts
+            saved_activity['students'].append({
+                'name' : unicodedata.normalize('NFKD', student.name).encode('ascii','ignore'), 
+                'attendances' : atts,
+                'sum' : sum,
+            })
+        saved_activities.append(saved_activity)
+    
+    total_grades = []
+    for student in students:
+        grade = Attendance.objects.filter(student = student, course__name = getcourse).aggregate(Sum('grade'))['grade__sum']
+        if grade == None:
+            grade = 0
+        total_grades.append({'name':unicodedata.normalize('NFKD', student.name).encode('ascii','ignore'), 'grade':grade})
+                    
+    return render_to_response('public_group.html',
+        {'saved_activities': saved_activities,
+         'total_grades' : total_grades,
+         'group_name' : group.name,
+        },
+        context_instance=RequestContext(request),
+        )    
 
 def register(request):
     """ Handle user registration """
