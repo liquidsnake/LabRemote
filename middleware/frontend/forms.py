@@ -10,6 +10,11 @@ class GroupForm(ModelForm):
         model = models.Group
         exclude = ('students',)
 
+class AssistantForm(ModelForm):
+    class Meta:
+        model = models.Assistant
+        exclude = ('group','external_id',)
+
 class RegisterForm(UserCreationForm):
     email = forms.EmailField()
     first_name = forms.CharField()

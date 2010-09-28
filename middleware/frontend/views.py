@@ -45,11 +45,15 @@ def course_select(request, course):
     """ List clients and select one """
     if not course:
         assistant = request.user.get_profile().assistant
-        if assistant:
+        approved = request.user.get_profile().approved
+        
+        if request.user.is_staff:
+            courses = Course.objects.all()
+        elif not approved:
+            courses = []
+        elif assistant:
             courses = assistant.courses.all()
             # TODO: if there's only one course, redirect to it
-        elif request.user.is_staff:
-            courses = Course.objects.all()
         else:
             courses = []
         return render_to_response('course_select.html',
@@ -100,11 +104,39 @@ def student_profile(request, getcourse, stud_id):
 @login_required
 @course_required
 def assistants(request, getcourse):
+    return _assistants(request)
+    
+def _assistants(request):
     assistants = Assistant.objects.all()
+    
+    for a in assistants:
+        a.profile = UserProfile.objects.filter(assistant=a)
+        if a.profile:
+            a.profile = a.profile[0]
+        else:
+            a.profile = None
     
     return render_to_response('assistants.html', 
             {"assistants": assistants},
             context_instance=RequestContext(request),)
+
+@login_required
+@course_required
+def assistant_approve(request, getcourse, ass_id):
+    if not request.user.is_staff:
+        return redirect('/')
+        
+    assistant = Assistant.objects.get(pk=ass_id)
+    
+    # Get user profile(s) pointing here
+    profile = UserProfile.objects.filter(assistant=assistant)
+    for p in profile:
+        p.approved = not p.approved
+        p.save()
+        
+    assistants = Assistant.objects.all()
+    
+    return _assistants(request)
 
 @login_required
 @course_required
@@ -195,6 +227,7 @@ def form_success(request, object, operation, id):
     possible_objects={}
     possible_objects['Activity'] = Activity
     possible_objects['Group'] = Group
+    possible_objects['Assistant'] = Assistant
 
     possible_operations = ['create', 'update', 'delete']
 

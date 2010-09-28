@@ -61,6 +61,9 @@ class Assistant(Student):
         #computed_hash = hashlib.sha256(self.code).hexdigest()
         computed_hash = self.code # TODO change this before release
         return computed_hash
+        
+    def __unicode__(self):
+        return u"%s" % (self.name, )
 
 class Course(models.Model):
     external_id = models.IntegerField(default=0)
