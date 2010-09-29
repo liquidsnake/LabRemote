@@ -339,7 +339,6 @@ def public_group_link(request, getcourse, group_id):
                     sum += grade
                 except Attendance.DoesNotExist:
                     atts.append(0)
-            print atts
             saved_activity['students'].append({
                 'name' : unicodedata.normalize('NFKD', student.name).encode('ascii','ignore'), 
                 'attendances' : atts,

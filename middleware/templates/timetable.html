@@ -22,7 +22,7 @@
             <td rowspan="{{ rows }}" style="vertical-align:top">
                 {% if activities %}
                     {% for act in activities %}
-                        <div style="position:relative; top:{{ act.position_start}}px; height:{{ act.height }}px; width:100%; border: thin solid black; text-align:center; background-color:#A9D0F5;"> {{ act.activity.group }} {{ act.activity.interval }}
+                        <div style="position:relative; top:{{ act.position_start}}px; height:{{ act.height }}px; width:100%; text-align:center; background-color:#A9D0F5;"> {{ act.activity.group }} {{ act.activity.interval }}
                             <br />
                             {% block action_buttons %}
                             {% comment %} TODO: replace with buttons or icons{% endcomment %}
