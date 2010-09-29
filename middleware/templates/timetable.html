@@ -7,39 +7,39 @@
 {% block content %}
 <h2>{% block content_title %}Timetable{% endblock %}</h2>
 
-<table class="weekdays">
-    {% for day, activities in activities_per_day %}
-        <tr>
-            <td>{{ day }}</td>
-            <td>
+<table class="weekdays timetable" style="width:100%;" cellpadding="0" cellspacing="0">
+    <tr>
+        <th>Hours</th>
+        {% for day, activities in activities_per_day %}
+        <th style="width:14%">
+            {{ day }}
+        </th>
+        {% endfor %}
+    </tr>
+    <tr>
+        <td style="height:{{ interval_height }}px;vertical-align:top;"> {{ min_hour }}</td>
+        {% for day, activities in activities_per_day %}
+            <td rowspan="{{ rows }}" style="vertical-align:top">
                 {% if activities %}
-                <table class="object_list">
-                    <tr>
-                       <th>group</th>
-                       <th>start</th>
-                       <th>end</th>
-                       <th></th>
-                    </tr>
                     {% for act in activities %}
-                        <tr>
-                            <td>{{ act.group }}</td>
-                            <td>{{ act.day_of_the_week }}</td>
-                            <td>{{ act.time_start }}</td>
-                            <td>{{ act.time_end }}</td>
-                            <td>
+                        <div style="position:relative; top:{{ act.position_start}}px; height:{{ act.height }}px; width:100%; border: thin solid black; text-align:center; background-color:#A9D0F5;"> {{ act.activity.group }} {{ act.activity.interval }}
+                            <br />
                             {% block action_buttons %}
-                            {% comment %} Maybe would need buttons here{% endcomment %}
-                            <a href="/crud/update/activity/{{ act.id }}/">Edit</a>
-                            <a href="/crud/delete/activity/{{ act.id }}/">Delete</a>
+                            {% comment %} TODO: replace with buttons or icons{% endcomment %}
+                            <a href="/crud/update/activity/{{ act.activity.id }}/">E</a>
+                            <a href="/crud/delete/activity/{{ act.activity.id }}/">D</a>
                             {% endblock %}
-                            </td>
-                        </tr>
+                        </div>
                     {% endfor %}
-                </table>
                 {% else %}
-                No activities for {{ day }}! <a href='/crud/add/activity/'>Add some</a>
+                    &nbsp;
                 {% endif %}
             </td>
+        {% endfor %}
+    </tr>
+    {% for hour in range %}
+        <tr>
+            <td style="height:{{ interval_height }}px;vertical-align:top;"> {{ hour }} </td>
         </tr>
     {% endfor %}
 </table>

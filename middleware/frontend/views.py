@@ -190,6 +190,15 @@ def group_students_rem(request, getcourse, group_id, stud_id):
 @course_required
 def timetable(request, getcourse):
     course = request.session.get('course', None)
+    #defines for the way the timetable will look like:
+    #hour height in pixels
+    hour_height = 40
+    #minimum hour (24 hour format)
+    min_hour = 8
+    #max hour
+    max_hour = 20
+    #how many hours between lines
+    interval = 2 
    
     #array for the days of the week
     days = [
@@ -206,11 +215,18 @@ def timetable(request, getcourse):
     activities = Activity.objects.filter(course=course).order_by('time_hour_start', 'time_hour_end', 'time_minute_start', 'time_minute_end')
     activities_per_day = [(day,[]) for day in days]
     for act in activities:
-        activities_per_day[act.day][1].append(act)
+        pos_start = (act.time_hour_start + act.time_minute_start/60.0 - min_hour) * hour_height
+        height = ((act.time_hour_end + act.time_minute_end /60) - (act.time_hour_start + act.time_minute_start/60)) * hour_height
+        activities_per_day[act.day][1].append({'activity':act, 'position_start': pos_start, 'height':height})
     
     return render_to_response('timetable.html',
         {'activities_per_day': activities_per_day,
          'days': days,
+         'min_hour': min_hour,
+         'max_hour': max_hour,
+         'range': range((min_hour + interval), max_hour, interval), #the first row is put manually
+         'rows': (max_hour-min_hour)/interval,
+         'interval_height': hour_height * interval,
         },
         context_instance=RequestContext(request),
         )     

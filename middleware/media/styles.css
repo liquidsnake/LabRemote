@@ -82,6 +82,14 @@ table.weekdays table.object_list {
     min-width: 400px;
 }
 
+table.timetable{
+    border-collapse:collapse;
+}
+
+table.timetable td{
+    border: thin solid black;
+}
+
 sup.new {
     background-color: red;
     border-radius: 5px;
