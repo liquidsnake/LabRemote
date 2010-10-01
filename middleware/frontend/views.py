@@ -9,12 +9,14 @@ from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from django.db.models import Max, Sum
 from django.http import HttpResponse, HttpResponseRedirect
+from django import forms
 
 from middleware.core.models import *
 from middleware.frontend.forms import RegisterForm
 
 import csv
 import unicodedata
+import json
 
 students_list_info = {
     'queryset' :   Student.objects.all(),
@@ -23,6 +25,12 @@ students_list_info = {
     'extra_context': {
     }
 }
+
+def json_response(dct):
+    """ A shorthand for dumping json data """
+    data = json.dumps(dct)
+    return HttpResponse(data, mimetype='application/json')
+
 
 def course_required(function):
     def _decorated(request, getcourse='', **kwargs):
@@ -393,3 +401,85 @@ def register(request):
 
 def created(request):
     return render_to_response("accounts/created.html")
+
+def group_edit(request, getcourse, group_id):
+    group = get_object_or_404(Group, id=group_id)
+
+    students = group.students.all() 
+    activities = group.activity_set.order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start').all()
+    saved_activities = []
+    for activity in activities:
+        saved_activity = {}
+        saved_activity['interval'] = activity.interval
+        saved_activity['day'] = activity.day_of_the_week
+        saved_activity['activity'] = activity
+        #get the maximum attendance week
+        max = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        saved_activity['weeks'] = range(1, max+1)
+        saved_activities.append(saved_activity)
+                    
+    return render_to_response('group_edit.html',
+        {'saved_activities': saved_activities,
+         'group_name' : group.name,
+         'course' : getcourse,
+        },
+        context_instance=RequestContext(request),
+        )    
+
+@login_required
+@course_required
+def get_activity(request, getcourse, activity_id):
+    #TODO error checking
+    student_list = []
+    try:
+        activity = Activity.objects.get(id = activity_id) 
+        student_list = activity.group.students.all()
+    except Activity.DoesNotExist:
+        pass
+    students = []        
+    for student in student_list:
+        max = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        attendances = Attendance.objects.filter(student = student, course__name = getcourse, activity = activity)
+        student_data = {"name": student.name}
+        student_data["student_id"] = student.id
+        for i in range(1, max+1):
+            try:
+                grade = attendances.get(week = i).grade
+                student_data["week_%d" % i] = grade
+            except Attendance.DoesNotExist:
+                student_data["week_%d" % i] = 0
+        students.append(student_data)
+
+    return json_response({"Results": students})
+
+class UpdateGradeForm(forms.Form):
+    new_grade = forms.IntegerField()
+
+@login_required
+@course_required
+def update_grade(request, getcourse, activity_id, student_id, week):
+    #TODO error checking
+    print getcourse, activity_id, student_id, week
+    form = UpdateGradeForm(request.POST)
+    new_grade = 0
+    if form.is_valid():
+        new_grade = form.cleaned_data['new_grade']
+    else:
+        pass
+    try:
+        student = Student.objects.get(id = student_id)
+    except Student.DoesNotExist:
+        return HttpResponse("No such student")
+    try:    
+        activity = Activity.objects.get(id = activity_id)
+    except Activity.DoesNotExist:
+        return HttpResponse("No such activity")
+    try:
+        course = Course.objects.get(name = getcourse)
+    except Course.DoesNotExist:
+        return HttpResponse("No such course")
+    attendance, created = Attendance.objects.get_or_create(course = course, activity = activity, student = student, week = week, defaults={'grade': new_grade})
+    attendance.grade = new_grade
+    attendance.save()
+    return HttpResponse("")
+

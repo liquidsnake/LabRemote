@@ -4,9 +4,10 @@
 <style>
 {% block css %}{% endblock %}
 </style>
+{% block javascript %}{% endblock %}
 </head>
 
-<body>
+<body class="yui-skin-sam">
 <div id="container">
  <div id="header">
  {% if user.is_authenticated %}
