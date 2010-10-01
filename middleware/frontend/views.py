@@ -469,7 +469,6 @@ class UpdateGradeForm(forms.Form):
 @course_required
 def update_grade(request, getcourse, activity_id, student_id, week):
     #TODO error checking
-    print getcourse, activity_id, student_id, week
     form = UpdateGradeForm(request.POST)
     new_grade = 0
     if form.is_valid():
