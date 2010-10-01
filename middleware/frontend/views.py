@@ -15,6 +15,7 @@ from middleware.core.models import *
 from middleware.frontend.forms import RegisterForm
 
 import csv
+import datetime
 import unicodedata
 import json
 
@@ -402,6 +403,10 @@ def register(request):
 def created(request):
     return render_to_response("accounts/created.html")
 
+def get_week(start_day):
+    delta = datetime.date.today() - start_day
+    return max(delta.days / 7, 0) 
+
 def group_edit(request, getcourse, group_id):
     group = get_object_or_404(Group, id=group_id)
 
@@ -414,8 +419,9 @@ def group_edit(request, getcourse, group_id):
         saved_activity['day'] = activity.day_of_the_week
         saved_activity['activity'] = activity
         #get the maximum attendance week
-        max = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
-        saved_activity['weeks'] = range(1, max+1)
+        max_w = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        max_w = max(max_w, get_week(activity.day_start))
+        saved_activity['weeks'] = range(1, max_w+1)
         saved_activities.append(saved_activity)
                     
     return render_to_response('group_edit.html',
@@ -424,7 +430,7 @@ def group_edit(request, getcourse, group_id):
          'course' : getcourse,
         },
         context_instance=RequestContext(request),
-        )    
+        )   
 
 @login_required
 @course_required
@@ -438,16 +444,20 @@ def get_activity(request, getcourse, activity_id):
         pass
     students = []        
     for student in student_list:
-        max = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        max_w = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        max_w = max(max_w, get_week(activity.day_start))
         attendances = Attendance.objects.filter(student = student, course__name = getcourse, activity = activity)
         student_data = {"name": student.name}
         student_data["student_id"] = student.id
-        for i in range(1, max+1):
+        sum = 0
+        for i in range(1, max_w+1):
             try:
                 grade = attendances.get(week = i).grade
                 student_data["week_%d" % i] = grade
+                sum += grade
             except Attendance.DoesNotExist:
                 student_data["week_%d" % i] = 0
+        student_data["sum"] = sum
         students.append(student_data)
 
     return json_response({"Results": students})

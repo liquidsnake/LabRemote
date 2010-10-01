@@ -38,6 +38,7 @@ LabRemote:
             <a href='/crud/update/group/{{ d.id }}/'>Edit</a>
             <a href='{% url middleware.frontend.views.group_students request.session.course d.id %}'>Students</a>
             <a href='/crud/delete/group/{{ d.id }}/'>Delete</a>
+            <a href='{% url middleware.frontend.views.group_edit request.session.course d.id %}'>Edit attendances</a>
             <a href='{% url middleware.frontend.views.export_group_csv request.session.course d.id %}'>Export as CSV</a>
             <a href='{% url middleware.frontend.views.public_group_link request.session.course d.id %}'>Public link</a>
         </td>

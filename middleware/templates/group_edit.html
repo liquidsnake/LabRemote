@@ -21,8 +21,9 @@
 
 {% for activity in saved_activities %}
 <h3>Attendance for activity during {{ activity.interval }} on {{ activity.day }}</h3>
-
 <div id="cellediting"></div> 
+
+<div class="tip">Tip: click on any of the grades to edit them!</div>
 
 <div id="json_{{ activity.activity.id }}"></div>
 
@@ -42,6 +43,8 @@ YAHOO.util.Event.addListener(window, "load", function() {
                     success:function(o) {
                         var r = o.responseText;
                         if (r == "") {
+                            var new_sum = record.getData('sum') + newValue - oldValue;
+                            datatable.updateCell(record, 'sum', new_sum);
                             callback(true, newValue);
                         } else {
                             alert(r);
@@ -63,8 +66,9 @@ YAHOO.util.Event.addListener(window, "load", function() {
         var myColumnDefs = [
             {key:"name", label:"Name", sortable:true},
             {% for week in activity.weeks %}
-                {key:"week_{{ week }}", label:"{{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, editor: textEditor },
+                {key:"week_{{ week }}", label:"{{ week }}", abbr: "Week {{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, editor: textEditor },
             {% endfor %}
+            {key:"sum", label:"Sum", formatter:YAHOO.widget.DataTable.formatNumber },
         ];
 
         var myDataSource = new YAHOO.util.DataSource("/course/{{ course }}/get_activity/{{activity.activity.id}}/");
@@ -74,9 +78,10 @@ YAHOO.util.Event.addListener(window, "load", function() {
             resultsList: "Results",
             fields: ["name",
                 "student_id",
-            {% for week in activity.weeks %}
-                {key:"week_{{ week }}", parser:"number"},
-            {% endfor %}
+                {% for week in activity.weeks %}
+                    {key:"week_{{ week }}", parser:"number"},
+                {% endfor %}
+                {key: "sum", parser:"number"},
             ]
         };
 

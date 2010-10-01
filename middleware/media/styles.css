@@ -96,3 +96,9 @@ sup.new {
     padding: 2px;
     color: white;
     font-size: 6pt;
+}
+
+.tip{
+    font-size: smaller;
+    font-style: italic;
+}
