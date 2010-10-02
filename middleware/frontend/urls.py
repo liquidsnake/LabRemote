@@ -6,9 +6,10 @@ from middleware.core.models import Activity, Group, Assistant
 from middleware.frontend.forms import GroupForm, AssistantForm
 
 urlpatterns = patterns('',
-    url(r'^course_select(/(?P<course>\d+))?/$', views.course_select, name="course_select"),
     (r'^$', views.dashboard),
+    url(r'^course_select(/(?P<course>\d+))?/$', views.course_select, name="course_select"),
     (r'^form_success/(?P<object>[^/]+)/(?P<operation>[^/]+)(/(?P<id>\d+))?/$', views.form_success),
+    (r'^import_course/$', views.import_course),
     url(r'^course/(?P<getcourse>[^/]+)/$', views.dashboard, name="course_selected"),
     (r'^course/(?P<getcourse>[^/]+)/students/$', views.students_list),
     (r'^course/(?P<getcourse>[^/]+)/student/(?P<stud_id>\d+)/$', views.student_profile),

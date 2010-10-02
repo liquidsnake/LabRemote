@@ -79,6 +79,43 @@ def course_select(request, course):
     return redirect(reverse("course_selected", args=[course.name]))
     
 @login_required
+def import_course(request):
+    """ Wizard for importing a course """
+    step = request.GET.get('step', 1)
+    step = int(step)
+    
+    if step == 1:
+        assistants = Assistant.objects.all()
+        return render_to_response('import_course.html',
+            {'step': step, 'assistants': assistants},
+            context_instance=RequestContext(request))            
+    if step == 2:
+        id = request.GET.get('a', request.user.get_profile().assistant.id)
+        a = Assistant.objects.get(pk=id)
+        # Start import
+        from middleware.scrapper.moodle import MoodleSession, LoginError
+        session = MoodleSession(str(a.moodle_url))
+        session.set_verbosity(0)
+        error, courses = None, []
+        try:
+            session.login(a.moodle_user, a.moodle_password)
+        except LoginError:
+            error = 'Login failed'
+        else:
+            if not session.answered("Overview of my courses"):
+                error = 'Unknown response.'
+            else:
+                courses = session.list_courses()
+        
+        return render_to_response('import_course.html',
+            {'step': step, 'error': error, 'courses': courses},
+            context_instance=RequestContext(request))
+    
+    return render_to_response('import_course.html',
+            {'step': -1},
+            context_instance=RequestContext(request))
+    
+@login_required
 @course_required
 def students_list(request, getcourse):
     course = request.session.get('course', None)

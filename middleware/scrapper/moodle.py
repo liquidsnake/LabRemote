@@ -2,7 +2,8 @@
 # Uses cURL as backend
 
 import os, sys
-import curl, pycurl
+import curl
+import pycurl
 
 class LoginError(pycurl.error): pass
 
