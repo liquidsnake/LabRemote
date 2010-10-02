@@ -12,7 +12,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django import forms
 
 from middleware.core.models import *
-from middleware.frontend.forms import RegisterForm
+from middleware.frontend.forms import RegisterForm, UpdateGradeForm
 
 import csv
 import datetime
@@ -93,26 +93,56 @@ def import_course(request):
         id = request.GET.get('a', request.user.get_profile().assistant.id)
         a = Assistant.objects.get(pk=id)
         # Start import
-        from middleware.scrapper.moodle import MoodleSession, LoginError
-        session = MoodleSession(str(a.moodle_url))
-        session.set_verbosity(0)
-        error, courses = None, []
-        try:
-            session.login(a.moodle_user, a.moodle_password)
-        except LoginError:
-            error = 'Login failed'
-        else:
-            if not session.answered("Overview of my courses"):
-                error = 'Unknown response.'
-            else:
-                courses = session.list_courses()
+        # Run middleware.worker for now and capture output
+        # import required
+        import os, subprocess
+        class FakeCourse(object):
+            def __init__(self):
+                self.id, self.name = 0,''
+        error, courses, courses2 = None, [], {}
+        worker_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'worker.py'))
         
+        output = subprocess.Popen(["/usr/bin/python", worker_path, a.moodle_user, a.moodle_password, a.moodle_url], 
+                    stdout=subprocess.PIPE).communicate()[0]
+        
+        lines = output.split("\n")
+        if lines[0] != "Ok":
+            error = lines[0]
+        else:
+            for i in lines[1:]:
+                if not i: break
+                c = FakeCourse()
+                parts = i.split(' ')
+                c.id = int(parts[0])
+                c.name = ' '.join(parts[1:])
+                courses.append(c)
+                courses2[c.id] = c.name
+                
+        request.session['courses'] = courses2
+                
         return render_to_response('import_course.html',
-            {'step': step, 'error': error, 'courses': courses},
+            {'step': step, 'error': error, 'courses': courses, 'assistant': a},
             context_instance=RequestContext(request))
-    
+    if step == 3:
+        id = request.GET.get('a', request.user.get_profile().assistant.id)
+        a = Assistant.objects.get(pk=id)
+        course_id = int(request.GET.get('c', -1))
+        
+        try:
+            a.moodle_course_id = course_id
+            a.save()
+        except: pass
+        
+        # Now import students and groups
+        import os, subprocess
+        error, groups = None, None
+        worker_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'update.py'))
+        
+        output = subprocess.Popen(["/usr/bin/python", worker_path, str(a.id)], 
+                    stdout=subprocess.PIPE).communicate()[0]
+        
     return render_to_response('import_course.html',
-            {'step': -1},
+            {'step': 3},
             context_instance=RequestContext(request))
     
 @login_required
@@ -164,6 +194,15 @@ def _assistants(request):
     
     return render_to_response('assistants.html', 
             {"assistants": assistants},
+            context_instance=RequestContext(request),)
+
+@login_required
+@course_required
+def courses(request, getcourse):
+    courses = Course.objects.all()
+    
+    return render_to_response('courses.html', 
+            {"courses": courses},
             context_instance=RequestContext(request),)
 
 @login_required
@@ -290,6 +329,7 @@ def form_success(request, object, operation, id):
     possible_objects['Activity'] = Activity
     possible_objects['Group'] = Group
     possible_objects['Assistant'] = Assistant
+    possible_objects['Course'] = Course
 
     possible_operations = ['create', 'update', 'delete']
 
@@ -465,6 +505,7 @@ def group_edit(request, getcourse, group_id):
         {'saved_activities': saved_activities,
          'group_name' : group.name,
          'course' : getcourse,
+         'students': students,
         },
         context_instance=RequestContext(request),
         )   
@@ -498,9 +539,6 @@ def get_activity(request, getcourse, activity_id):
         students.append(student_data)
 
     return json_response({"Results": students})
-
-class UpdateGradeForm(forms.Form):
-    new_grade = forms.IntegerField()
 
 @login_required
 @course_required

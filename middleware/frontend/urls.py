@@ -2,7 +2,7 @@ from django.conf.urls.defaults import *
 import middleware.frontend.views as views
 from django.views.generic.create_update import create_object, update_object, delete_object
 from django.views.generic.simple import direct_to_template
-from middleware.core.models import Activity, Group, Assistant
+from middleware.core.models import Activity, Group, Assistant, Course
 from middleware.frontend.forms import GroupForm, AssistantForm
 
 urlpatterns = patterns('',
@@ -26,6 +26,8 @@ urlpatterns = patterns('',
     
     (r'^course/(?P<getcourse>[^/]+)/assistants/$', views.assistants),
     (r'^course/(?P<getcourse>[^/]+)/assistant/approve/(?P<ass_id>\d+)/$', views.assistant_approve),
+   
+    (r'^course/(?P<getcourse>[^/]+)/courses/$', views.courses), 
     
     #generic view magic. Using generic views to add, update and delete the objects
     (r'^crud/add/activity/$', create_object, {
@@ -77,6 +79,22 @@ urlpatterns = patterns('',
             'template_name': 'object_form.html', 
             'post_save_redirect': '/form_success/Assistant/update/%(id)s/', 
             'extra_context': {'object_name': 'Assistant'},
+        }
+    ),
+    # Course
+    (r'^crud/update/course/(?P<object_id>\d+)/$', update_object, {
+            'model': Course, 
+            'login_required': True, 
+            'template_name': 'object_form.html', 
+            'post_save_redirect': '/form_success/Course/update/%(id)s/', 
+            'extra_context': {'object_name': 'Course'},
+        }
+    ),
+    (r'^crud/delete/course/(?P<object_id>\d+)/$', delete_object, {
+            'model': Course, 
+            'login_required': True, 
+            'template_name': 'object_delete_form.html', 
+            'post_delete_redirect': '/form_success/Course/delete/', 
         }
     ),
 )

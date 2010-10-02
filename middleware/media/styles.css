@@ -78,13 +78,13 @@ table.object_list th {
     font-size: 0.8em;
     padding: 4px;
 }
-table.object_list td a {
+td.actions a, a.button{
     background-color: #eee;
     border-radius: 4px;
     padding: 2px 6px 2px 6px;
     white-space: nowrap;
 }
-table.object_list td a:hover {
+td.actions a:hover, a.button:hover {
     background-color: #aaa;
     text-decoration: none;
 }
@@ -111,4 +111,8 @@ sup.new {
 .tip{
     font-size: smaller;
     font-style: italic;
+}
+div.menu-right {
+    float: right;
+    text-align: right;
 }

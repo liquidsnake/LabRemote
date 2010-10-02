@@ -22,7 +22,7 @@
         <td>{% if d.profile.approved %}yes{% else %}<strong>no</strong>{% endif %}</td>
         <td>{{ d.courses.all }}</td>
         <td>{{ d.groups.all }}</td>
-        <td align="center">
+        <td align="center" class="actions">
         {% block action_buttons %}
         {% if d.profile %}
         <a href="{% url middleware.frontend.views.assistant_approve request.session.course d.id %}">Approve</a>

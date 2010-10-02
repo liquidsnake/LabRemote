@@ -29,8 +29,10 @@ if __name__ == "__main__":
         sys.exit(1)
     
     if session.answered("Overview of my courses"):
-        print session.list_courses()
-        print session.list_groups(COURSE_ID)
+        print "Ok"
+        for c in session.list_courses():
+            print c[0],c[1]
+        #print session.list_groups(COURSE_ID)
         session.logout()
         sys.exit(0)
     elif session.answered("forgot_password.php"):
