@@ -8,14 +8,16 @@ import views
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from django.db.models import Max, Sum
+from django.http import HttpResponse, HttpResponseRedirect
 from django import forms
-from django.http import HttpResponse
 
 from middleware.core.models import *
-from middleware.frontend.forms import RegistrationForm
+from middleware.frontend.forms import RegisterForm
 
 import csv
+import datetime
 import unicodedata
+import json
 
 students_list_info = {
     'queryset' :   Student.objects.all(),
@@ -24,6 +26,12 @@ students_list_info = {
     'extra_context': {
     }
 }
+
+def json_response(dct):
+    """ A shorthand for dumping json data """
+    data = json.dumps(dct)
+    return HttpResponse(data, mimetype='application/json')
+
 
 def course_required(function):
     def _decorated(request, getcourse='', **kwargs):
@@ -45,7 +53,18 @@ def dashboard(request, getcourse=''):
 def course_select(request, course):
     """ List clients and select one """
     if not course:
-        courses = Course.objects.all()
+        assistant = request.user.get_profile().assistant
+        approved = request.user.get_profile().approved
+        
+        if request.user.is_staff:
+            courses = Course.objects.all()
+        elif not approved:
+            courses = []
+        elif assistant:
+            courses = assistant.courses.all()
+            # TODO: if there's only one course, redirect to it
+        else:
+            courses = []
         return render_to_response('course_select.html',
             {'courses': courses},
             context_instance=RequestContext(request))
@@ -53,7 +72,7 @@ def course_select(request, course):
     course = get_object_or_404(Course, pk=course)
     if not request.user.is_staff:
         profile = request.user.get_profile()
-        if not profile.assistant or (course not in profile.assistant.courses):
+        if not profile.assistant or (course not in profile.assistant.courses.all()):
             return redirect('/dev-null') # TODO error
     
     request.session['course'] = course
@@ -94,11 +113,39 @@ def student_profile(request, getcourse, stud_id):
 @login_required
 @course_required
 def assistants(request, getcourse):
+    return _assistants(request)
+    
+def _assistants(request):
     assistants = Assistant.objects.all()
+    
+    for a in assistants:
+        a.profile = UserProfile.objects.filter(assistant=a)
+        if a.profile:
+            a.profile = a.profile[0]
+        else:
+            a.profile = None
     
     return render_to_response('assistants.html', 
             {"assistants": assistants},
             context_instance=RequestContext(request),)
+
+@login_required
+@course_required
+def assistant_approve(request, getcourse, ass_id):
+    if not request.user.is_staff:
+        return redirect('/')
+        
+    assistant = Assistant.objects.get(pk=ass_id)
+    
+    # Get user profile(s) pointing here
+    profile = UserProfile.objects.filter(assistant=assistant)
+    for p in profile:
+        p.approved = not p.approved
+        p.save()
+        
+    assistants = Assistant.objects.all()
+    
+    return _assistants(request)
 
 @login_required
 @course_required
@@ -152,6 +199,15 @@ def group_students_rem(request, getcourse, group_id, stud_id):
 @course_required
 def timetable(request, getcourse):
     course = request.session.get('course', None)
+    #defines for the way the timetable will look like:
+    #hour height in pixels
+    hour_height = 40
+    #minimum hour (24 hour format)
+    min_hour = 8
+    #max hour
+    max_hour = 20
+    #how many hours between lines
+    interval = 2 
    
     #array for the days of the week
     days = [
@@ -168,11 +224,18 @@ def timetable(request, getcourse):
     activities = Activity.objects.filter(course=course).order_by('time_hour_start', 'time_hour_end', 'time_minute_start', 'time_minute_end')
     activities_per_day = [(day,[]) for day in days]
     for act in activities:
-        activities_per_day[act.day][1].append(act)
+        pos_start = (act.time_hour_start + act.time_minute_start/60.0 - min_hour) * hour_height
+        height = ((act.time_hour_end + act.time_minute_end /60) - (act.time_hour_start + act.time_minute_start/60)) * hour_height
+        activities_per_day[act.day][1].append({'activity':act, 'position_start': pos_start, 'height':height})
     
     return render_to_response('timetable.html',
         {'activities_per_day': activities_per_day,
          'days': days,
+         'min_hour': min_hour,
+         'max_hour': max_hour,
+         'range': range((min_hour + interval), max_hour, interval), #the first row is put manually
+         'rows': (max_hour-min_hour)/interval,
+         'interval_height': hour_height * interval,
         },
         context_instance=RequestContext(request),
         )     
@@ -189,6 +252,7 @@ def form_success(request, object, operation, id):
     possible_objects={}
     possible_objects['Activity'] = Activity
     possible_objects['Group'] = Group
+    possible_objects['Assistant'] = Assistant
 
     possible_operations = ['create', 'update', 'delete']
 
@@ -209,39 +273,11 @@ def form_success(request, object, operation, id):
         context_instance=RequestContext(request),
         )    
 
-
-def register(request):
-    """ User registration """
-    if request.user.is_authenticated():
-        return redirect('/')
-        
-    manipulator = RegistrationForm()
-    if request.POST:
-        new_data = request.POST.copy()
-        errors = manipulator.get_validation_errors(new_data)
-        if not errors:
-            # Save the user                                                                                                                                                 
-            manipulator.do_html2python(new_data)
-            new_user = manipulator.save(new_data)
-            
-            # Create and save their profile                                                                                                                                 
-            #new_profile = UserProfile(user=new_user,
-            #                          activation_key=activation_key,
-            #                          key_expires=key_expires)
-            #new_profile.save()
-            
-            return render_to_response('register.html', {'created': True})
-    else:
-        errors = new_data = {}
-    form = forms.FormWrapper(manipulator, new_data, errors)
-    return render_to_response('register.html', {'form': form})
-
-
 @login_required
 @course_required
 def export_group_csv(request, getcourse, group_id):
     #TODO: check for inexistent group
-    group = Group.objects.get(id=group_id)
+    group = get_object_or_404(Group, id=group_id)
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=%s-group.csv' % slugify(group.name)
 
@@ -285,3 +321,174 @@ def export_group_csv(request, getcourse, group_id):
     writer.writerow([])
                     
     return response
+
+def public_group_link(request, getcourse, group_id):
+    group = get_object_or_404(Group, id=group_id)
+
+    students = group.students.all() 
+    activities = group.activity_set.order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start').all()
+    saved_activities = []
+    for activity in activities:
+        saved_activity = {}
+        saved_activity['interval'] = activity.interval
+        saved_activity['day'] = activity.day_of_the_week
+        #get the maximum attendance week
+        max = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        saved_activity['weeks'] = range(1, max+1)
+        saved_activity['students'] = []
+        for student in students:
+            attendances = Attendance.objects.filter(student = student, course__name = getcourse, activity = activity)
+            #grades for this student for this activity
+            atts = []
+            sum = 0
+            for i in range(1, max+1):
+                try:
+                    grade = attendances.get(week = i).grade
+                    atts.append(grade)
+                    sum += grade
+                except Attendance.DoesNotExist:
+                    atts.append(0)
+            saved_activity['students'].append({
+                'name' : unicodedata.normalize('NFKD', student.name).encode('ascii','ignore'), 
+                'attendances' : atts,
+                'sum' : sum,
+            })
+        saved_activities.append(saved_activity)
+    
+    total_grades = []
+    for student in students:
+        grade = Attendance.objects.filter(student = student, course__name = getcourse).aggregate(Sum('grade'))['grade__sum']
+        if grade == None:
+            grade = 0
+        total_grades.append({'name':unicodedata.normalize('NFKD', student.name).encode('ascii','ignore'), 'grade':grade})
+                    
+    return render_to_response('public_group.html',
+        {'saved_activities': saved_activities,
+         'total_grades' : total_grades,
+         'group_name' : group.name,
+        },
+        context_instance=RequestContext(request),
+        )    
+
+def register(request):
+    """ Handle user registration """
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            newuser = User.objects.create_user(username=data['username'],
+                        password=data['password1'],
+                        email=data['email'])
+            newuser.first_name=data['first_name']
+            newuser.last_name=data['last_name']
+            newuser.save()
+            profile = newuser.get_profile()
+            # Attach an assistant
+            assistant = Assistant(first_name=data['first_name'],
+                        last_name=data['last_name'])
+            assistant.save()
+            profile.assistant = assistant
+            profile.save()
+            #print "profile", profile, assistant, profile.assistant
+            return HttpResponseRedirect("/accounts/created/")
+    else:
+        form = RegisterForm()
+
+    return render_to_response("accounts/register.html", {
+        'form' : form
+        },
+        context_instance=RequestContext(request)
+    )
+
+def created(request):
+    return render_to_response("accounts/created.html")
+
+def get_week(start_day):
+    delta = datetime.date.today() - start_day
+    return max(delta.days / 7, 0) 
+
+def group_edit(request, getcourse, group_id):
+    group = get_object_or_404(Group, id=group_id)
+
+    students = group.students.all() 
+    activities = group.activity_set.order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start').all()
+    saved_activities = []
+    for activity in activities:
+        saved_activity = {}
+        saved_activity['interval'] = activity.interval
+        saved_activity['day'] = activity.day_of_the_week
+        saved_activity['activity'] = activity
+        #get the maximum attendance week
+        max_w = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        max_w = max(max_w, get_week(activity.day_start))
+        saved_activity['weeks'] = range(1, max_w+1)
+        saved_activities.append(saved_activity)
+                    
+    return render_to_response('group_edit.html',
+        {'saved_activities': saved_activities,
+         'group_name' : group.name,
+         'course' : getcourse,
+        },
+        context_instance=RequestContext(request),
+        )   
+
+@login_required
+@course_required
+def get_activity(request, getcourse, activity_id):
+    #TODO error checking
+    student_list = []
+    try:
+        activity = Activity.objects.get(id = activity_id) 
+        student_list = activity.group.students.all()
+    except Activity.DoesNotExist:
+        pass
+    students = []        
+    for student in student_list:
+        max_w = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        max_w = max(max_w, get_week(activity.day_start))
+        attendances = Attendance.objects.filter(student = student, course__name = getcourse, activity = activity)
+        student_data = {"name": student.name}
+        student_data["student_id"] = student.id
+        sum = 0
+        for i in range(1, max_w+1):
+            try:
+                grade = attendances.get(week = i).grade
+                student_data["week_%d" % i] = grade
+                sum += grade
+            except Attendance.DoesNotExist:
+                student_data["week_%d" % i] = 0
+        student_data["sum"] = sum
+        students.append(student_data)
+
+    return json_response({"Results": students})
+
+class UpdateGradeForm(forms.Form):
+    new_grade = forms.IntegerField()
+
+@login_required
+@course_required
+def update_grade(request, getcourse, activity_id, student_id, week):
+    #TODO error checking
+    form = UpdateGradeForm(request.POST)
+    new_grade = 0
+    if form.is_valid():
+        new_grade = form.cleaned_data['new_grade']
+    else:
+        pass
+    try:
+        student = Student.objects.get(id = student_id)
+    except Student.DoesNotExist:
+        return HttpResponse("No such student")
+    try:    
+        activity = Activity.objects.get(id = activity_id)
+    except Activity.DoesNotExist:
+        return HttpResponse("No such activity")
+    try:
+        course = Course.objects.get(name = getcourse)
+    except Course.DoesNotExist:
+        return HttpResponse("No such course")
+    attendance, created = Attendance.objects.get_or_create(course = course, activity = activity, student = student, week = week, defaults={'grade': new_grade})
+    attendance.grade = new_grade
+    attendance.save()
+    return HttpResponse("")
+

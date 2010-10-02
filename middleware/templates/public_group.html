@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Grades for group {{ group_name }}{% endblock %}
+
+{% block css %}#menu-groups {background-color: #eee;}{% endblock %}
+
+{% block content %}
+<h2>{% block content_title %}Grades for group {{ group_name }}{% endblock %}</h2>
+
+{% for activity in saved_activities %}
+<h3>Attendance for activity during {{ activity.interval }} on {{ activity.day }}</h3>
+
+<table>
+    <tr>
+        <th> Name </th>
+        {% for week in activity.weeks %}
+            <th> {{ week }} </th>
+        {% endfor %}
+        <th> Sum </th>
+    </tr>
+    {% for student in activity.students %}
+        <tr>
+            <td> {{ student.name }} </td>
+            
+            {% for attendance in student.attendances %}
+                <td>
+                    {{ attendance }}
+                </td>
+            {% endfor %}
+
+            <td> {{ student.sum }} </td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% endfor %}
+
+<h3>Attendance for all activities</h3>
+
+<table>
+    <tr>
+        <th> Name </th>
+        <th> Sum </th>
+    </tr>
+    {% for student in total_grades %}
+        <tr>
+            <td> {{ student.name }} </td>
+            <td> {{ student.grade }} </td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
+

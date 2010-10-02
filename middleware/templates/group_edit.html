@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Grades for group {{ group_name }}{% endblock %}
+
+{% block css %}#menu-groups {background-color: #eee;}{% endblock %}
+
+{% block javascript %} 
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.1/build/fonts/fonts-min.css" />
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.1/build/datatable/assets/skins/sam/datatable.css" />
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/connection/connection-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/json/json-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/element/element-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/datasource/datasource-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/datatable/datatable-min.js"></script>
+ {% endblock %}
+
+{% block content %}
+<h2>{% block content_title %}Grades for group {{ group_name }}{% endblock %}</h2>
+
+{% for activity in saved_activities %}
+<h3>Attendance for activity during {{ activity.interval }} on {{ activity.day }}</h3>
+<div id="cellediting"></div> 
+
+<div class="tip">Tip: click on any of the grades to edit them!</div>
+
+<div id="json_{{ activity.activity.id }}"></div>
+
+<script type="text/javascript">
+YAHOO.util.Event.addListener(window, "load", function() {
+    YAHOO.example.XHR_JSON = function() {
+        var submitter = function (callback, newValue) {
+            var record = this.getRecord(),
+                column = this.getColumn(),
+                oldValue = this.value,
+                datatable = this.getDataTable();
+            
+            YAHOO.util.Connect.asyncRequest(
+                'POST',
+                '/course/{{course}}/update_grade/{{activity.activity.id}}/'+record.getData('student_id')+'/'+column.key+'/', 
+                {
+                    success:function(o) {
+                        var r = o.responseText;
+                        if (r == "") {
+                            var new_sum = record.getData('sum') + newValue - oldValue;
+                            datatable.updateCell(record, 'sum', new_sum);
+                            callback(true, newValue);
+                        } else {
+                            alert(r);
+                            callback();
+                        }
+                    },
+                    failure:function(o) {
+                        alert(o.statusText);
+                        callback();
+                    },
+                    scope:this
+                },
+                'new_grade='+newValue 
+            );
+        }
+        var textEditor = new YAHOO.widget.TextboxCellEditor({ disableBtns: false, asyncSubmitter: submitter, validator:YAHOO.widget.DataTable.validateNumber});
+
+
+        var myColumnDefs = [
+            {key:"name", label:"Name", sortable:true},
+            {% for week in activity.weeks %}
+                {key:"week_{{ week }}", label:"{{ week }}", abbr: "Week {{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, editor: textEditor },
+            {% endfor %}
+            {key:"sum", label:"Sum", formatter:YAHOO.widget.DataTable.formatNumber },
+        ];
+
+        var myDataSource = new YAHOO.util.DataSource("/course/{{ course }}/get_activity/{{activity.activity.id}}/");
+        myDataSource.responseType = YAHOO.util.DataSource.TYPE_JSON;
+        myDataSource.connXhrMode = "queueRequests";
+        myDataSource.responseSchema = {
+            resultsList: "Results",
+            fields: ["name",
+                "student_id",
+                {% for week in activity.weeks %}
+                    {key:"week_{{ week }}", parser:"number"},
+                {% endfor %}
+                {key: "sum", parser:"number"},
+            ]
+        };
+
+        var myDataTable = new YAHOO.widget.DataTable("json_{{ activity.activity.id }}", myColumnDefs,
+                myDataSource, {initialRequest:""});
+
+        var mySuccessHandler = function() {
+            this.set("sortedBy", null);
+            this.onDataReturnAppendRows.apply(this,arguments);
+        };
+        var myFailureHandler = function() {
+            this.showTableMessage(YAHOO.widget.DataTable.MSG_ERROR, YAHOO.widget.DataTable.CLASS_ERROR);
+            this.onDataReturnAppendRows.apply(this,arguments);
+        };
+        var callbackObj = {
+            success : mySuccessHandler,
+            failure : myFailureHandler,
+            scope : myDataTable
+        };
+        
+        // Set up editing flow
+        var highlightEditableCell = function(oArgs) {
+            var elCell = oArgs.target;
+            if(YAHOO.util.Dom.hasClass(elCell, "yui-dt-editable")) {
+                this.highlightCell(elCell);
+            }
+        };
+        myDataTable.subscribe("cellMouseoverEvent", highlightEditableCell);
+        myDataTable.subscribe("cellMouseoutEvent", myDataTable.onEventUnhighlightCell);
+        myDataTable.subscribe("cellClickEvent", myDataTable.onEventShowCellEditor);
+
+                
+        return {
+            oDS: myDataSource,
+            oDT: myDataTable
+        };
+    }();
+});
+
+</script>
+
+
+{% endfor %}
+
+
+{% endblock %}
+

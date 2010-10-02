@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}{% endblock %}
+{% block title %}{{ block.super }} | Edit {{object_name}}{% endblock %}
 
 {% block content %}
-<h2>{% block content_title %}{% endblock %}</h2>
+<h2>{% block content_title %}{{ object_name }}{% endblock %}</h2>
 
 <form action="" method="post">
 {% csrf_token %}

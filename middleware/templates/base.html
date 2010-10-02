@@ -1,33 +1,41 @@
 <html>
 <head><title>{% block title %}LabRemote{% endblock %}</title>
 <link rel="stylesheet" href="/media/styles.css" type="text/css" />
+<style>
+{% block css %}{% endblock %}
+</style>
+{% block javascript %}{% endblock %}
 </head>
 
-<body>
+<body class="yui-skin-sam">
 <div id="container">
  <div id="header">
- <div id="user_bar">Hello <strong>{{ user.username }}</strong> {{ request.session.course }}. 
+ {% if user.is_authenticated %}
+ <div id="user_bar">Hello <strong>{{ user.username }}</strong> 
+ <a href="{% url middleware.frontend.views.course_select %}">{{ request.session.course }}</a>. 
  {% if user.is_superuser %}
  <a href="/admin/">Administration</a> |
  {% endif %}
  <a href="/accounts/logout/">Log out</a></div>
+ </div>
+ {% endif %}
  <h1><img src="/media/labremote.png" width="300" align="baseline" /></h1>
- </div>
  
- <div id="menu">
  {% if request.session.course %}
- <a href="{% url middleware.frontend.views.dashboard request.session.course %}">Dashboard</a>
- <a href="{% url middleware.frontend.views.students_list request.session.course %}">Students</a>
- <a href="{% url middleware.frontend.views.groups_index request.session.course %}">Groups</a>
- <a href="{% url middleware.frontend.views.timetable request.session.course %}">Timetable</a>
- {% if user.get_profile.assistant.is_updater %}<a href="{% url middleware.frontend.views.assistants request.session.course %}">Assistants</a>
+ <div id="menu">
+ <a href="{% url middleware.frontend.views.dashboard request.session.course %}" id="menu-dashboard">Dashboard</a>
+ <a href="{% url middleware.frontend.views.students_list request.session.course %}" id="menu-students">Students</a>
+ <a href="{% url middleware.frontend.views.groups_index request.session.course %}" id="menu-groups">Groups</a>
+ <a href="{% url middleware.frontend.views.timetable request.session.course %}" id="menu-timetable">Timetable</a>
+ {% if user.get_profile.assistant.is_updater %}<a href="{% url middleware.frontend.views.assistants request.session.course %}" id="menu-assistants">Assistants
     {% if user.get_profile.get_new_count %}
-        <sup class="new">{{ user.get_profile.get_new_count }} new</sup>
+        <sup class="new">&nbsp;{{ user.get_profile.get_new_count }}&nbsp;</sup>
     {% endif %}
- {% endif %}
+    </a>
  {% endif %}
  </div>
- 
+ {% endif %}
+  
   <div id="content">
  {% block content %}
  {% endblock %}
@@ -36,6 +44,6 @@
 </div>
  
  <div id="footer">
- &copy; KSS 2010</div>
+ &copy; <a href="http://labremote.korect.ro/">LabRemote</a> Team, KSS 2010</div>
 </div>
 </body></html>
