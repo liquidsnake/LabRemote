@@ -100,7 +100,7 @@ def timetable(request, user, session_key, course):
     return json_response({"timetable" : timetable})
 
 @valid_key
-def group(request, user, session_key, name, course, activity_id):
+def group(request, user, session_key, name, course, activity_id, week = None):
     """ Returns a certain group from a certain course """
     assistant = request.assistant
     
@@ -118,7 +118,9 @@ def group(request, user, session_key, name, course, activity_id):
         group = Group.objects.get(name=name, course__name=course)
         students = []
         for s in group.students.all():
-            attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = get_week(act.day_start), defaults={'grade': 0})
+            if week is None:
+                week = get_week(act.day_start)
+            attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = week, defaults={'grade': 0})
             students.append({"name": s.name, 
                 "grade": int(attendance.grade),
                 "id": s.id,
@@ -126,10 +128,10 @@ def group(request, user, session_key, name, course, activity_id):
     except Group.DoesNotExist:
         return json_response({"error": "No such group"}, failed = True)
                 
-    return json_response({"name": name, "students": students, "activity_id":activity_id})
+    return json_response({"name": name, "students": students, "activity_id":activity_id, "week": get_week(act.day_start)})
 
 @valid_key
-def current_group(request, user, session_key, course):
+def current_group(request, user, session_key, course, week = None):
     """ Returns the current group for this course and assistant """
     assistant = request.assistant
     now = datetime.datetime.now().time()
@@ -149,12 +151,14 @@ def current_group(request, user, session_key, course):
             if today == act.day and start <= now and now <= end:
                 students = []
                 for s in group.students.all(): 
-                    attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = get_week(act.day_start), defaults={'grade': 0})
+                    if week is None:
+                        week = get_week(act.day_start)
+                    attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = week, defaults={'grade': 0})
                     students.append({"name": s.name, 
                         "grade": int(attendance.grade),
                         "id": s.id,
                         "avatar": s.avatar})
-                return json_response({"name": group.name, "students": students, 'activity_id' : act.id})
+                return json_response({"name": group.name, "students": students, 'activity_id' : act.id, "week" : week})
     return json_response({"error":"no current group"}, failed = True)
     
 @valid_key
