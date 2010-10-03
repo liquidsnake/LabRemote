@@ -40,7 +40,10 @@ import com.android.LabRemote.Utils.StudentProvider;
  * @see StudentProvider
  */
 public class SearchActivity extends ListActivity {
+	/** List filled with resulted students */
 	private ListView mListView;
+	/** Requests that a child activity returns with error message 
+	 * if there was a server communication error during its initialization */
 	public static final int REQUEST_FROM_SERVER = 4;
 
 	@Override
@@ -50,27 +53,30 @@ public class SearchActivity extends ListActivity {
 		mListView = (ListView) findViewById(android.R.id.list);	 
 
 		Intent intent = getIntent();
-		if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+		if (Intent.ACTION_VIEW.equals(intent.getAction())) { /** click on a suggestion */
 			Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
 			individualIntent .putExtra("ID", intent.getDataString());
 			startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
 			finish();
-		} else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+		} else if (Intent.ACTION_SEARCH.equals(intent.getAction())) { /** click on search */
 			String query = intent.getStringExtra(SearchManager.QUERY);
 			showResults(query);
 		}
 	}
 
+	/**
+	 * Displays search results 
+	 */
 	private void showResults(String query) {
 		Cursor cursor = managedQuery(StudentProvider.CONTENT_URI, 
 				null, null, new String[] {query}, null);
 
 		if (cursor != null) {
 			String[] from = new String[] {SearchManager.SUGGEST_COLUMN_TEXT_1};
-			int[] to = new int[] {R.id.groupName};
+			int[] to = new int[] {R.id.resultName};
 
 			SimpleCursorAdapter words = new SimpleCursorAdapter(this,
-					R.layout.group_item, cursor, from, to);
+					R.layout.search_result_item, cursor, from, to);
 			setListAdapter(words);
 
 			mListView.setOnItemClickListener(new OnItemClickListener() {

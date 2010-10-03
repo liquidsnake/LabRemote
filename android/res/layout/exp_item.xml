@@ -6,8 +6,7 @@
 	android:background="@color/white" android:layout_marginBottom="2dip"
 	android:orientation="horizontal">
 	<TextView android:layout_width="215dip" android:id="@+id/exp_name"
-		android:padding="5dip" android:layout_height="wrap_content"
-		android:gravity="center" android:layout_gravity="center"
-		android:paddingLeft="100dip" android:textSize="20sp"
-		android:textColor="@color/black" />
+		android:layout_height="wrap_content" android:gravity="center" 
+		android:layout_gravity="center"   
+		android:textSize="20sp" android:textColor="@color/black" />
 </LinearLayout>

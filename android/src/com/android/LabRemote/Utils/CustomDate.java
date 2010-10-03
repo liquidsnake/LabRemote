@@ -26,21 +26,20 @@ import java.util.Calendar;
  * TODO: testat bine
  */
 public class CustomDate {
-	public static final String[] week_day = { "Monday", "Tuesday", "Wednesday",
-		"Thursday", "Friday", "Saturday", "Sunday" };
 	public static final String[] short_week = { "Sun", "Mon", "Tue", "Wed", "Thu",
 		"Fri", "Sat"};
 	public static final String[] month = { "January", "February", "March",
 		"April", "May", "June", "July", "August", "September", "October",
 		"November", "December" };
 
-	public static String getDate(int day) {
+	public static String getDate(int day) { 
 		String result;
-
+		day = day%7 + 1;
 		final Calendar c = Calendar.getInstance();
-		int mDay = c.get(Calendar.DAY_OF_MONTH) + day - c.get(Calendar.DAY_OF_WEEK) + 2;
-		result = short_week[day+1] + ", " + mDay + " " + month[c.get(Calendar.MONTH)];
-
+		int dif = day - c.get(Calendar.DAY_OF_WEEK); 
+		c.add(Calendar.DATE, dif);
+		result = short_week[day-1] + ", " + c.get(Calendar.DAY_OF_MONTH) + 
+				" " + month[c.get(Calendar.MONTH)];
 		return result;		
 	}
 
@@ -49,9 +48,8 @@ public class CustomDate {
 
 		final Calendar c = Calendar.getInstance();
 		int mDay = c.get(Calendar.DAY_OF_MONTH);
-		System.out.println("daaay" + c.get(Calendar.DAY_OF_WEEK));
-		result = short_week[c.get(Calendar.DAY_OF_WEEK)-1] + ", " + mDay + " " + month[c.get(Calendar.MONTH)];
-
+		result = short_week[c.get(Calendar.DAY_OF_WEEK)-1] + ", " + mDay + 
+				" " + month[c.get(Calendar.MONTH)];
 		return result;	
 	}
 

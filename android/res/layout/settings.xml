@@ -27,16 +27,26 @@
   <!-- Load login code -->
   <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content" 
   	android:id="@+id/loadCode" android:padding="10dip">
-    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical">
- 	<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" 
+    <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical">
+ 	<TextView android:id="@+id/loadTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" 
  		android:text="@string/load_code" android:textColor="@color/black" android:textSize="20sp"/>
+ 	<Button android:id="@+id/loadManual" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  		android:background="@android:drawable/star_off" android:layout_toRightOf="@id/loadTitle"/>
   	<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-  		android:textColor="@color/black" android:text="@string/load_text"/>
-  	</LinearLayout>
-  	<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="right">
+  		android:textColor="@color/black" android:text="@string/load_text" android:layout_below="@id/loadTitle"/>
+  	</RelativeLayout>
+  	<LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content" android:gravity="right">
   		<CheckBox android:id="@+id/codeChecked" android:layout_width="wrap_content" 
   			android:layout_height="wrap_content" android:clickable="false"/>
   	</LinearLayout>
+  </LinearLayout>
+  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content" 
+  	android:id="@+id/loadCodeManual" android:padding="10dip" android:visibility="gone">
+  	<EditText android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="2dip"
+  		android:password="true" android:id="@+id/editCode" android:hint="Insert new login code" 
+  		android:background="@layout/round_grey"/>
+  	<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="right"
+  		android:background="@android:drawable/btn_default_small" android:id="@+id/loadEditedCode" android:text="Ok" />
   </LinearLayout>
   
   <LinearLayout android:id="@+id/horizontalLine" android:layout_width="fill_parent"
@@ -60,7 +70,7 @@
 	android:layout_marginLeft="10dip" android:layout_marginRight="10dip"/>
   
   <!-- Done button -->
-  <LinearLayout android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_gravity="right">
+  <LinearLayout android:layout_width="wrap_content" android:layout_height="fill_parent" android:layout_gravity="right">
  	 <Button android:id="@+id/doneButton" android:layout_gravity="bottom" 
   		android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Done" />
   </LinearLayout>

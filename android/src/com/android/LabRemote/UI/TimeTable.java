@@ -19,12 +19,23 @@
 
 package com.android.LabRemote.UI;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Pair;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
@@ -37,18 +48,7 @@ import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.CustomDate;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import com.android.LabRemote.Utils.GroupID;
 
 /** 
  * Select a class group based on a specific day and a time interval
@@ -87,7 +87,7 @@ public class TimeTable extends Activity {
 
 				startGroupView(mListItems.get(groupPosition).get(childPosition).get("group"), 
 						mListItems.get(groupPosition).get(childPosition).get("aid"), 
-						CustomDate.getDate(groupPosition));
+						CustomDate.getDate(groupPosition+1));
 				return false;
 
 			}
@@ -115,7 +115,7 @@ public class TimeTable extends Activity {
 	 * Fills the timetable with data
 	 */
 	public void fillTable() {
-		ArrayList<Hashtable<String, List<Pair<String, String>>>> mParsedData;
+		ArrayList<Hashtable<String, List<GroupID>>> mParsedData;
 		SimpleExpandableListAdapter expListAdapter;
 		ArrayList<HashMap<String, String>> parents;
 		ArrayList<HashMap<String, String>> subList;
@@ -138,7 +138,7 @@ public class TimeTable extends Activity {
 		for (int i = 0; i < mParsedData.size(); ++i) { 
 			subList = new ArrayList<HashMap<String, String>>();
 
-			Hashtable<String, List<Pair<String, String>>> h = mParsedData.get(i);
+			Hashtable<String, List<GroupID>> h = mParsedData.get(i);
 			Vector<String> v = new Vector<String>(h.keySet());
 			Collections.sort(v);
 			Iterator<String> it = v.iterator();
@@ -148,9 +148,9 @@ public class TimeTable extends Activity {
 				for (int k = 0; k < h.get(interval).size(); k++) { 
 					/** for each group in interval */
 					childrenMap = new HashMap<String, String>();
-					childrenMap.put("group", h.get(interval).get(k).first);
+					childrenMap.put("group", h.get(interval).get(k).getName());
 					childrenMap.put("interval", interval);
-					childrenMap.put("aid", h.get(interval).get(k).second);
+					childrenMap.put("aid", h.get(interval).get(k).getActivity());
 					subList.add(childrenMap);
 				}
 			}
@@ -169,9 +169,9 @@ public class TimeTable extends Activity {
 	 * @return A list of week days, represented as hashtables
 	 * @see getWeekDay
 	 */
-	private ArrayList<Hashtable<String, List<Pair<String, String>>>> parseTimetable() {
-		ArrayList<Hashtable<String, List<Pair<String, String>>>> timetable = 
-			new ArrayList<Hashtable<String, List<Pair<String, String>>>>();
+	private ArrayList<Hashtable<String, List<GroupID>>> parseTimetable() {
+		ArrayList<Hashtable<String, List<GroupID>>> timetable = 
+			new ArrayList<Hashtable<String, List<GroupID>>>();
 		JSONObject table;
 
 		try {
@@ -196,9 +196,9 @@ public class TimeTable extends Activity {
 	 * @param day The requested week day
 	 * @return A hashtable where an interval is the key for a list of groups 
 	 */
-	private Hashtable<String, List<Pair<String, String>>> getWeekDay(JSONObject from, String day) {
-		Hashtable<String, List<Pair<String, String>>> wDay = 
-			new Hashtable<String, List<Pair<String, String>>>();
+	private Hashtable<String, List<GroupID>> getWeekDay(JSONObject from, String day) {
+		Hashtable<String, List<GroupID>> wDay = 
+			new Hashtable<String, List<GroupID>>();
 
 		try {
 			JSONObject jDay = from.getJSONObject(day);
@@ -207,10 +207,10 @@ public class TimeTable extends Activity {
 			while (rez.hasNext()) {
 				String key = (String) rez.next();
 				JSONArray val = (JSONArray) jDay.get(key);
-				ArrayList<Pair<String, String>> vals = new ArrayList<Pair<String, String>>();
+				ArrayList<GroupID> vals = new ArrayList<GroupID>();
 				for (int i = 0; i < val.length(); i++) {
 					JSONObject in = val.getJSONObject(i);
-					vals.add(new Pair<String, String>(in.getString("name"), in.getString("id")));
+					vals.add(new GroupID(in.getString("name"), in.getString("id")));
 				}
 				wDay.put(key, vals);
 			}

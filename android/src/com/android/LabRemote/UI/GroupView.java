@@ -20,6 +20,9 @@
 package com.android.LabRemote.UI;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,9 +35,13 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.widget.Gallery;
+import android.widget.PopupWindow;
+import android.widget.SimpleAdapter;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,24 +50,30 @@ import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.AvatarCallback;
-import com.android.LabRemote.Utils.MListAdapter;
-import com.android.LabRemote.Utils.MListItem;
+import com.android.LabRemote.Utils.GroupAdapter;
+import com.android.LabRemote.Utils.GroupItem;
 import com.android.LabRemote.Utils.ShowAvatar;
 
 /** 
  * Lists the students of a specific group
- * @see ListItemView
- * @see MListAdapter
- * @see MListItem
+ * @see GroupItemView
+ * @see GroupAdapter
+ * @see GroupItem
  */
 public class GroupView extends ListActivity implements AvatarCallback {
-
-	private String mGroup, mDate, mAID;
-	private AvatarCallback ava;
-	private ArrayList<MListItem> mList;
-	private Intent mIndividualIntent;
+ 
+	/** Group's name */
+	private String mGroup;
+	/** Activity id associated to the request */
+	private String mAID;
+	/** Informations about the students in the group */
+	private ArrayList<GroupItem> mList;
+	/** JSON data received from the server */
 	private JSONObject mData;
-	private MListAdapter mAdapter;
+	/** Adapter that manages the group's items */
+	private GroupAdapter mAdapter;
+	/** Requests that a child activity returns with error message 
+	 * if there was a server communication error during its initialization */
 	public static final int REQUEST_FROM_SERVER = 3;
 
 	/**
@@ -77,9 +90,9 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	 */
 	private OnClickListener onItemClick = new OnClickListener() {
 		public void onClick(View v) {
-			mIndividualIntent = new Intent(getApplicationContext(), StudentView.class);
-			mIndividualIntent.putExtra("Name", ((ListItemView)v).getName().getText()); 
-			mIndividualIntent.putExtra("ID", ((ListItemView)v).getmId()); 
+			Intent mIndividualIntent = new Intent(getApplicationContext(), StudentView.class);
+			mIndividualIntent.putExtra("Name", ((GroupItemView)v).getName().getText()); 
+			mIndividualIntent.putExtra("ID", ((GroupItemView)v).getmId()); 
 			mIndividualIntent.putExtra("AID", mAID); 
 			startActivityForResult(mIndividualIntent, REQUEST_FROM_SERVER);
 		}
@@ -94,19 +107,45 @@ public class GroupView extends ListActivity implements AvatarCallback {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.group_view);
 		
-		/** Test schimbare saptamana */
-		//TODO: post daca schimb saptamana
+		/** Test schimbare saptamana 
 		ava = this;
 		TableLayout he = (TableLayout) findViewById(R.id.header);
 		he.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				ArrayList<MListItem> nou = new ArrayList<MListItem>();
+				ArrayList<GroupItem> nou = new ArrayList<GroupItem>();
 				nou.add(mList.get(0));
 				nou.add(mList.get(1));
 				nou.add(mList.get(2));
 				nou.add(mList.get(3));
-				mAdapter = new MListAdapter(getApplicationContext(), nou, ava, onItemClick);
+				mAdapter = new GroupAdapter(getApplicationContext(), nou, ava, onItemClick);
 				setListAdapter(mAdapter);				
+			}
+		}); */
+		
+		/** Test popup week */
+		TableLayout he = (TableLayout) findViewById(R.id.header);
+		he.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				String[] from = new String[] {"sapt"};
+				int[] to = new int[] {R.id.resultName};
+				List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+
+				for (int i = 0; i < 18; i++) {
+					Map<String, String> map = new HashMap<String, String>();
+					map.put("sapt", i+"");
+					list.add(map);
+				}
+				SimpleAdapter words = new SimpleAdapter(getApplicationContext(), list, 
+						R.layout.search_result_item, from, to);
+				Gallery content = new Gallery(getApplicationContext());
+				content.setAdapter(words);
+				
+				PopupWindow week = new PopupWindow(content, ViewGroup.LayoutParams.FILL_PARENT, 
+						ViewGroup.LayoutParams.WRAP_CONTENT);
+				week.setFocusable(true);
+				week.setTouchable(true);
+				week.setOutsideTouchable(true);
+				week.showAsDropDown(v);
 			}
 		});
 
@@ -120,7 +159,7 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	private void receiveData() {
 
 		/** Header informations */
-		mDate = getIntent().getStringExtra("Date");
+		String mDate = getIntent().getStringExtra("Date");
 		TextView dateText = (TextView) findViewById(R.id.dateHeader);
 		dateText.setText(mDate); 
 		mAID = getIntent().getStringExtra("AID");
@@ -149,13 +188,13 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	 */
 	private void fillList() {
 		JSONArray students;
-		mList = new ArrayList<MListItem>();
+		mList = new ArrayList<GroupItem>();
 		
 		try {
 			students = mData.getJSONArray("students"); 
 			for (int i = 0; i < students.length(); i++) {
 				JSONObject stud = students.getJSONObject(i);
-				mList.add(new MListItem(stud.getString("avatar"), stud.getString("name"), 
+				mList.add(new GroupItem(stud.getString("avatar"), stud.getString("name"), 
 						stud.getString("grade"), stud.getString("id"))); 
 			}
 		} catch (JSONException e) {
@@ -171,7 +210,7 @@ public class GroupView extends ListActivity implements AvatarCallback {
 			e.printStackTrace();
 		}
 			
-		mAdapter = new MListAdapter(this, mList, this, onItemClick);
+		mAdapter = new GroupAdapter(this, mList, this, onItemClick);
 		setListAdapter(mAdapter);
 	}
 	
@@ -189,7 +228,7 @@ public class GroupView extends ListActivity implements AvatarCallback {
 				students.put(stud);
 			}			
 			result.put("students", students);
-			new Connection(this).post(result, "group");
+			new Connection(this).post(result, "group"); //TODO: check response
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

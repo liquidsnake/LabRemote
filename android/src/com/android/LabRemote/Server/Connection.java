@@ -19,9 +19,13 @@
 
 package com.android.LabRemote.Server;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -37,24 +41,26 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
+//TODO: return null la catch
 /**
  * Handles communication with the server: API posts and request
  */
 public class Connection {
+	/** Edit and store application's private data */
 	private SharedPreferences mPreferences;
-	private Context mContext;
+	/** Login code */
 	private String mCode;
+	/** Middleware's address */
 	private String mHost;
+	/** Selected course */
 	private String mCourse;
+	/** Assistant's id */
 	private String mID;
+	/** Http client used for queries */
 	private HttpClient mHttpClient;
 	
 	/** API Queries */
@@ -70,8 +76,7 @@ public class Connection {
 	private static final String serverError = "There was a problem with the server or the request";
 	
 	public Connection(Context context) {
-		mContext = context;
-		mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+		mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 		this.mCode = mPreferences.getString("loginCode", null);
 		this.mHost = mPreferences.getString("host", null);
 		this.mCourse = mPreferences.getString("course", null);
@@ -106,7 +111,9 @@ public class Connection {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} 
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		}
 
 		return result;
 	}
@@ -202,12 +209,16 @@ public class Connection {
 		return get(request);
 	}
 	
-	//TODO: parse post result
-	public String post(JSONObject data, String type) {
+	/**
+	 * Posts data on the server
+	 * @param data content for post
+	 * @param type Post's type (e.g.: group)
+	 * @return a {@link ServerResponse} that shows if the post succedeed or not
+	 */
+	public ServerResponse post(JSONObject data, String type) {
 		String url = mHost + "/api/post/";
 		HttpPost httpost = new HttpPost(url);
 		HttpResponse res = null;
-		String result = "ok";
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(5);  
         
         nameValuePairs.add(new BasicNameValuePair("user", mID));  
@@ -222,10 +233,13 @@ public class Connection {
 			res = mHttpClient.execute(httpost);
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
+			return new ServerResponse("failed", "invalid post");
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
+			return new ServerResponse("failed", "invalid post");
 		} catch (IOException e) {
 			e.printStackTrace();
+			return new ServerResponse("failed", "invalid post");
 		}
 		
 		/** Read post result */
@@ -234,18 +248,29 @@ public class Connection {
 			InputStream instream;
 			try {
 				instream = entity.getContent();
-				//String rez = convertStreamToString(instream);
+				String rez = convertStreamToString(instream);
 				instream.close();
+				JSONObject result = new JSONObject(rez);
+				if (result.getString("status").equals("success"))
+					return new ServerResponse("success", null);
+				else
+					return new ServerResponse("failed", result.getString("error"));
+			} catch (JSONException e) {
+				e.printStackTrace();
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
+			
 		}
-		return result;
+		
+		return new ServerResponse("failed", "invalid post");
 	}
 
+	/**
+	 * Used for parsing http data 
+	 */
 	private static String convertStreamToString(InputStream is) {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 		StringBuilder sb = new StringBuilder();
@@ -263,6 +288,7 @@ public class Connection {
 				is.close();
 			} catch (IOException e) {
 				e.printStackTrace();
+				return null;
 			}
 		}
 		return sb.toString();
