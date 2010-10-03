@@ -45,6 +45,10 @@ public class StudentProvider extends ContentProvider {
 	private static final int SEARCH_SUGGEST = 1;
 	private static final UriMatcher sURIMatcher = buildUriMatcher();
 
+	/**
+	 * Creates an uri matcher, used by the provider to identify its data set <br />
+	 * Can refer search results or suggestions 
+	 */ 
 	private static UriMatcher buildUriMatcher() {
 		UriMatcher matcher =  new UriMatcher(UriMatcher.NO_MATCH);
 		matcher.addURI(AUTHORITY, "student", SEARCH_STUDENT);
@@ -68,12 +72,15 @@ public class StudentProvider extends ContentProvider {
 				throw new IllegalArgumentException(
 						"selectionArgs must be provided for the Uri: " + uri);
 			}
-			return search(selectionArgs[0]);
+			return search(selectionArgs[0]); //TODO: poate fi null
 		default:
 			throw new IllegalArgumentException("Unknown Uri: " + uri);
 		}
 	}
 
+	/**
+	 * Loads search suggestions from server 
+	 */
 	private Cursor getSuggestions(String query) {
 		query = query.toLowerCase();
 		String[] columns = new String[] {
@@ -98,6 +105,9 @@ public class StudentProvider extends ContentProvider {
 		return res;
 	}
 
+	/**
+	 * Loads search results from server
+	 */
 	private Cursor search(String query) {
 		query = query.toLowerCase();
 		String[] columns = new String[] {

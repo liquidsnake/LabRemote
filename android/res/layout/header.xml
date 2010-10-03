@@ -5,7 +5,7 @@
 	android:id="@+id/header" android:layout_width="fill_parent" 
 	android:layout_height="wrap_content" android:stretchColumns="1">
 	<TableRow android:layout_width="fill_parent" android:layout_height="fill_parent"
-		android:fadingEdge="horizontal" android:background="@color/header_color">
+		android:fadingEdge="horizontal" android:background="@drawable/bar_top">
 		<TextView android:textColor="@color/black" android:textSize="45dip"
 			android:id="@+id/courseName" android:paddingLeft="5dip"/>
 		<LinearLayout android:gravity="right"

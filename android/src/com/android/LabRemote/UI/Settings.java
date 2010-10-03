@@ -54,6 +54,12 @@ import java.util.List;
  */
 public class Settings extends Activity {
 
+	//@Override
+	//public void onBackPressed() {
+		// TODO Auto-generated method stub
+		//super.onBackPressed();
+	//}
+
 	/** Shows if login was checked or not */
 	private boolean mLogin;
 	/** Reads application's private data: host, login code and course */
@@ -77,6 +83,8 @@ public class Settings extends Activity {
 	private AlertDialog.Builder mSelCourseDialog;
 	/** Dialog that displays an error when login fails */
 	private AlertDialog.Builder mLoginFailedDialog;
+	private LinearLayout manual;
+	private EditText editCode;
 
 	private static final String INTENT_SCAN = "com.google.zxing.client.android.SCAN";
 	private static final String SCAN_MODE = "SCAN_MODE";
@@ -127,6 +135,27 @@ public class Settings extends Activity {
 				}
 			}
 		});	
+		
+		/** Load login code manual */
+		Button manualLoad = (Button)findViewById(R.id.loadManual);
+		manual = (LinearLayout)findViewById(R.id.loadCodeManual);
+		manualLoad.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				mLoadCode.setVisibility(View.GONE);
+				manual.setVisibility(View.VISIBLE);				
+			}
+		});
+		editCode = (EditText)findViewById(R.id.editCode);
+		Button loadEditedCode = (Button)findViewById(R.id.loadEditedCode);
+		loadEditedCode.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				mCodeChecked.setChecked(true);
+				storeCode(editCode.getText().toString());
+				invalidateLogin();	
+				mLoadCode.setVisibility(View.VISIBLE);
+				manual.setVisibility(View.GONE);	
+			}
+		});
 
 		/** Select course */
 		mSelectCourse = (TextView)findViewById(R.id.selectCourse);

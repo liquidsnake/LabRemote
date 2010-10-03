@@ -10,4 +10,5 @@
 	<string name="load_text">Click here to load a new code.</string>
 	<string name="host">Host Address</string>
 	<string name="change_course">Click for course</string>
+	<string name="empty_group">No students in this group</string>
 </resources>

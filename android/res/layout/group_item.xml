@@ -13,7 +13,6 @@
 	<ImageView android:id="@+id/groupPhoto"
 		android:layout_width="50dip" android:layout_height="50dip" 
 		android:layout_margin="2dip" />
-
 	         
 	<LinearLayout 
                 android:layout_width="0dip" 
@@ -28,15 +27,12 @@
 			android:layout_gravity="left" android:singleLine="true"/>
 	</FrameLayout>
 
-	<FrameLayout android:layout_width="fill_parent" android:background="@layout/round_grade"
+	<FrameLayout android:layout_width="fill_parent" android:background="@layout/round_grey"
 		android:layout_height="wrap_content" android:layout_weight="1">
-		<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content" 
-			android:layout_margin="5dip" android:layout_gravity="center" >
-			<TextView  android:id="@+id/groupGrade" android:layout_width="wrap_content" 
-				android:layout_height="wrap_content" android:padding="2dip" android:textStyle="bold"
-				android:layout_margin="2dip" android:textColor="@color/black" >                                           
-			</TextView>
-		</FrameLayout>
+		<TextView  android:id="@+id/groupGrade" android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" android:padding="2dip" android:textStyle="bold"
+			android:textColor="@color/black" android:layout_gravity="center">                                           
+		</TextView>
 	</FrameLayout>
 
 	 </LinearLayout>

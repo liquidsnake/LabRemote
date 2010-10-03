@@ -37,6 +37,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -52,9 +55,9 @@ import com.android.LabRemote.Utils.CustomDate;
  * Informations about a selected student
  */
 public class StudentView extends ListActivity {
-	private String mName, mGroup, mDate, mID;
+	
+	/** JSON data received from server */
 	private JSONObject data;
-	private SimpleAdapter mAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +69,32 @@ public class StudentView extends ListActivity {
 		setContentView(R.layout.individual_view);
 
 		receiveData();
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.menu, menu);
+	    return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	    case R.id.cgroup:
+	        Intent in = new Intent(this, GroupView.class);
+	        startActivity(in);
+	        return true;
+	    case R.id.timetable:
+	    	Intent inn = new Intent(this, TimeTable.class);
+	        startActivity(inn);
+	        return true;
+	    case R.id.search:
+	    	onSearchRequested();
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    }
 	}
 
 	/**
@@ -79,10 +108,10 @@ public class StudentView extends ListActivity {
 		String course = preferences.getString("course", null);
 		TextView cv = (TextView) findViewById(R.id.courseName);
 		cv.setText(course);
-		mDate = CustomDate.getCurrentDate();
+		String mDate = CustomDate.getCurrentDate();
 		TextView dateView = (TextView)findViewById(R.id.dateHeader);
 		dateView.setText(mDate);
-		mID = getIntent().getStringExtra("ID"); 
+		String mID = getIntent().getStringExtra("ID"); 
 
 		/** From server */
 		ServerResponse result = new Connection(this).getStudent(mID);
@@ -106,7 +135,7 @@ public class StudentView extends ListActivity {
 			JSONObject grades = data.getJSONObject("attendances"); 
             for(int i = 0; i < grades.length(); i++) {
                  HashMap<String, String> map = new HashMap<String, String>();
-                 map.put("index", " L" + i);
+                 map.put("index", i+".");
                  map.put("grade", " " + grades.getJSONObject(i+"").getString("grade"));
                  gradeSum += Integer.parseInt(grades.getJSONObject(i+"").getString("grade"));
                  contentMap.add(map);
@@ -116,23 +145,23 @@ public class StudentView extends ListActivity {
 		}
 
 		try {
-			mName = data.getString("name"); 
+			String mName = data.getString("name"); 
 			TextView nameView = (TextView)findViewById(R.id.individualName);
 			nameView.setText(mName);
-			mGroup = data.getString("virtual_group");
+			String mGroup = data.getString("virtual_group");
 			TextView groupView = (TextView)findViewById(R.id.classHeader);
 			groupView.setText(mGroup);
 			TextView groupStudentView = (TextView)findViewById(R.id.individualGroup);
 			groupStudentView.setText(mGroup);
 			ImageView avatar = (ImageView)findViewById(R.id.individualPhoto);
-			avatar.setBackgroundResource(R.drawable.frame);
+			avatar.setBackgroundResource(android.R.drawable.picture_frame); //era frame
 			String avatarUrl = data.getString("avatar");
 			setAvatar(avatar, avatarUrl);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
-        mAdapter = new SimpleAdapter(this, contentMap, R.layout.individual_grade, from, to);
+        SimpleAdapter mAdapter = new SimpleAdapter(this, contentMap, R.layout.individual_grade, from, to);
         setListAdapter(mAdapter);
 		TextView gr = (TextView) findViewById(R.id.individualGrade);
 		gr.setText(gradeSum + " p.");

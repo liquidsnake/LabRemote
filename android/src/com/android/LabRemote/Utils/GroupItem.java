@@ -1,5 +1,5 @@
 /**
- * MListItem.java
+ * GroupItem.java
  *     
  * Copyright (C) 2010 LabRemote Team
  *
@@ -20,27 +20,27 @@
 package com.android.LabRemote.Utils;
 
 import com.android.LabRemote.UI.GroupView;
-import com.android.LabRemote.UI.SearchActivity;
-import com.android.LabRemote.UI.StudentView;
 
 import android.graphics.Bitmap;
 
 /**
- * Data structure that maintains an item from a list 
- * of students or grades
+ * Data structure that maintains an item from a list of students 
  * @see GroupView
- * @see SearchActivity
- * @see StudentView
  */
-public class MListItem {
+public class GroupItem {
 
+	/** The url of the student's avatar */
 	private String mImgUrl; 
+	/** Student's name */
 	private String mName;
+	/** Student's grade for the selected activity */
 	private String mGrade; 
+	/** Student's avatar */
 	private Bitmap mAvatar;
+	/** Student's unique id */
 	private String mID;	
 
-	public MListItem(String img, String name, String grade, String id) {
+	public GroupItem(String img, String name, String grade, String id) {
 		mImgUrl = img;
 		mName = name;
 		mGrade = grade;

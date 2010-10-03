@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/cgroup"
+          android:icon="@android:drawable/ic_menu_agenda"
+          android:title="Group" />
+    <item android:id="@+id/timetable"
+          android:icon="@android:drawable/ic_menu_today"
+          android:title="Timetable" />
+    <item android:id="@+id/search"
+          android:icon="@android:drawable/ic_menu_search"
+          android:title="Search" />
+</menu>

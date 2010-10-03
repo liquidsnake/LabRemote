@@ -6,6 +6,7 @@
   android:background="@color/white">
   <ListView
   	android:id="@android:id/list"
+  	android:background="@color/white"
   	android:dividerHeight="2dip" 
   	android:divider="@color/grey"
   	android:layout_gravity="center"

@@ -1,5 +1,5 @@
 /**
- * ShowAvatar.java
+ * GroupID.java
  *     
  * Copyright (C) 2010 LabRemote Team
  *
@@ -19,26 +19,23 @@
 
 package com.android.LabRemote.Utils;
 
-import android.graphics.Bitmap;
-import android.widget.ImageView;
-
-import com.android.LabRemote.UI.GroupItemView;
-
 /**
- * Displays student avatar once it is downloaded
+ * 
  */
-public class ShowAvatar implements Runnable {
-	public GroupItemView item;
-	public Bitmap bmp;
-
-	public ShowAvatar(GroupItemView item, Bitmap bmp) {
-		this.bmp = bmp;
-		this.item = item;
+public class GroupID {
+	private String mName, mActivity;
+	
+	public GroupID(String name, String activity_id) {
+		mName = name;
+		mActivity = activity_id;
+	}
+	
+	public String getName() {
+		return mName;
+	}
+	
+	public String getActivity() {
+		return mActivity;
 	}
 
-	public void run()
-	{
-		ImageView img = item.getImg();
-		img.setImageBitmap(bmp);
-	}
 }

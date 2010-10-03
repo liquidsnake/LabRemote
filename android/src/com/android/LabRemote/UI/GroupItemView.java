@@ -1,5 +1,5 @@
 /**
- * ListItemView.java
+ * GroupItemView.java
  *     
  * Copyright (C) 2010 LabRemote Team
  *
@@ -39,29 +39,35 @@ import android.widget.TextView;
 import android.widget.PopupWindow.OnDismissListener;
 
 import com.android.LabRemote.R;
-import com.android.LabRemote.Utils.MListItem;
+import com.android.LabRemote.Utils.GroupItem;
 
 /**
- * View that gives the layout for an item in a list 
- * of students or grades
- * @see MListItem
+ * View that gives the layout for an item in a list of students
+ * @see GroupView
  */
-public class ListItemView extends LinearLayout {
+public class GroupItemView extends LinearLayout {
 
-	protected MListItem mItem; 
-	protected PopupWindow popupGrade;
-	protected EditText popupEdit;
-	protected ImageView mImg;
-	protected TextView mName;
-	protected TextView mGrade;
-	protected GestureDetector mGestureDetector;
-	protected Context mContext;
+	/** The view's dataset with informations about the student */
+	private GroupItem mItem; 
+	/** Popup grade editor's window */
+	private PopupWindow popupGrade;
+	/** Popup grade editor */
+	private EditText popupEdit;
+	/** Student's avatar */
+	private ImageView mImg;
+	/** Student's name */
+	private TextView mName;
+	/** Student's grade */
+	private TextView mGrade;
+	/** Detects fling gesture that increases/decreases grade */
+	private GestureDetector mGestureDetector;
+	private Context mContext;
 
 	/**
 	 * Initializes the view with the data provided by item
-	 * @param item Contains strings that defines the view's image, name and/or grade
+	 * @param item Contains strings that defines the view's image, name and grade
 	 */
-	public ListItemView(Context context, MListItem item) {
+	public GroupItemView(Context context, GroupItem item) {
 		super(context);
 		mContext = context;
 		mItem = item;
@@ -73,19 +79,28 @@ public class ListItemView extends LinearLayout {
 		initGrade(R.id.groupGrade);
 	}
 
-	protected void initImage(int res) {
+	/**
+	 * Initializes avatar
+	 */
+	private void initImage(int res) {
 		mImg = (ImageView) findViewById(res);
-		mImg.setBackgroundResource(R.drawable.frame);
+		mImg.setBackgroundResource(android.R.drawable.picture_frame);
 		Bitmap avatar = mItem.getAvatar();
 		setImage(avatar);
 	}
 
-	protected void initName(int res) {
+	/**
+	 * Initializes student's name
+	 */
+	private void initName(int res) {
 		mName = (TextView) findViewById(res);
 		mName.setText(mItem.getName());
 	}
 
-	protected void initGrade(int res) {
+	/**
+	 * Initializes student's grade
+	 */
+	private void initGrade(int res) {
 
 		/** Grade */ 
 		if (mItem.getGrade() != null) {
@@ -118,11 +133,15 @@ public class ListItemView extends LinearLayout {
 		}
 	}
 
-	protected void initPopupEdit() {
+	/**
+	 * Initializes popup editor 
+	 */
+	private void initPopupEdit() {
 		popupEdit = new EditText(mContext);
 		popupEdit.setTextColor(R.color.black);
 		popupEdit.setText(mGrade.getText().toString());
-		popupEdit.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+		popupEdit.setLayoutParams(
+				new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		popupEdit.addTextChangedListener(new TextWatcher() {
 			public void afterTextChanged(Editable s) {
 				popupGrade.update(ViewGroup.LayoutParams.WRAP_CONTENT, 
@@ -139,7 +158,10 @@ public class ListItemView extends LinearLayout {
 		});
 	}
 
-	protected void initPopupWindow() {
+	/**
+	 * Initializes popup editor's window
+	 */
+	private void initPopupWindow() {
 		popupGrade = new PopupWindow(popupEdit, ViewGroup.LayoutParams.WRAP_CONTENT, 
 				ViewGroup.LayoutParams.WRAP_CONTENT);
 		popupGrade.setFocusable(true);
@@ -166,7 +188,7 @@ public class ListItemView extends LinearLayout {
 	 * Gesture detector class that handles finger gestures
 	 * Used to detect fling gesture that increases/decreases a grade
 	 */
-	protected class MyGestureDetector extends SimpleOnGestureListener {
+	private class MyGestureDetector extends SimpleOnGestureListener {
 
 		@Override
 		public boolean onFling(MotionEvent e1, MotionEvent e2, 
@@ -206,7 +228,7 @@ public class ListItemView extends LinearLayout {
 		mItem.setGrade(grade);
 	}
 
-	public MListItem getItem() {
+	public GroupItem getItem() {
 		return mItem;
 	}
 

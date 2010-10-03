@@ -24,6 +24,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
@@ -60,6 +61,9 @@ public class Login extends Activity {
 		
 		/** Check host and code */
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		Editor ed = mPreferences.edit();
+		ed.putString("loginCode", "code");
+		ed.commit();
 		String code = mPreferences.getString("loginCode", null);
 		String host = mPreferences.getString("host", null);
 

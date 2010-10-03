@@ -1,5 +1,5 @@
 /**
- * MListAdapter.java
+ * GroupAdapter.java
  *     
  * Copyright (C) 2010 LabRemote Team
  *
@@ -32,29 +32,25 @@ import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.BaseAdapter;
 
+import com.android.LabRemote.UI.GroupItemView;
 import com.android.LabRemote.UI.GroupView;
-import com.android.LabRemote.UI.ListItemView;
-import com.android.LabRemote.UI.SearchActivity;
-import com.android.LabRemote.UI.StudentView;
 
 /**
- *  Adapter class for the list's content 
- *  Manages the item in the list
+ *  Adapter class for the groups's content 
+ *  Manages the items in the list
  *  @see GroupView
- *  @see StudentView
- *  @see SearchActivity
  */
-public class MListAdapter extends BaseAdapter {
+public class GroupAdapter extends BaseAdapter {
 
 	/** Array filled with list's elements */
-	private ArrayList<MListItem> mItems = new ArrayList<MListItem>();
+	private ArrayList<GroupItem> mItems = new ArrayList<GroupItem>();
 	/** Callback when a new avatar is downloaded and parsed */
 	private AvatarCallback mAvatarCallback;
 	/** Called when a list item is clicked */
 	private OnClickListener mOnItemClick;
 	private Context mContext;
 
-	public MListAdapter(Context context, ArrayList<MListItem> items, 
+	public GroupAdapter(Context context, ArrayList<GroupItem> items, 
 			AvatarCallback avatarCallback, OnClickListener onItemClick) {
 		mAvatarCallback = avatarCallback;
 		mOnItemClick = onItemClick;
@@ -75,10 +71,10 @@ public class MListAdapter extends BaseAdapter {
 	}
 	
 	public View getView(int index, View convertView, ViewGroup parent) {
-		ListItemView item;
-		MListItem it = mItems.get(index);
+		GroupItemView item;
+		GroupItem it = mItems.get(index);
 		
-		item = new ListItemView(mContext, mItems.get(index));
+		item = new GroupItemView(mContext, mItems.get(index));
 		if (it.getAvatar() == null)
 			new DownloadAvatar(it.getImgUrl(), mAvatarCallback, item);
 		item.setOnClickListener(mOnItemClick);
@@ -94,9 +90,9 @@ public class MListAdapter extends BaseAdapter {
 	private class DownloadAvatar extends Thread {
 		private String mUrl;
 		private AvatarCallback mAvatarCallback;
-		private ListItemView mItem;
+		private GroupItemView mItem;
 
-		public DownloadAvatar(String url, AvatarCallback avatarCallback, ListItemView item) {
+		public DownloadAvatar(String url, AvatarCallback avatarCallback, GroupItemView item) {
 			mUrl = url;
 			mAvatarCallback= avatarCallback;
 			mItem = item;
