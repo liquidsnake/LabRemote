@@ -12,8 +12,17 @@
 {% endfor %}
 </ul>
 {% else %}
+{% if not request.user.is_staff %}
 You are not enroled to any course. Please wait for another teaching assistant
 to validate your account.
+{% endif %}
+{% endif %}
+
+{% if request.user.is_staff %}
+<p>Initialize new course / moodle connection:</p>
+<ul>
+    <li><a href="/import_course/?step=1">Import course</a></li>
+</ul>
 {% endif %}
 
 {% endblock %}

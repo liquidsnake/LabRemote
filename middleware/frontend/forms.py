@@ -19,3 +19,6 @@ class RegisterForm(UserCreationForm):
     email = forms.EmailField()
     first_name = forms.CharField()
     last_name = forms.CharField()
+
+class UpdateGradeForm(forms.Form):
+    new_grade = forms.IntegerField()

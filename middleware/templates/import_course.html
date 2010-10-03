@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ block.super }} | Import a course into LabRemote:{% endblock %}
+
+{% block content %}
+
+<h2>Import course</h2>
+
+{% if step == 1 %}
+<p>Select an assistant profile for moodle credentials:</p>
+<ul>
+{% for a in assistants %}
+    <li><a href="./?step=2&a={{ a.id }}">{{ a.name }} (is updater: {{ a.is_updater }})</a> <a class="button" target="popup" href="/crud/update/assistant/{{ a.id }}/">Edit</a></li>
+{% endfor %}
+</ul>
+{% else %}
+{% if step == 2 %}
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% else %}
+    <p>Select a course for importing: </p>
+        {% if courses %}
+        <ul>
+        {% for course in courses %}
+            <li><a href="./?step=3{% if assistant %}&a={{ assistant.id }}{% endif %}&c={{ course.id }}">{{ course.name }}</a></li>
+        {% endfor %}
+        </ul>
+        {% else %}
+            No courses found.
+        {% endif %}
+    {% endif %}
+{% else %}
+{% if step == 3 %}
+    <p>Import done!</p>
+    
+    <p>Go to: <a href="{% url middleware.frontend.views.course_select %}">course selection.</a></p>
+    
+{% endif %}
+{% endif %}
+{% endif %}
+
+{% endblock %}
+

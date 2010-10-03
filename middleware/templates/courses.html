@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ block.super }} | Courses{% endblock %}
+
+{% block css %}#menu-courses {background-color: #eee;}{% endblock %}
+
+{% block content %}
+<h2>{% block content_title %}Courses{% endblock %}</h2>
+<table class="object_list">
+    <tr>
+       <th>name</th>
+       <th>title</th>
+       <th>groups</th>
+       <th>students</th>
+    </tr>
+{% for d in courses %}
+    <tr>
+        <td>
+        <a href="/crud/update/course/{{ d.id }}/">{{ d.name }}</a></td>
+        <td>{{ d.title}}</td>
+        <td>{{ d.groups.all }}</td>
+        <td>{{ d.students.all }}</td>
+        <td align="center" class="actions" nowrap>
+        {% block action_buttons %}
+        <a href="/crud/update/course/{{ d.id }}/">Edit</a>
+        <a href="/crud/delete/course/{{ d.id }}/">Delete</a>
+        {% endblock %}
+        </td>
+    </tr>
+{% endfor %}
+</table>
+
+{% block bottom_buttons %}
+{% endblock %}
+
+{% endblock %}
+

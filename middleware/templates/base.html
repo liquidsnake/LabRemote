@@ -23,16 +23,20 @@
  
  {% if request.session.course %}
  <div id="menu">
- <a href="{% url middleware.frontend.views.dashboard request.session.course %}" id="menu-dashboard">Dashboard</a>
- <a href="{% url middleware.frontend.views.students_list request.session.course %}" id="menu-students">Students</a>
- <a href="{% url middleware.frontend.views.groups_index request.session.course %}" id="menu-groups">Groups</a>
- <a href="{% url middleware.frontend.views.timetable request.session.course %}" id="menu-timetable">Timetable</a>
- {% if user.get_profile.assistant.is_updater %}<a href="{% url middleware.frontend.views.assistants request.session.course %}" id="menu-assistants">Assistants
+ {% if user.get_profile.assistant.is_updater %}
+    <div class="menu-right">
+    <a href="{% url middleware.frontend.views.assistants request.session.course %}" id="menu-assistants">Assistants
     {% if user.get_profile.get_new_count %}
         <sup class="new">&nbsp;{{ user.get_profile.get_new_count }}&nbsp;</sup>
     {% endif %}
     </a>
+    <a href="{% url middleware.frontend.views.courses request.session.course %}" id="menu-courses">Courses</a>
+    </div>
  {% endif %}
+ <a href="{% url middleware.frontend.views.dashboard request.session.course %}" id="menu-dashboard">Dashboard</a>
+ <a href="{% url middleware.frontend.views.students_list request.session.course %}" id="menu-students">Students</a>
+ <a href="{% url middleware.frontend.views.groups_index request.session.course %}" id="menu-groups">Groups</a>
+ <a href="{% url middleware.frontend.views.timetable request.session.course %}" id="menu-timetable">Timetable</a>
  </div>
  {% endif %}
   

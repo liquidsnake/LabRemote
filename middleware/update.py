@@ -16,8 +16,20 @@ setup_environ(settings)
 from core.models import Assistant, Student, Course
 
 def main(args):
-    """ Iterate through assitants and scrap their moodle """
-    for a in Assistant.objects.all():
+    """ Iterate through assistants and scrap their moodle """
+    if len(args) < 1:
+        todos = Assistant.objects.all()
+    else:
+        todos = []
+        for a in args[1:]:
+            try:
+                assistant = Assistant.objects.get(pk=int(a))
+                todos.append(assistant)
+            except: 
+                sys.stderr.write('Could not load assistant: %s' % a)
+    
+    # Execute todos
+    for a in todos:
         if not a.is_updater:
             continue
         
@@ -46,8 +58,10 @@ def main(args):
                         break
                 if course is None:
                     sys.stderr.write("Could not get course: %d " % course_id)
+                    continue
                 
             groups = session.list_groups(int(a.moodle_course_id))
+            
             for key,g in groups.items():
                 for user in g['users']:
                     try:
