@@ -579,7 +579,7 @@ def update_grade(request, getcourse, activity_id, student_id, week):
     except Activity.DoesNotExist:
         return HttpResponse("No such activity")
     try:
-        course = Course.objects.get(name = getcourse)
+        course = Course.objects.get(id = getcourse)
     except Course.DoesNotExist:
         return HttpResponse("No such course")
     attendance, created = Attendance.objects.get_or_create(course = course, activity = activity, student = student, week = week, defaults={'grade': new_grade})
