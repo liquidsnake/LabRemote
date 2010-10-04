@@ -70,7 +70,7 @@ def login(request, qr_code):
     except Assistant.DoesNotExist:
         return json_response({"error": "Invalid code"}, failed = True)
 
-    courses = [c.name for c in assistant.courses.all()]
+    courses = [{"name" : c.name, "id": c.id, "abbr" : ''.join([chr[0] for chr in c.name.split(' ')])} for c in assistant.courses.all()]
     response = {"user": assistant.id, "name": assistant.name, "courses": courses}
     
     return json_response(response)

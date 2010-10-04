@@ -46,7 +46,8 @@ class Student(models.Model):
         return u"%s: %s" % (self.name, self.group)
 
 class Assistant(Student):
-    code = models.CharField(max_length=128, default='')
+    #code must be unique
+    code = models.CharField(max_length=128, default='', unique=True)
     courses = models.ManyToManyField('Course', blank=True)
     groups = models.ManyToManyField('Group', blank=True)
     
