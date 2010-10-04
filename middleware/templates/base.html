@@ -23,7 +23,7 @@
  
  {% if request.session.course %}
  <div id="menu">
- {% if user.get_profile.assistant.is_updater %}
+ {% if user.get_profile.assistant.is_updater or user.is_staff %}
     <div class="menu-right">
     <a href="{% url middleware.frontend.views.assistants request.session.course.id %}" id="menu-assistants">Assistants
     {% if user.get_profile.get_new_count %}

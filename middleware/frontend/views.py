@@ -90,7 +90,7 @@ def import_course(request):
             {'step': step, 'assistants': assistants},
             context_instance=RequestContext(request))            
     if step == 2:
-        id = request.GET.get('a', request.user.get_profile().assistant.id)
+        id = request.GET.get('a', 0)
         a = Assistant.objects.get(pk=id)
         # Start import
         # Run middleware.worker for now and capture output
@@ -124,7 +124,7 @@ def import_course(request):
             {'step': step, 'error': error, 'courses': courses, 'assistant': a},
             context_instance=RequestContext(request))
     if step == 3:
-        id = request.GET.get('a', request.user.get_profile().assistant.id)
+        id = request.GET.get('a', 0)
         a = Assistant.objects.get(pk=id)
         course_id = int(request.GET.get('c', -1))
         
