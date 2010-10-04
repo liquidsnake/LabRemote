@@ -8,4 +8,6 @@
 <color name="grey2">#BBBBBB</color>
 <color name="press">#00FFFFFF</color>
 <color name="normal">#30FFFFFF</color>
+<color name="greywhite">#f5f5f5</color>
+<color name="lav">#e6e6fa</color>
 </resources>

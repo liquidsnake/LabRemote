@@ -19,6 +19,7 @@
 
 package com.android.LabRemote.UI;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -39,12 +41,14 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
 import android.widget.Gallery;
 import android.widget.PopupWindow;
 import android.widget.SimpleAdapter;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
@@ -53,7 +57,7 @@ import com.android.LabRemote.Utils.AvatarCallback;
 import com.android.LabRemote.Utils.GroupAdapter;
 import com.android.LabRemote.Utils.GroupItem;
 import com.android.LabRemote.Utils.ShowAvatar;
-
+//TODO: current week chenar, selector + vacante + post
 /** 
  * Lists the students of a specific group
  * @see GroupItemView
@@ -75,6 +79,9 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	/** Requests that a child activity returns with error message 
 	 * if there was a server communication error during its initialization */
 	public static final int REQUEST_FROM_SERVER = 3;
+	private ArrayList<String> mInactiveWeeks;
+	private String mCurrentWeek;
+	private AvatarCallback ava;
 
 	/**
 	 * Displays a newly downloaded avatar
@@ -107,8 +114,8 @@ public class GroupView extends ListActivity implements AvatarCallback {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.group_view);
 		
-		/** Test schimbare saptamana 
-		ava = this;
+		/** Test schimbare saptamana */
+		ava = this; /*
 		TableLayout he = (TableLayout) findViewById(R.id.header);
 		he.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -130,18 +137,31 @@ public class GroupView extends ListActivity implements AvatarCallback {
 				int[] to = new int[] {R.id.resultName};
 				List<Map<String, String>> list = new ArrayList<Map<String, String>>();
 
-				for (int i = 0; i < 18; i++) {
+				for (int i = 0; i < 18; i++) {//TODO: max weeks
 					Map<String, String> map = new HashMap<String, String>();
 					map.put("sapt", i+"");
 					list.add(map);
 				}
 				SimpleAdapter words = new SimpleAdapter(getApplicationContext(), list, 
 						R.layout.search_result_item, from, to);
-				Gallery content = new Gallery(getApplicationContext());
+				final Gallery content = new Gallery(getApplicationContext());
+				content.setSpacing(5);
+				content.setBackgroundColor(R.color.lav);
 				content.setAdapter(words);
+				content.setSelection(Integer.parseInt(mCurrentWeek), true);
+				content.setOnItemClickListener(new OnItemClickListener() {
+					public void onItemClick(AdapterView<?> arg0, View arg1,
+							int arg2, long arg3) {
+						if (mInactiveWeeks.contains(arg2+""))
+							Toast.makeText(getApplicationContext(), "vacanta", 1).show();
+						else
+							getWeek(arg2); //in alt thread + dc e sapt curent nu mai cer
+					}
+				});
 				
 				PopupWindow week = new PopupWindow(content, ViewGroup.LayoutParams.FILL_PARENT, 
 						ViewGroup.LayoutParams.WRAP_CONTENT);
+				week.setBackgroundDrawable(getResources().getDrawable(R.color.lav));
 				week.setFocusable(true);
 				week.setTouchable(true);
 				week.setOutsideTouchable(true);
@@ -152,6 +172,28 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		receiveData();
 	}
 
+	private class Week extends AsyncTask<String, String, String> {
+	     protected void onProgressUpdate(Integer... progress) {
+	     }
+
+	     protected void onPostExecute(String result) {
+	    	 if (mData != null) 
+	 			fillList();
+	    }
+
+		@Override
+		protected String doInBackground(String... params) {
+			ServerResponse response = new Connection(getApplicationContext()).
+			getGroup(params[0], params[1], params[2]); //stiu oricand group si mAID ?
+			mData = (JSONObject) response.getRespone();
+			return "";
+		}
+	 }
+	 
+	private void getWeek(int id) {
+		new Week().execute(mGroup, mAID, id+"");
+	}
+	
 	/**
 	 * Receives data from the previous activity and from the server
 	 * @see Connection
@@ -174,7 +216,7 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		if (getIntent().getBooleanExtra("Current", false) == true) 
 			response = new Connection(this).getCurrentGroup();
 		else
-			response = new Connection(this).getGroup(mGroup, mAID);
+			response = new Connection(this).getGroup(mGroup, mAID, null);
 		
 		mData = (JSONObject) response.getRespone();
 		if (mData != null) 
@@ -205,7 +247,12 @@ public class GroupView extends ListActivity implements AvatarCallback {
 			mGroup = mData.getString("name");
 			TextView groupText = (TextView) findViewById(R.id.classHeader);
 			groupText.setText(mGroup);
+			JSONArray inactive = mData.getJSONArray("inactive_weeks");
+			mInactiveWeeks = new ArrayList<String>();
+			for (int i = 0; i < inactive.length(); i++)
+				mInactiveWeeks.add(i, inactive.getString(i));
 			mAID = mData.getString("activity_id");
+			mCurrentWeek = mData.getString("week");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

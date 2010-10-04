@@ -56,7 +56,7 @@ public class Connection {
 	private String mCode;
 	/** Middleware's address */
 	private String mHost;
-	/** Selected course */
+	/** Selected course's id */
 	private String mCourse;
 	/** Assistant's id */
 	private String mID;
@@ -79,7 +79,7 @@ public class Connection {
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 		this.mCode = mPreferences.getString("loginCode", null);
 		this.mHost = mPreferences.getString("host", null);
-		this.mCourse = mPreferences.getString("course", null);
+		this.mCourse = mPreferences.getString("courseId", null);
 		this.mID = mPreferences.getString("userId", null);
 		this.mHttpClient = new DefaultHttpClient();
 	}
@@ -126,7 +126,7 @@ public class Connection {
 	public ServerResponse login() {
 		ServerResponse res;
 		JSONObject jObject = null;
-		String[] courses;	
+		JSONObject[] courses;	
 		
 		/** Server request */
 		String request = mHost + logQuery + mCode;
@@ -140,12 +140,14 @@ public class Connection {
 			SharedPreferences.Editor editor = mPreferences.edit();
 			String user_id = jObject.getString("user");
 			JSONArray c = jObject.getJSONArray("courses");
-			courses = new String[c.length()];
+			courses = new JSONObject[c.length()];
 			for (int i = 0; i < c.length(); i++)
-				courses[i] = c.getString(i);
+				courses[i] = c.getJSONObject(i);
 
-			if (c.length() > 0)
-				editor.putString("course", courses[0]); 
+			if (c.length() > 0) {
+				editor.putString("course", courses[0].getString("abbr"));
+				editor.putString("courseId", courses[0].getString("id"));
+			}
 			editor.putString("userId", user_id); 
 			editor.commit();
 		} catch (JSONException e) {
@@ -183,9 +185,12 @@ public class Connection {
 		return new ServerResponse(jObject, null);
 	}
 
-	public ServerResponse getGroup(String group, String aid) {
+	public ServerResponse getGroup(String group, String aid, String week) {
 		String request = mHost + groupQuery + mCourse + "/" + mID + "/" 
-				+ mCode + "/" + group + "/" + aid;
+				+ mCode + "/" + group + "/" + aid + "/";
+		if (week != null)
+			request += week + "/";
+			
 		return get(request);
 	}
 	
