@@ -201,28 +201,28 @@ def student(request, user, session_key, course, id):
         return json_response({"error":"No such course"}, failed = True)
 
     try:
-        my_group = student.virtual_group.get(course=course)
+        my_group = student.virtual_group.get(course=course).name
+        attendances = {}
+        activities = my_group.activity_set.all().order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start')    
+        for i,act in enumerate(activities):
+            current_act = {"activity_id":act.id, "activity_day": act.day, "activity_interval":act.interval}
+            atts = act.attendance_set.filter(student=student, course=course)
+            for a in atts:
+                grd = int(a.grade)
+                if a.week in attendances:
+                    attendances[a.week]['grade'] += grd
+                    attendances[a.week]['grades'].append(grd)
+                else:
+                    attendances[a.week] = {"grade":grd, "grades": [grd]}
     except Group.DoesNotExist:
-        return json_response({"error":"No such course"}, failed = True)
+        my_group = ''
+        attendances = {}
         
-    
-    attendances = {}
-    activities = my_group.activity_set.all().order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start')    
-    for i,act in enumerate(activities):
-        current_act = {"activity_id":act.id, "activity_day": act.day, "activity_interval":act.interval}
-        atts = act.attendance_set.filter(student=student, course=course)
-        for a in atts:
-            grd = int(a.grade)
-            if a.week in attendances:
-                attendances[a.week]['grade'] += grd
-                attendances[a.week]['grades'].append(grd)
-            else:
-                attendances[a.week] = {"grade":grd, "grades": [grd]}
-    
     return json_response({"name": student.name,
         "id": student.id,
         "avatar": student.avatar,
-        "virtual_group": my_group.name,
+        "group": student.group,
+        "virtual_group": my_group,
         "attendances": attendances})
         
 @valid_key
