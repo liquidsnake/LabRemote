@@ -34,7 +34,7 @@ def json_response(dct):
 
 
 def course_required(function):
-    def _decorated(request, getcourse='', **kwargs):
+    def _decorated(request, getcourse=0, **kwargs):
         course = request.session.get('course', None)
         if not course:
             return redirect(reverse(views.course_select))
@@ -43,7 +43,7 @@ def course_required(function):
         
 @login_required
 @course_required
-def dashboard(request, getcourse=''):
+def dashboard(request, getcourse=0):
     """ Show client dashboard or redirect to select client page"""
     return render_to_response('dashboard.html', 
         context_instance=RequestContext(request),
@@ -76,7 +76,7 @@ def course_select(request, course):
             return redirect('/dev-null') # TODO error
     
     request.session['course'] = course
-    return redirect(reverse("course_selected", args=[course.name]))
+    return redirect(reverse("course_selected", args=[course.id]))
     
 @login_required
 def import_course(request):
@@ -274,6 +274,7 @@ def group_students_rem(request, getcourse, group_id, stud_id):
 @login_required
 @course_required
 def timetable(request, getcourse):
+    """ Show all the current activities for a course."""
     course = request.session.get('course', None)
     #defines for the way the timetable will look like:
     #hour height in pixels
@@ -353,6 +354,7 @@ def form_success(request, object, operation, id):
 @login_required
 @course_required
 def export_group_csv(request, getcourse, group_id):
+    course = request.session.get('course', None)
     #TODO: check for inexistent group
     group = get_object_or_404(Group, id=group_id)
     response = HttpResponse(mimetype='text/csv')
@@ -367,13 +369,13 @@ def export_group_csv(request, getcourse, group_id):
     for activity in activities:
         writer.writerow(["Activity during %s on %s" % (activity.interval, activity.day_of_the_week)])
         #get the maximum attendance week
-        max = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
+        max = course.max_weeks
         l = range(max+1)
         l[0] = ''
         l.extend(['', 'Sum'])
         writer.writerow(l)
         for student in students:
-            attendances = Attendance.objects.filter(student = student, course__name = getcourse, activity = activity)
+            attendances = Attendance.objects.filter(student = student, course = course, activity = activity)
             #grades for this student for this activity
             atts = [unicodedata.normalize('NFKD', student.name).encode('ascii','ignore')]
             sum = 0
@@ -390,7 +392,7 @@ def export_group_csv(request, getcourse, group_id):
     
     writer.writerow(['Sum during all the activities'])
     for student in students:
-        grade = Attendance.objects.filter(student = student, course__name = getcourse).aggregate(Sum('grade'))['grade__sum']
+        grade = Attendance.objects.filter(student = student, course = course).aggregate(Sum('grade'))['grade__sum']
         if grade == None:
             grade = 0
         atts = [unicodedata.normalize('NFKD', student.name).encode('ascii','ignore'), grade]
@@ -400,21 +402,24 @@ def export_group_csv(request, getcourse, group_id):
     return response
 
 def public_group_link(request, getcourse, group_id):
+    course = request.session.get('course', None)
+    course = Course.objects.get(id=course.id)
     group = get_object_or_404(Group, id=group_id)
 
     students = group.students.all() 
     activities = group.activity_set.order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start').all()
     saved_activities = []
+    
+    max = course.max_weeks
+
     for activity in activities:
         saved_activity = {}
         saved_activity['interval'] = activity.interval
         saved_activity['day'] = activity.day_of_the_week
         #get the maximum attendance week
-        max = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
-        saved_activity['weeks'] = range(1, max+1)
         saved_activity['students'] = []
         for student in students:
-            attendances = Attendance.objects.filter(student = student, course__name = getcourse, activity = activity)
+            attendances = Attendance.objects.filter(student = student, course = course, activity = activity)
             #grades for this student for this activity
             atts = []
             sum = 0
@@ -434,7 +439,7 @@ def public_group_link(request, getcourse, group_id):
     
     total_grades = []
     for student in students:
-        grade = Attendance.objects.filter(student = student, course__name = getcourse).aggregate(Sum('grade'))['grade__sum']
+        grade = Attendance.objects.filter(student = student, course = course).aggregate(Sum('grade'))['grade__sum']
         if grade == None:
             grade = 0
         total_grades.append({'name':unicodedata.normalize('NFKD', student.name).encode('ascii','ignore'), 'grade':grade})
@@ -443,6 +448,8 @@ def public_group_link(request, getcourse, group_id):
         {'saved_activities': saved_activities,
          'total_grades' : total_grades,
          'group_name' : group.name,
+         'weeks' : range(1,course.max_weeks+1),
+         'inactive' : course.inactive_as_list,
         },
         context_instance=RequestContext(request),
         )    
@@ -485,6 +492,9 @@ def get_week(start_day):
     return max(delta.days / 7, 0) 
 
 def group_edit(request, getcourse, group_id):
+    course = request.session.get('course', None)
+    #Get the course as saving it in the session has some problems
+    course = Course.objects.get(id=course.id)
     group = get_object_or_404(Group, id=group_id)
 
     students = group.students.all() 
@@ -496,16 +506,15 @@ def group_edit(request, getcourse, group_id):
         saved_activity['day'] = activity.day_of_the_week
         saved_activity['activity'] = activity
         #get the maximum attendance week
-        max_w = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
-        max_w = max(max_w, get_week(activity.day_start))
-        saved_activity['weeks'] = range(1, max_w+1)
         saved_activities.append(saved_activity)
                     
     return render_to_response('group_edit.html',
         {'saved_activities': saved_activities,
          'group_name' : group.name,
-         'course' : getcourse,
+         'course' : course,
          'students': students,
+         'weeks' : range(1,course.max_weeks+1),
+         'inactive' : course.inactive_as_list,
         },
         context_instance=RequestContext(request),
         )   
@@ -513,6 +522,7 @@ def group_edit(request, getcourse, group_id):
 @login_required
 @course_required
 def get_activity(request, getcourse, activity_id):
+    course = request.session.get('course', None)
     #TODO error checking
     student_list = []
     try:
@@ -522,9 +532,8 @@ def get_activity(request, getcourse, activity_id):
         pass
     students = []        
     for student in student_list:
-        max_w = Attendance.objects.filter(course__name = getcourse, activity = activity).aggregate(Max('week'))['week__max']
-        max_w = max(max_w, get_week(activity.day_start))
-        attendances = Attendance.objects.filter(student = student, course__name = getcourse, activity = activity)
+        max_w = course.max_weeks
+        attendances = Attendance.objects.filter(student = student, course = course, activity = activity)
         student_data = {"name": student.name}
         student_data["student_id"] = student.id
         sum = 0

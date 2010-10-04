@@ -3,10 +3,10 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.core import serializers
 from django.http import HttpResponse, Http404
-import json
-import datetime
 from django.views.decorators.csrf import csrf_exempt
-
+import json
+from datetime import datetime
+from datetime import date
 
 from models import *
 
@@ -79,7 +79,7 @@ def login(request, qr_code):
 def timetable(request, user, session_key, course):
     """ Returns the timetable for the current course. """
     try:
-        course = Course.objects.get(name=course)
+        course = Course.objects.get(id=course)
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
 
@@ -88,7 +88,7 @@ def timetable(request, user, session_key, course):
     
     for (i, day) in enumerate(DAYS):
         activities = {}
-        acts = Activity.objects.filter(course__name=course).filter(day=i) 
+        acts = Activity.objects.filter(course=course).filter(day=i) 
         for a in acts:
             try:
                 activities[a.interval].append({"name":a.group.name, "id":a.id})
@@ -99,15 +99,32 @@ def timetable(request, user, session_key, course):
     
     return json_response({"timetable" : timetable})
 
+def get_week(course):
+    td = datetime.now()
+    start_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
+    diff = td - start_date
+    return diff.days/7 + 1
+
 @valid_key
 def group(request, user, session_key, name, course, activity_id, week = None):
     """ Returns a certain group from a certain course """
     assistant = request.assistant
     
     try:
-        course = Course.objects.get(name=course)
+        course = Course.objects.get(id=course)
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
+    
+    if week is None:
+        week = get_week(course)
+    else:
+        week = int(week)
+   
+    if week > course.max_weeks:
+        return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
+    
+    if week in course.inactive_as_list:
+        return json_response({"error":"This week is during the holiday"}, failed = True)
     
     try:
         act = Activity.objects.get(id = activity_id)
@@ -115,11 +132,9 @@ def group(request, user, session_key, name, course, activity_id, week = None):
         return json_response({"error":"No such activity"}, failed = True)
     
     try:
-        group = Group.objects.get(name=name, course__name=course)
+        group = Group.objects.get(name=name, course = course)
         students = []
         for s in group.students.all():
-            if week is None:
-                week = get_week(act.day_start)
             attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = week, defaults={'grade': 0})
             students.append({"name": s.name, 
                 "grade": int(attendance.grade),
@@ -128,7 +143,7 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     except Group.DoesNotExist:
         return json_response({"error": "No such group"}, failed = True)
                 
-    return json_response({"name": name, "students": students, "activity_id":activity_id, "week": get_week(act.day_start)})
+    return json_response({"name": name, "students": students, "activity_id":activity_id, "week": week})
 
 @valid_key
 def current_group(request, user, session_key, course, week = None):
@@ -137,12 +152,23 @@ def current_group(request, user, session_key, course, week = None):
     now = datetime.datetime.now().time()
 
     try:
-        course = Course.objects.get(name=course)
+        course = Course.objects.get(id=course)
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
     
+    if week is None:
+        week = get_week(course)
+    else:
+        week = int(week)
+    
+    if week > course.max_weeks:
+        return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
+    
+    if week in course.inactive_weeks_as_a_list:
+        return json_response({"error":"This week is during the holiday"}, failed = True)
+    
     #get all the where the user is an assistant for this course
-    for group in assistant.groups.filter(course__name=course):
+    for group in assistant.groups.filter(course = course):
         for act in group.activity_set.all():
             #see if the group activity is taking place now
             start = datetime.time(act.time_hour_start, act.time_minute_start)
@@ -170,7 +196,7 @@ def student(request, user, session_key, course, id):
         return json_response({"error":"No such student"}, failed = True)
 
     try:
-        course = Course.objects.get(name=course)
+        course = Course.objects.get(pk=course)
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
 
@@ -205,7 +231,7 @@ def search(request, user, session_key, course, query):
     Returns a list of maximum 20 results """
     
     try:
-        c = Course.objects.get(name=course)
+        c = Course.objects.get(id=course)
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
     
@@ -224,9 +250,6 @@ def search(request, user, session_key, course, query):
     
     return json_response({"students": results})
 
-def get_week(start_day):
-    delta = datetime.date.today() - start_day
-    return max(delta.days / 7, 0)
 
 @csrf_exempt
 def post_data(request):
@@ -247,13 +270,25 @@ def post_data(request):
         return json_response({"error":"invalid session key"}, failed = True)
         
     try:
-        course = Course.objects.get(name=course)
+        course = Course.objects.get(id=course)
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
+    
 
     try:
         data = json.loads(request.POST['contents'])
         if request.POST['type'] == 'group':
+            try:
+                week = int(request.POST['week'])
+            except:
+                week = get_week(course)
+
+            if week > course.max_weeks:
+                return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
+            
+            if week in course.inactive_weeks_as_a_list:
+                return json_response({"error":"This week is during the holiday"}, failed = True)
+            
             try:
                 act = Activity.objects.get(id = int(data['activity_id']))
             except Activity.DoesNotExist:
@@ -262,7 +297,7 @@ def post_data(request):
                 try: 
                     current_student = Student.objects.get(id = int(student['id']))
                     student['grade'] = float(student['grade'])
-                    attendance, created = Attendance.objects.get_or_create(course = course, student = current_student, activity = act, week = get_week(act.day_start), defaults={'grade': student['grade']})
+                    attendance, created = Attendance.objects.get_or_create(course = course, student = current_student, activity = act, week = week, defaults={'grade': student['grade']})
                     attendance.grade = student['grade']
                     attendance.save()
                 except Student.DoesNotExist:

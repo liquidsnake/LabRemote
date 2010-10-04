@@ -8,14 +8,14 @@
 <h2>Dashboard</h2>
     {% if user.get_profile.assistant %}
     <div class="login_code">
-        Scanează codul de mai jos pentru a te autentifica pe mobilul Android. <br/>
+        Scan the code below to authenticate yourself on the Andorid smartphone<br/>
         <img src="http://chart.apis.google.com/chart?cht=qr&chs=250x250&chl={{ user.get_profile.assistant.code }}" />
         <br/>
         <span>code: {{ user.get_profile.assistant.code }}</span>
     </div>
     
-    Asistent: {{ user.get_profile.assistant }} <br/>
-    Sincronizare moodle: {{ user.get_profile.assistant.is_updater }} <br/>
+    Assistant: {{ user.get_profile.assistant }} <br/>
+    Moodle sync: {{ user.get_profile.assistant.is_updater }} <br/>
     Course: {{ request.session.course.name }} <br/>
     Groups: {{ user.get_profile.assistant.groups.all }}
     

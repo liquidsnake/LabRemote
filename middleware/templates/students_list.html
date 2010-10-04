@@ -35,7 +35,7 @@
     <tr>
         <td>{{ d.external_id }}</td>
         <td><img src="{{ d.avatar }}" width="40" valign="middle" />
-        <a href="{% url middleware.frontend.views.student_profile request.session.course d.id %}">{{ d.first_name }} {{ d.last_name }}</a></td>
+        <a href="{% url middleware.frontend.views.student_profile request.session.course.id d.id %}">{{ d.first_name }} {{ d.last_name }}</a></td>
         <td>{{ d.group }}</td>
         <td>{{ d.groups }}</td>
         <td>

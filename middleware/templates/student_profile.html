@@ -32,7 +32,7 @@
 
 {% block bottom_buttons %}
 {% for g in student.groups %}
-    <a href="{% url middleware.frontend.views.group_edit request.session.course g.id %}" class="button">Edit attendance {{ g.name }}</a>
+    <a href="{% url middleware.frontend.views.group_edit request.session.course.id g.id %}" class="button">Edit attendance {{ g.name }}</a>
 {% endfor %}
 {% endblock %}
 

@@ -116,3 +116,11 @@ div.menu-right {
     float: right;
     text-align: right;
 }
+
+.inactive_column {
+    background-color:grey;
+}
+
+.grade{
+    width: 4%;
+}

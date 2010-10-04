@@ -1,4 +1,6 @@
 import hashlib
+from datetime import datetime
+from datetime import timedelta
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -18,7 +20,6 @@ class Student(models.Model):
     external_id = models.IntegerField(default=0)
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(default='', max_length=64, blank=True)
-    
     group = models.CharField(default='', blank=True, max_length=20)
     avatar = models.URLField(verify_exists=False, default='', blank=True)
     
@@ -63,21 +64,32 @@ class Assistant(Student):
         return computed_hash
         
     def __unicode__(self):
-        return u"%s" % (self.name, )
+        return u"%s" % self.name
 
 class Course(models.Model):
     external_id = models.IntegerField(default=0)
     name = models.CharField(max_length=64)
     title = models.CharField(max_length=100, default='')
+    start_year = models.IntegerField(help_text = "The year when the activity has started", default = 2010)
+    start_week = models.IntegerField(help_text = "The week number when the activity has started", default = 0)
+    max_weeks = models.IntegerField(help_text = "Number of activities which will take place", default = 14)
+    inactive_weeks = models.CommaSeparatedIntegerField(max_length = 100, help_text = "Comma separated list of weeks in which the activity will not take place")
         
     students = models.ManyToManyField(Student, blank=True)
     
     def get_groups(self):
         """ Return unique groups """
         return list(self.students.values('group').distinct())
+    
+    @property
+    def inactive_as_list(self):
+        return map(int, self.inactive_weeks.strip(',').split(','))
         
     def __unicode__(self):
-        return u"%s" % self.name
+        start_date = datetime.strptime('%d %d 1' % (self.start_year, self.start_week), '%Y %W %w')
+        end_year = start_date + timedelta(weeks = self.max_weeks)
+        end_date = end_year.strftime("%d-%m-%Y")
+        return u"%s (%s - %s)" % (self.name, start_date.strftime("%d-%m-%Y"), end_date)
     
 class Group(models.Model):
     """ This is a managed, virtual group. Not a moodle one """
@@ -112,8 +124,6 @@ class Activity(models.Model):
     time_hour_end = models.IntegerField(default=10)
     time_minute_end = models.IntegerField(default=0)
 
-    day_start = models.DateField()
-    
     @property
     def interval(self):
         return u"%s-%s" % (self.time_start, self.time_end)

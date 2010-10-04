@@ -13,8 +13,8 @@
 <table>
     <tr>
         <th> Name </th>
-        {% for week in activity.weeks %}
-            <th> {{ week }} </th>
+        {% for week in weeks %}
+            <th class="grade"> {{ week }} </th>
         {% endfor %}
         <th> Sum </th>
     </tr>
@@ -23,9 +23,13 @@
             <td> {{ student.name }} </td>
             
             {% for attendance in student.attendances %}
-                <td>
-                    {{ attendance }}
-                </td>
+                {% if forloop.counter in inactive %}
+                    <td class="inactive_column">
+                {% else %}
+                    <td>
+                {% endif %}
+                        {{ attendance }}
+                    </td>
             {% endfor %}
 
             <td> {{ student.sum }} </td>

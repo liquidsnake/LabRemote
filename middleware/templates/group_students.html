@@ -20,7 +20,7 @@ Available ({{ group.parent_group }}):
     <tr>
         <td>{{ d.name }}</td>
         <td>{{ d.group }}</td>
-        <td><a href='{% url middleware.frontend.views.group_students_add request.session.course group.id d.id %}'>add</a></td>
+        <td><a href='{% url middleware.frontend.views.group_students_add request.session.course.id group.id d.id %}'>add</a></td>
     </tr>
 {% endfor %}
 </table>
@@ -36,7 +36,7 @@ Group {{ group.name }}:
     <tr>
         <td>{{ d.name }}</td>
         <td>{{ d.group }}</td>
-        <td><a href='{% url middleware.frontend.views.group_students_rem request.session.course group.id d.id %}'>remove</a></td>
+        <td><a href='{% url middleware.frontend.views.group_students_rem request.session.course.id group.id d.id %}'>remove</a></td>
     </tr>
 {% endfor %}
 </table>
@@ -46,6 +46,6 @@ Group {{ group.name }}:
 </table>
 
 <a href='/crud/update/group/{{ group.id }}/'>Edit group info</a> <br/>
-<a href='{% url middleware.frontend.views.groups_index request.session.course %}'>Back to groups</a>
+<a href='{% url middleware.frontend.views.groups_index request.session.course.id %}'>Back to groups</a>
 {% endblock %}
 

@@ -38,7 +38,7 @@ YAHOO.util.Event.addListener(window, "load", function() {
             
             YAHOO.util.Connect.asyncRequest(
                 'POST',
-                '/course/{{course}}/update_grade/{{activity.activity.id}}/'+record.getData('student_id')+'/'+column.key+'/', 
+                '/course/{{course.id}}/update_grade/{{activity.activity.id}}/'+record.getData('student_id')+'/'+column.key+'/', 
                 {
                     success:function(o) {
                         var r = o.responseText;
@@ -65,20 +65,24 @@ YAHOO.util.Event.addListener(window, "load", function() {
 
         var myColumnDefs = [
             {key:"name", label:"Name", sortable:true},
-            {% for week in activity.weeks %}
-                {key:"week_{{ week }}", label:"{{ week }}", abbr: "Week {{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, editor: textEditor },
+            {% for week in weeks %}
+                {% if week in inactive %}
+                    {key:"week_{{ week }}", label:"{{ week }}", abbr: "Week {{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, className: "inactive_column" },
+                {% else %}
+                    {key:"week_{{ week }}", label:"{{ week }}", abbr: "Week {{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, editor: textEditor },
+                {% endif %}
             {% endfor %}
             {key:"sum", label:"Sum", formatter:YAHOO.widget.DataTable.formatNumber },
         ];
 
-        var myDataSource = new YAHOO.util.DataSource("/course/{{ course }}/get_activity/{{activity.activity.id}}/");
+        var myDataSource = new YAHOO.util.DataSource("/course/{{ course.id }}/get_activity/{{activity.activity.id}}/");
         myDataSource.responseType = YAHOO.util.DataSource.TYPE_JSON;
         myDataSource.connXhrMode = "queueRequests";
         myDataSource.responseSchema = {
             resultsList: "Results",
             fields: ["name",
                 "student_id",
-                {% for week in activity.weeks %}
+                {% for week in weeks %}
                     {key:"week_{{ week }}", parser:"number"},
                 {% endfor %}
                 {key: "sum", parser:"number"},
