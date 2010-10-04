@@ -143,7 +143,7 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     except Group.DoesNotExist:
         return json_response({"error": "No such group"}, failed = True)
                 
-    return json_response({"name": name, "students": students, "activity_id":activity_id, "week": week})
+    return json_response({"name": name, "students": students, "activity_id":activity_id, "week": week, "inactive_weeks" : course.inactive_as_list})
 
 @valid_key
 def current_group(request, user, session_key, course, week = None):
@@ -184,7 +184,7 @@ def current_group(request, user, session_key, course, week = None):
                         "grade": int(attendance.grade),
                         "id": s.id,
                         "avatar": s.avatar})
-                return json_response({"name": group.name, "students": students, 'activity_id' : act.id, "week" : week})
+                return json_response({"name": group.name, "students": students, 'activity_id' : act.id, "week" : week, "inactive_weeks" : course.inactive_as_list})
     return json_response({"error":"no current group"}, failed = True)
     
 @valid_key
