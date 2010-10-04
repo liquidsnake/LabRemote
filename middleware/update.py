@@ -53,7 +53,7 @@ def main(args):
                 course = None
                 for c in courses:
                     if c[0] == course_id:
-                        course = Course(external_id=course_id, title=c[1], name=c[1])
+                        course = Course(external_id=course_id, title=c[1], name=''.join([chr[0] for chr in c[1].split(' ')]))
                         course.save()
                         break
                 if course is None:
