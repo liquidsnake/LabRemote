@@ -118,9 +118,15 @@ div.menu-right {
 }
 
 .inactive_column {
-    background-color:grey;
+    background-color:#BDBDBD;
 }
 
 .grade{
     width: 4%;
 }
+
+tr.inactive_week td{
+    background-color:#BDBDBD;
+}
+
+

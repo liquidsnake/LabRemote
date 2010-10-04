@@ -7,6 +7,8 @@
 {% block javascript %} 
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.1/build/fonts/fonts-min.css" />
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.1/build/datatable/assets/skins/sam/datatable.css" />
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.1/build/container/assets/skins/sam/container.css" />
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/dragdrop/dragdrop-min.js"></script>
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
 
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/connection/connection-min.js"></script>
@@ -14,6 +16,9 @@
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/element/element-min.js"></script>
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/datasource/datasource-min.js"></script>
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/datatable/datatable-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/container/container-min.js"></script>
+<script src="http://yui.yahooapis.com/2.8.1/build/dragdrop/dragdrop-min.js"></script>
+
  {% endblock %}
 
 {% block content %}
@@ -23,7 +28,10 @@
 <h3>Attendance for activity during {{ activity.interval }} on {{ activity.day }}</h3>
 <div id="cellediting"></div> 
 
-<div class="tip">Tip: click on any of the grades to edit them!</div>
+<div class="tip">Tip: click on any of the grades to edit them!
+        <button id="show1">Show week layout</button> 
+</div>
+    
 
 <div id="json_{{ activity.activity.id }}"></div>
 
@@ -129,6 +137,45 @@ YAHOO.util.Event.addListener(window, "load", function() {
 
 
 {% endfor %}
+
+<script type="text/javascript">
+
+        function init() {
+            YAHOO.example.panel1 = new YAHOO.widget.Panel("panel1", { width:"320px", visible:false, constraintoviewport:true, underlay:"shadow", draggable:"true" } );
+            YAHOO.example.panel1.render();
+
+            YAHOO.util.Event.addListener("show1", "click", YAHOO.example.panel1.show, YAHOO.example.panel1, true);
+
+        }
+
+        YAHOO.util.Event.addListener(window, "load", init);
+</script>
+
+    
+    <div id="panel1">
+        <div class="hd">Actual weeks:</div>
+        <div class="bd">
+            <table class="weeks_table">
+            <tr>
+                <th>Week no.</th>
+                <th>Day start</th>
+                <th>Day end</th>
+            </tr>
+            {% for week in week_legend %}
+            {% if week.week in inactive %}
+            <tr class="inactive_week">
+            {% else %}
+            <tr>
+            {% endif %}
+                <td> {{ week.week }} </td>
+                <td> {{ week.start_date }} </td>
+                <td> {{ week.end_date }} </td>
+            </tr> 
+            {% endfor %}
+            </table>
+        </div>
+        <div class="ft"></div>
+    </div>
 
 
 {% endblock %}

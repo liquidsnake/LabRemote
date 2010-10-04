@@ -507,6 +507,16 @@ def group_edit(request, getcourse, group_id):
         saved_activity['activity'] = activity
         #get the maximum attendance week
         saved_activities.append(saved_activity)
+
+    #show the weeks in human readable form
+    week_legend = []
+    c_week = datetime.datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
+    for i in range(course.max_weeks):
+        next_date = c_week + timedelta(weeks = 1)
+        end_date = next_date.strftime("%d-%m-%Y")
+        start_date = c_week.strftime("%d-%m-%Y")
+        week_legend.append({'week': i+1, 'week_m1': i, 'start_date': start_date, 'end_date': end_date})
+        c_week = next_date
                     
     return render_to_response('group_edit.html',
         {'saved_activities': saved_activities,
@@ -514,6 +524,7 @@ def group_edit(request, getcourse, group_id):
          'course' : course,
          'students': students,
          'weeks' : range(1,course.max_weeks+1),
+         'week_legend' : week_legend,
          'inactive' : course.inactive_as_list,
         },
         context_instance=RequestContext(request),
