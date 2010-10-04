@@ -84,7 +84,10 @@ class Course(models.Model):
     
     @property
     def inactive_as_list(self):
-        return map(int, self.inactive_weeks.strip(',').split(','))
+        l = self.inactive_weeks.strip(',').split(',')
+        if l:
+            return map(int, self.inactive_weeks.strip(',').split(','))
+        return []
         
     def __unicode__(self):
         start_date = datetime.strptime('%d %d 1' % (self.start_year, self.start_week), '%Y %W %w')
