@@ -19,7 +19,11 @@
 
 package com.android.LabRemote.UI;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -32,6 +36,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -83,6 +88,8 @@ public class Settings extends Activity {
 	private RelativeLayout manual;
 	/** Allows the user to insert a new login code */
 	private EditText editCode;
+	private String[] courses;
+	private String[] coursesId;
 
 	private static final String INTENT_SCAN = "com.google.zxing.client.android.SCAN";
 	private static final String SCAN_MODE = "SCAN_MODE";
@@ -171,7 +178,11 @@ public class Settings extends Activity {
 			public void onClick(View v) {
 				ServerResponse result = checkLogin();
 				if (result.getError() == null) {
-					showSelect((String[])result.getRespone());
+					ArrayList<Pair<String, String>> s = (ArrayList<Pair<String, String>>)result.getRespone();
+					String[] res = new String[s.size()];
+					for (int i = 0; i < s.size(); i++)
+						res[i] = s.get(i).second;
+					showSelect(res);
 					mLogin = true;
 				} else 
 					showLoginFailed(result.getError());		
@@ -233,7 +244,7 @@ public class Settings extends Activity {
 		final String[] values = courses;
 		mSelCourseDialog.setItems(courses, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
-				mEditor.putString("course", values[item]);
+				mEditor.putString("course", values[item]);//TODO: course id
 				mSelectCourse.setText(values[item]);
 			}
 		});
