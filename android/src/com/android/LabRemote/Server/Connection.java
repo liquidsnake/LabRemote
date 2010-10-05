@@ -44,6 +44,7 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Pair;
 
 //TODO: return null la catch
 /**
@@ -136,17 +137,22 @@ public class Connection {
 			return res;
 
 		/** Parse response */
+		//TODO: fac MPair class sau Map
+		ArrayList<Pair<String, String>> cc = new ArrayList<Pair<String, String>>();
 		try {
 			SharedPreferences.Editor editor = mPreferences.edit();
 			String user_id = jObject.getString("user");
 			JSONArray c = jObject.getJSONArray("courses");
+			
 			courses = new JSONObject[c.length()];
-			for (int i = 0; i < c.length(); i++)
-				courses[i] = c.getJSONObject(i);
+			for (int i = 0; i < c.length(); i++) {
+				cc.add(new Pair<String, String>(c.getJSONObject(i).getString("id"),
+						c.getJSONObject(i).getString("abbr")));
+			}
 
-			if (c.length() > 0) {
-				editor.putString("course", courses[0].getString("abbr"));
-				editor.putString("courseId", courses[0].getString("id"));
+			if (cc.size() > 0) {
+				editor.putString("course", cc.get(0).second);
+				editor.putString("courseId", cc.get(0).first);
 			}
 			editor.putString("userId", user_id); 
 			editor.commit();
@@ -156,7 +162,7 @@ public class Connection {
 		}
 
 		/** Successful login */
-		return new ServerResponse(courses, null);
+		return new ServerResponse(cc, null);
 	}
 
 	/**
