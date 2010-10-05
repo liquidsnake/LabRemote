@@ -19,6 +19,8 @@
 
 package com.android.LabRemote.UI;
 
+import java.util.List;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -30,6 +32,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -38,6 +41,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,20 +49,12 @@ import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 
-import java.util.List;
-
 /** 
  * Application's settings activity. <br>
  * Allows the users to set the middleware's host, load the login code
  * and switch between courses.
  */
 public class Settings extends Activity {
-
-	//@Override
-	//public void onBackPressed() {
-		// TODO Auto-generated method stub
-		//super.onBackPressed();
-	//}
 
 	/** Shows if login was checked or not */
 	private boolean mLogin;
@@ -83,7 +79,9 @@ public class Settings extends Activity {
 	private AlertDialog.Builder mSelCourseDialog;
 	/** Dialog that displays an error when login fails */
 	private AlertDialog.Builder mLoginFailedDialog;
-	private LinearLayout manual;
+	/** Background layout where the user can load the login code manual */
+	private RelativeLayout manual;
+	/** Allows the user to insert a new login code */
 	private EditText editCode;
 
 	private static final String INTENT_SCAN = "com.google.zxing.client.android.SCAN";
@@ -91,6 +89,14 @@ public class Settings extends Activity {
 	private static final String QR_CODE_MODE = "QR_CODE_MODE";
 	private static final String SCAN_RESULT = "SCAN_RESULT";
 	private static final int REQCODE_SCAN = 0;
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+	    if (keyCode == KeyEvent.KEYCODE_BACK) {
+	        return true;
+	    }
+	    return super.onKeyDown(keyCode, event);
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -138,7 +144,7 @@ public class Settings extends Activity {
 		
 		/** Load login code manual */
 		Button manualLoad = (Button)findViewById(R.id.loadManual);
-		manual = (LinearLayout)findViewById(R.id.loadCodeManual);
+		manual = (RelativeLayout)findViewById(R.id.loadCodeManual);
 		manualLoad.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				mLoadCode.setVisibility(View.GONE);
