@@ -17,7 +17,9 @@
     Assistant: {{ user.get_profile.assistant }} <br/>
     Moodle sync: {{ user.get_profile.assistant.is_updater }} <br/>
     Course: {{ request.session.course.name }} <br/>
-    Groups: {{ user.get_profile.assistant.groups.all }}
+    Groups: {% for group in user.get_profile.assistant.groups.all %}
+    <a href="{% url group_students request.session.course.id group.id %}">{{ group.name }}</a>
+    {% endfor %}
     
     <p style="clear:both"></p>
     {% endif %}

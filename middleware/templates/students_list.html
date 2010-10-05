@@ -37,7 +37,11 @@
         <td><img src="{{ d.avatar }}" width="40" valign="middle" />
         <a href="{% url middleware.frontend.views.student_profile request.session.course.id d.id %}">{{ d.first_name }} {{ d.last_name }}</a></td>
         <td>{{ d.group }}</td>
-        <td>{{ d.groups }}</td>
+        <td>
+        {% for group in d.groups %}
+            <a href="{% url group_students request.session.course.id group.id %}">{{ group.name }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        </td>
         <td>
         {% block action_buttons %}
         {% endblock %}
