@@ -276,7 +276,6 @@ def post_data(request):
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
     
-
     try:
         data = json.loads(request.POST['contents'])
         if request.POST['type'] == 'group':
@@ -288,7 +287,7 @@ def post_data(request):
             if week > course.max_weeks:
                 return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
             
-            if week in course.inactive_weeks_as_a_list:
+            if week in course.inactive_as_list:
                 return json_response({"error":"This week is during the holiday"}, failed = True)
             
             try:
@@ -307,5 +306,5 @@ def post_data(request):
             return json_response({})
         else:
             return json_response({"error":"Wrong query type"}, failed = True)
-    except Exception:
-        return json_response({"error":"Malformed query"}, failed = True)
+    except Exception as e:
+        return json_response({"error":"Malformed query %s" % e}, failed = True)
