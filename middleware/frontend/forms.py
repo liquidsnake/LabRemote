@@ -14,6 +14,11 @@ class AssistantForm(ModelForm):
     class Meta:
         model = models.Assistant
         exclude = ('group','external_id',)
+        
+class CourseForm(ModelForm):
+    class Meta:
+        model = models.Course
+        exclude = ('students',)
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField()

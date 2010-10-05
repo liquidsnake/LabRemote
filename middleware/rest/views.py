@@ -6,9 +6,11 @@ from django.http import HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
+from datetime import time
 from datetime import date
 
 from models import *
+from middleware.core.functions import get_week
 
 DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"]
 
@@ -99,11 +101,6 @@ def timetable(request, user, session_key, course):
     
     return json_response({"timetable" : timetable})
 
-def get_week(course):
-    td = datetime.now()
-    start_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
-    diff = td - start_date
-    return diff.days/7 + 1
 
 @valid_key
 def group(request, user, session_key, name, course, activity_id, week = None):
@@ -149,8 +146,8 @@ def group(request, user, session_key, name, course, activity_id, week = None):
 def current_group(request, user, session_key, course, week = None):
     """ Returns the current group for this course and assistant """
     assistant = request.assistant
-    now = datetime.datetime.now().time()
-
+    now = datetime.now().time() # Atentie: nu da valori corecte (timezone)
+    
     try:
         course = Course.objects.get(id=course)
     except Course.DoesNotExist:
@@ -164,16 +161,16 @@ def current_group(request, user, session_key, course, week = None):
     if week > course.max_weeks:
         return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
     
-    if week in course.inactive_weeks_as_a_list:
+    if week in course.inactive_as_list:
         return json_response({"error":"This week is during the holiday"}, failed = True)
     
     #get all the where the user is an assistant for this course
     for group in assistant.groups.filter(course = course):
         for act in group.activity_set.all():
             #see if the group activity is taking place now
-            start = datetime.time(act.time_hour_start, act.time_minute_start)
-            end = datetime.time(act.time_hour_end, act.time_minute_end)
-            today = datetime.date.today().weekday()
+            start = time(act.time_hour_start, act.time_minute_start)
+            end = time(act.time_hour_end, act.time_minute_end)
+            today = datetime.today().weekday()
             if today == act.day and start <= now and now <= end:
                 students = []
                 for s in group.students.all(): 
@@ -201,7 +198,7 @@ def student(request, user, session_key, course, id):
         return json_response({"error":"No such course"}, failed = True)
 
     try:
-        my_group = student.virtual_group.get(course=course).name
+        my_group = student.virtual_group.get(course=course)
         attendances = {}
         activities = my_group.activity_set.all().order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start')    
         for i,act in enumerate(activities):
@@ -214,6 +211,7 @@ def student(request, user, session_key, course, id):
                     attendances[a.week]['grades'].append(grd)
                 else:
                     attendances[a.week] = {"grade":grd, "grades": [grd]}
+        my_group = my_group.name
     except Group.DoesNotExist:
         my_group = ''
         attendances = {}
@@ -274,7 +272,6 @@ def post_data(request):
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
     
-
     try:
         data = json.loads(request.POST['contents'])
         if request.POST['type'] == 'group':
@@ -286,7 +283,7 @@ def post_data(request):
             if week > course.max_weeks:
                 return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
             
-            if week in course.inactive_weeks_as_a_list:
+            if week in course.inactive_as_list:
                 return json_response({"error":"This week is during the holiday"}, failed = True)
             
             try:
@@ -305,5 +302,5 @@ def post_data(request):
             return json_response({})
         else:
             return json_response({"error":"Wrong query type"}, failed = True)
-    except Exception:
-        return json_response({"error":"Malformed query"}, failed = True)
+    except Exception as e:
+        return json_response({"error":"Malformed query %s" % e}, failed = True)

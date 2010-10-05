@@ -19,6 +19,8 @@
 
 package com.android.LabRemote.UI;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,8 +33,11 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -42,7 +47,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Gallery;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.SimpleAdapter;
 import android.widget.TableLayout;
@@ -300,6 +307,78 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		back.putExtra("serverError", error);
 		setResult(Activity.RESULT_CANCELED, back);
 		finish();
+	}
+	
+	private class WeekAdapter extends BaseAdapter {
+
+		/** Array filled with list's elements */
+		private ArrayList<String> mItems = new ArrayList<String>();
+		/** Called when a list item is clicked */
+		private OnClickListener mOnItemClick;
+		private Context mContext;
+
+		public WeekAdapter(Context context, ArrayList<String> items, 
+				OnClickListener onItemClick) {
+			mOnItemClick = onItemClick;
+			mContext = context;
+			mItems = items;
+		}
+
+		public int getCount() {
+			return mItems.size();
+		}
+
+		public Object getItem(int index) {
+			return mItems.get(index);
+		}
+
+		public long getItemId(int index) {
+			return index;
+		}
+		
+		public View getView(int index, View convertView, ViewGroup parent) {
+			LinearLayout item;
+			String it = mItems.get(index);
+			
+			//item = //cel nou cu it
+			//item.setOnClickListener(mOnItemClick);
+			//item.setClickable(true);
+
+			return null;
+		}
+
+		/**
+		 * Downloads an avatar from the given url and fires the callback
+		 * function that displays the new photo
+		 */
+		private class DownloadAvatar extends Thread {
+			private String mUrl;
+			private AvatarCallback mAvatarCallback;
+			private GroupItemView mItem;
+
+			public DownloadAvatar(String url, AvatarCallback avatarCallback, GroupItemView item) {
+				mUrl = url;
+				mAvatarCallback= avatarCallback;
+				mItem = item;
+				start();
+			}
+
+			public void run() {
+				try
+				{
+					HttpURLConnection con = (HttpURLConnection)(new URL(mUrl)).openConnection();
+					con.connect();
+					Bitmap b = BitmapFactory.decodeStream(con.getInputStream());
+					mItem.getItem().setAvatar(b);
+					ShowAvatar displayer = new ShowAvatar(mItem, b);
+					mAvatarCallback.onImageReceived(displayer);
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (NullPointerException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 }

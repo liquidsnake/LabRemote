@@ -15,11 +15,18 @@
     </div>
     
     Assistant: {{ user.get_profile.assistant }} <br/>
-    Moodle sync: {{ user.get_profile.assistant.is_updater }} <br/>
     Course: {{ request.session.course.name }} <br/>
-    Groups: {% for group in user.get_profile.assistant.groups.all %}
+    Groups: 
+    {% for group in user.get_profile.assistant.groups.all %}
     <a href="{% url group_students request.session.course.id group.id %}">{{ group.name }}</a>
-    {% endfor %}
+    {% endfor %} <br/>
+    
+    <h3>Today</h3>
+    
+    <p>Current week: {{ info.week }} <span class="info">({{ info.actual_week }})</span> Inactive: {{ info.inactive_week }}</p>
+    
+    <p>Current group: {{ info.activity.group }} <em>{{ info.activity }}</em> </p>
+    
     
     <p style="clear:both"></p>
     {% endif %}

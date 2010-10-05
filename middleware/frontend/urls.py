@@ -3,7 +3,7 @@ import middleware.frontend.views as views
 from django.views.generic.create_update import create_object, update_object, delete_object
 from django.views.generic.simple import direct_to_template
 from middleware.core.models import Activity, Group, Assistant, Course
-from middleware.frontend.forms import GroupForm, AssistantForm
+from middleware.frontend.forms import GroupForm, AssistantForm, CourseForm
 
 urlpatterns = patterns('',
     (r'^$', views.dashboard),
@@ -11,18 +11,23 @@ urlpatterns = patterns('',
     (r'^form_success/(?P<object>[^/]+)/(?P<operation>[^/]+)(/(?P<id>\d+))?/$', views.form_success),
     (r'^import_course/$', views.import_course),
     url(r'^course/(?P<getcourse>\d+)/$', views.dashboard, name="course_selected"),
+   
     (r'^course/(?P<getcourse>\d+)/students/$', views.students_list),
     (r'^course/(?P<getcourse>\d+)/student/(?P<stud_id>\d+)/$', views.student_profile),
+   
     (r'^course/(?P<getcourse>\d+)/timetable/$', views.timetable),
+    
     (r'^course/(?P<getcourse>\d+)/groups/$', views.groups_index), 
     url(r'^course/(?P<getcourse>\d+)/group_students/(?P<group_id>\d+)/$', views.group_students, name="group_students"), 
+    (r'^course/(?P<getcourse>\d+)/group_view/(?P<group_id>\d+)/$', views.group_view), 
     (r'^course/(?P<getcourse>\d+)/export_group_csv/(?P<group_id>\d+)/$', views.export_group_csv), 
     (r'^public/(?P<getcourse>\d+)/group/(?P<group_id>\d+)/$', views.public_group_link), 
     (r'^course/(?P<getcourse>\d+)/group_edit/(?P<group_id>\d+)/$', views.group_edit), 
-    (r'^course/(?P<getcourse>\d+)/get_activity/(?P<activity_id>\d+)/$', views.get_activity), 
-    (r'^course/(?P<getcourse>\d+)/update_grade/(?P<activity_id>\d+)/(?P<student_id>\d+)/week_(?P<week>\d+)/$', views.update_grade), 
     (r'^course/(?P<getcourse>\d+)/group_student_add/(?P<group_id>\d+)/(?P<stud_id>\d+)/$', views.group_students_add), 
     (r'^course/(?P<getcourse>\d+)/group_student_rem/(?P<group_id>\d+)/(?P<stud_id>\d+)/$', views.group_students_rem), 
+    
+    (r'^course/(?P<getcourse>\d+)/get_activity/(?P<activity_id>\d+)/$', views.get_activity), 
+    (r'^course/(?P<getcourse>\d+)/update_grade/(?P<activity_id>\d+)/(?P<student_id>\d+)/week_(?P<week>\d+)/$', views.update_grade), 
     
     (r'^course/(?P<getcourse>\d+)/assistants/$', views.assistants),
     (r'^course/(?P<getcourse>\d+)/assistant/approve/(?P<ass_id>\d+)/$', views.assistant_approve),
@@ -83,7 +88,7 @@ urlpatterns = patterns('',
     ),
     # Course
     (r'^crud/update/course/(?P<object_id>\d+)/$', update_object, {
-            'model': Course, 
+            'form_class': CourseForm, 
             'login_required': True, 
             'template_name': 'object_form.html', 
             'post_save_redirect': '/form_success/Course/update/%(id)s/', 

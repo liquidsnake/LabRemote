@@ -128,5 +128,9 @@ div.menu-right {
 tr.inactive_week td{
     background-color:#BDBDBD;
 }
-
-
+div.profile_picture {
+    float:right;
+}
+.info {
+    color: #888;
+}

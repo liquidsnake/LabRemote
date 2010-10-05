@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Group View{% endblock %}
+
+{% block css %}#menu-groups {background-color: #eee;}{% endblock %}
+
+{% block content %}
+<h2>{% block content_title %}Group View{% endblock %}</h2>
+
+Group {{ group.name }}:
+<table class="object_list">
+    <tr>
+       <th>student</th>
+       <th>group</th>
+    </tr>
+{% for d in group.students.all %}
+    <tr>
+        <td><a href="{% url middleware.frontend.views.student_profile request.session.course.id d.id %}">{{ d.name }}</a></td>
+        <td>{{ d.group }}</td>
+        <td><a href='{% url middleware.frontend.views.group_students_rem request.session.course.id group.id d.id %}'>remove</a></td>
+    </tr>
+{% endfor %}
+</table>
+
+<a href='{% url group_students request.session.course.id group.id %}/'>Add/Remove students</a> <br/>
+<a href='/crud/update/group/{{ group.id }}/'>Edit group info</a> <br/>
+<a href='{% url middleware.frontend.views.groups_index request.session.course.id %}'>Back to groups</a>
+{% endblock %}
+
