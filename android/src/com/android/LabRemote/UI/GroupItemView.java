@@ -84,7 +84,7 @@ public class GroupItemView extends LinearLayout {
 	 */
 	private void initImage(int res) {
 		mImg = (ImageView) findViewById(res);
-		mImg.setBackgroundResource(android.R.drawable.picture_frame);
+		//mImg.setBackgroundResource(android.R.drawable.picture_frame);
 		Bitmap avatar = mItem.getAvatar();
 		setImage(avatar);
 	}

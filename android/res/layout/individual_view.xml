@@ -15,7 +15,8 @@
 	<LinearLayout android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:orientation="horizontal"
 		android:background="@color/white">
-		<FrameLayout android:layout_width="70dip" android:layout_height="70dip" android:layout_margin="10dip">
+		<FrameLayout android:layout_width="70dip" android:layout_height="70dip" android:layout_margin="10dip"
+			android:padding="4dip" android:background="@drawable/att">
 			<ImageView android:id="@+id/individualPhoto" android:layout_width="fill_parent" 
 				android:layout_height="fill_parent" android:background="@drawable/empty"/>
 		</FrameLayout>
@@ -38,16 +39,16 @@
 
 	<!-- Attendance list -->
 	<LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:orientation="vertical" android:background="@drawable/att">
+		android:orientation="vertical">
 	<TextView android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:text="Attendance" android:paddingLeft="20dip"
 		android:textSize="20dip" android:textColor="@color/black" android:paddingRight="20dip"/>
-	<LinearLayout android:layout_width="fill_parent" android:layout_height="2dip" android:background="@color/grey" />
+	<LinearLayout android:layout_width="fill_parent" android:layout_height="2dip" />
 	</LinearLayout>
 	<ListView android:id="@android:id/list" android:divider="@color/white"
 		android:layout_width="fill_parent" android:layout_height="fill_parent"
 		android:background="@color/white" android:orientation="vertical" 
-		android:paddingRight="55dip">
+		android:paddingRight="55dip" android:paddingLeft="30dip">
 	</ListView>
 
 </LinearLayout>

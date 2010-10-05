@@ -19,13 +19,8 @@
 
 package com.android.LabRemote.UI;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,22 +31,22 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Gallery;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-import android.widget.SimpleAdapter;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -88,7 +83,8 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	public static final int REQUEST_FROM_SERVER = 3;
 	private ArrayList<String> mInactiveWeeks;
 	private String mCurrentWeek;
-	private AvatarCallback ava;
+	private Gallery content;
+	private PopupWindow week;
 
 	/**
 	 * Displays a newly downloaded avatar
@@ -122,53 +118,48 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		setContentView(R.layout.group_view);
 		
 		/** Test schimbare saptamana */
-		ava = this; /*
-		TableLayout he = (TableLayout) findViewById(R.id.header);
-		he.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				ArrayList<GroupItem> nou = new ArrayList<GroupItem>();
-				nou.add(mList.get(0));
-				nou.add(mList.get(1));
-				nou.add(mList.get(2));
-				nou.add(mList.get(3));
-				mAdapter = new GroupAdapter(getApplicationContext(), nou, ava, onItemClick);
-				setListAdapter(mAdapter);				
-			}
-		}); */
+
 		
 		/** Test popup week */
 		TableLayout he = (TableLayout) findViewById(R.id.header);
 		he.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				String[] from = new String[] {"sapt"};
-				int[] to = new int[] {R.id.resultName};
-				List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+				ArrayList<String> wee = new ArrayList<String>();
 
 				for (int i = 0; i < 18; i++) {//TODO: max weeks
-					Map<String, String> map = new HashMap<String, String>();
-					map.put("sapt", i+"");
-					list.add(map);
+					wee.add(i+"");
 				}
-				SimpleAdapter words = new SimpleAdapter(getApplicationContext(), list, 
-						R.layout.search_result_item, from, to);
-				final Gallery content = new Gallery(getApplicationContext());
+				LinearLayout layout = new LinearLayout(getApplicationContext());
+				layout.setOrientation(LinearLayout.VERTICAL);
+				TextView title = new TextView(getApplicationContext());
+				title.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+				title.setTextColor(R.color.black);
+				title.setText("Select weeeek:");
+				layout.addView(title);
+				content = new Gallery(getApplicationContext());
 				content.setSpacing(5);
-				content.setBackgroundColor(R.color.lav);
-				content.setAdapter(words);
+				final WeekAdapter adap = new WeekAdapter(getApplicationContext(), wee, null, mInactiveWeeks, mCurrentWeek);
+				content.setAdapter(adap);
 				content.setSelection(Integer.parseInt(mCurrentWeek), true);
 				content.setOnItemClickListener(new OnItemClickListener() {
 					public void onItemClick(AdapterView<?> arg0, View arg1,
 							int arg2, long arg3) {
 						if (mInactiveWeeks.contains(arg2+""))
 							Toast.makeText(getApplicationContext(), "vacanta", 1).show();
-						else
+						else {
+							TextView sel = (TextView)arg1.findViewById(R.id.resultName);
+							sel.setTypeface(Typeface.DEFAULT_BOLD);
 							getWeek(arg2); //in alt thread + dc e sapt curent nu mai cer
+							week.dismiss();							
+						}
 					}
 				});
 				
-				PopupWindow week = new PopupWindow(content, ViewGroup.LayoutParams.FILL_PARENT, 
+				layout.addView(content);
+				week = new PopupWindow(layout, ViewGroup.LayoutParams.FILL_PARENT, 
 						ViewGroup.LayoutParams.WRAP_CONTENT);
-				week.setBackgroundDrawable(getResources().getDrawable(R.color.lav));
+				//week.setBackgroundDrawable(getResources().getDrawable(android.R.drawable.editbox_dropdown_light_frame));
+				week.setBackgroundDrawable(getResources().getDrawable(android.R.drawable.spinner_dropdown_background));
 				week.setFocusable(true);
 				week.setTouchable(true);
 				week.setOutsideTouchable(true);
@@ -198,6 +189,25 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	 }
 	 
 	private void getWeek(int id) {
+		JSONObject result = new JSONObject();
+		try {
+			result.put("name", mGroup);
+			result.put("activity_id", mAID);
+			result.put("week", mCurrentWeek);
+			System.out.println("prntru " + mCurrentWeek);
+			JSONArray students = new JSONArray();
+			for (int i = 0; i < mList.size(); i++) {
+				JSONObject stud = new JSONObject();
+				stud.put("id", mList.get(i).getID());
+				stud.put("grade", mList.get(i).getGrade());
+				students.put(stud);
+			}			
+			result.put("students", students);
+			new Connection(this).post(result, "group"); //TODO: check response
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
 		new Week().execute(mGroup, mAID, id+"");
 	}
 	
@@ -208,10 +218,10 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	private void receiveData() {
 
 		/** Header informations */
-		String mDate = getIntent().getStringExtra("Date");
+		String mDate = getIntent().getStringExtra("Date"); //TODO: iau week day si eu trim si week
 		TextView dateText = (TextView) findViewById(R.id.dateHeader);
 		dateText.setText(mDate); 
-		mAID = getIntent().getStringExtra("AID");
+		mAID = getIntent().getStringExtra("AID"); 
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		String course = preferences.getString("course", null);
 		TextView cv = (TextView) findViewById(R.id.courseName);
@@ -316,9 +326,14 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		/** Called when a list item is clicked */
 		private OnClickListener mOnItemClick;
 		private Context mContext;
+		private String mWeek;
+		private TextView current;
+		private ArrayList<String> mInvalid;
 
 		public WeekAdapter(Context context, ArrayList<String> items, 
-				OnClickListener onItemClick) {
+				OnClickListener onItemClick, ArrayList<String> invalid, String week) {
+			mWeek = week;
+			mInvalid = invalid;
 			mOnItemClick = onItemClick;
 			mContext = context;
 			mItems = items;
@@ -337,47 +352,23 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		}
 		
 		public View getView(int index, View convertView, ViewGroup parent) {
-			LinearLayout item;
+			View item;
+			LayoutInflater layoutInflater = (LayoutInflater)
+					mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			item = layoutInflater.inflate(R.layout.search_result_item, null, false);
+
 			String it = mItems.get(index);
+			TextView text = (TextView)item.findViewById(R.id.resultName);
+			text.setText(it);
 			
-			//item = //cel nou cu it
-			//item.setOnClickListener(mOnItemClick);
-			//item.setClickable(true);
-
-			return null;
-		}
-
-		/**
-		 * Downloads an avatar from the given url and fires the callback
-		 * function that displays the new photo
-		 */
-		private class DownloadAvatar extends Thread {
-			private String mUrl;
-			private AvatarCallback mAvatarCallback;
-			private GroupItemView mItem;
-
-			public DownloadAvatar(String url, AvatarCallback avatarCallback, GroupItemView item) {
-				mUrl = url;
-				mAvatarCallback= avatarCallback;
-				mItem = item;
-				start();
+			if (mWeek.equals(index+"")) {
+				text.setTypeface(Typeface.DEFAULT_BOLD);
+				current = text;
 			}
+			if (mInvalid.contains(index+""))
+				text.setTextColor(R.color.grey);
 
-			public void run() {
-				try
-				{
-					HttpURLConnection con = (HttpURLConnection)(new URL(mUrl)).openConnection();
-					con.connect();
-					Bitmap b = BitmapFactory.decodeStream(con.getInputStream());
-					mItem.getItem().setAvatar(b);
-					ShowAvatar displayer = new ShowAvatar(mItem, b);
-					mAvatarCallback.onImageReceived(displayer);
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (NullPointerException e) {
-					e.printStackTrace();
-				}
-			}
+			return item;
 		}
 	}
 

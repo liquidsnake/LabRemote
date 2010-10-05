@@ -154,7 +154,7 @@ public class StudentView extends ListActivity {
 			TextView groupStudentView = (TextView)findViewById(R.id.individualGroup);
 			groupStudentView.setText(mGroup);
 			ImageView avatar = (ImageView)findViewById(R.id.individualPhoto);
-			avatar.setBackgroundResource(android.R.drawable.picture_frame); //era frame
+			//avatar.setBackgroundResource(android.R.drawable.picture_frame); //era frame
 			String avatarUrl = data.getString("avatar");
 			setAvatar(avatar, avatarUrl);
 		} catch (JSONException e) {

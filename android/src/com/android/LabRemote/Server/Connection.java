@@ -237,6 +237,7 @@ public class Connection {
         nameValuePairs.add(new BasicNameValuePair("session_key", mCode));  
         nameValuePairs.add(new BasicNameValuePair("type", type));
         nameValuePairs.add(new BasicNameValuePair("contents", data.toString()));  
+        System.out.println("am trimis " + nameValuePairs);
         
         /** Send post */
 		try {
