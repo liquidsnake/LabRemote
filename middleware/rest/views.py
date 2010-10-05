@@ -279,7 +279,7 @@ def post_data(request):
         data = json.loads(request.POST['contents'])
         if request.POST['type'] == 'group':
             try:
-                week = int(request.POST['week'])
+                week = int(data['week'])
             except:
                 week = get_week(course)
 
