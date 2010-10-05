@@ -10,6 +10,7 @@ from datetime import time
 from datetime import date
 
 from models import *
+from middleware.core.functions import get_week
 
 DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"]
 
@@ -100,11 +101,6 @@ def timetable(request, user, session_key, course):
     
     return json_response({"timetable" : timetable})
 
-def get_week(course):
-    td = datetime.now()
-    start_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
-    diff = td - start_date
-    return diff.days/7 + 1
 
 @valid_key
 def group(request, user, session_key, name, course, activity_id, week = None):

@@ -27,20 +27,23 @@ LabRemote:
 <table class="object_list">
     <tr>
        <th>group</th>
-       <th>students</th>
        <th></th>
     </tr>
 {% for d in groups %}
     <tr>
-        <td>{{ d.name }}</td>
-        <td align="center">{{ d.students.all|length }}</td>
+        <td><big><a href="{% url middleware.frontend.views.group_view request.session.course.id d.id %}">{{ d.name }}</a> <br/></big>
+        
+        Students: {{ d.students.all|length }}
+        </td>
         <td class="actions">
-            <a href='/crud/update/group/{{ d.id }}/'>Edit</a>
             <a href='{% url middleware.frontend.views.group_students request.session.course.id d.id %}'>Students</a>
-            <a href='/crud/delete/group/{{ d.id }}/'>Delete</a>
             <a href='{% url middleware.frontend.views.group_edit request.session.course.id d.id %}'>Edit attendances</a>
             <a href='{% url middleware.frontend.views.export_group_csv request.session.course.id d.id %}'>Export as CSV</a>
             <a href='{% url middleware.frontend.views.public_group_link request.session.course.id d.id %}'>Public link</a>
+        </td>
+        <td class="actions">
+            <a href='/crud/update/group/{{ d.id }}/'>Edit</a>
+            <a href='/crud/delete/group/{{ d.id }}/'>Delete</a>
         </td>
     </tr>
 {% endfor %}

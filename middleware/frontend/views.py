@@ -12,6 +12,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django import forms
 
 from middleware.core.models import *
+from middleware.core.functions import *
 from middleware.frontend.forms import RegisterForm, UpdateGradeForm
 
 import csv
@@ -45,7 +46,19 @@ def course_required(function):
 @course_required
 def dashboard(request, getcourse=0):
     """ Show client dashboard or redirect to select client page"""
+    info = {}
+    course = request.session.get('course', None)
+    
+    info['week'] = get_week(course)
+    info['actual_week'] = info['week'] + course.start_week
+    info['inactive_week'] = info['week'] in course.inactive_as_list
+    try:
+        info['activity'] = get_current_activity(request.user.get_profile().assistant, course)
+    except Exception as e:
+        info['activity'] = str(e)
+    
     return render_to_response('dashboard.html', 
+        {'info': info, 'course': course},
         context_instance=RequestContext(request),
         )      
 
@@ -252,6 +265,16 @@ def group_students(request, getcourse, group_id):
             
     return render_to_response('group_students.html',
         {'group': group, 'available_students': available_students},
+        context_instance=RequestContext(request),
+        )
+        
+@login_required
+@course_required
+def group_view(request, getcourse, group_id):
+    group = Group.objects.get(id=group_id)
+            
+    return render_to_response('group_view.html',
+        {'group': group},
         context_instance=RequestContext(request),
         )
         
@@ -486,10 +509,6 @@ def register(request):
 
 def created(request):
     return render_to_response("accounts/created.html")
-
-def get_week(start_day):
-    delta = datetime.date.today() - start_day
-    return max(delta.days / 7, 0) 
 
 def group_edit(request, getcourse, group_id):
     course = request.session.get('course', None)
