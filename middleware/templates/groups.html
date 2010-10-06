@@ -11,43 +11,51 @@
     <tr>
         <td width="30%" valign="top"> 
 Moodle:
-<table class="object_list">
-    <tr>
-       <th>group</th>
-    </tr>
-{% for d in moodle_groups %}
-    <tr>
-        <td>{{ d.group }}</td>
-    </tr>
-{% endfor %}
-</table>
+{% if moodle_groups %}
+    <table class="object_list">
+        <tr>
+           <th>group</th>
+        </tr>
+    {% for d in moodle_groups %}
+        <tr>
+            <td>{{ d.group }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <div>There are no Moodle groups.</div>
+{% endif %}
         </td>
         <td width="70%" valign="top">
 LabRemote:
-<table class="object_list">
-    <tr>
-       <th>group</th>
-       <th></th>
-    </tr>
-{% for d in groups %}
-    <tr>
-        <td><big><a href="{% url middleware.frontend.views.group_view request.session.course.id d.id %}">{{ d.name }}</a> <br/></big>
-        
-        Students: {{ d.students.all|length }}
-        </td>
-        <td class="actions">
-            <a href='{% url middleware.frontend.views.group_students request.session.course.id d.id %}'>Students</a>
-            <a href='{% url middleware.frontend.views.group_edit request.session.course.id d.id %}'>Edit attendances</a>
-            <a href='{% url middleware.frontend.views.export_group_csv request.session.course.id d.id %}'>Export as CSV</a>
-            <a href='{% url middleware.frontend.views.public_group_link request.session.course.id d.id %}'>Public link</a>
-        </td>
-        <td class="actions">
-            <a href='/crud/update/group/{{ d.id }}/'>Edit</a>
-            <a href='/crud/delete/group/{{ d.id }}/'>Delete</a>
-        </td>
-    </tr>
-{% endfor %}
-</table>
+{% if groups %}
+    <table class="object_list">
+        <tr>
+           <th>group</th>
+           <th></th>
+        </tr>
+    {% for d in groups %}
+        <tr>
+            <td><big><a href="{% url middleware.frontend.views.group_view request.session.course.id d.id %}">{{ d.name }}</a> <br/></big>
+            
+            Students: {{ d.students.all|length }}
+            </td>
+            <td class="actions">
+                <a href='{% url middleware.frontend.views.group_students request.session.course.id d.id %}'>Students</a>
+                <a href='{% url middleware.frontend.views.group_edit request.session.course.id d.id %}'>Edit attendances</a>
+                <a href='{% url middleware.frontend.views.export_group_csv request.session.course.id d.id %}'>Export as CSV</a>
+                <a href='{% url middleware.frontend.views.public_group_link request.session.course.id d.id %}'>Public link</a>
+            </td>
+            <td class="actions">
+                <a href='/crud/update/group/{{ d.id }}/'>Edit</a>
+                <a href='/crud/delete/group/{{ d.id }}/'>Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <div>There are no LabRemote groups.</div>
+{% endif %}
             <a href='/crud/add/group/'>Add a new group</a>
         </td>
     </tr>

@@ -7,7 +7,7 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 import views
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
-from django.db.models import Max, Sum
+from django.db.models import Max, Sum, Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django import forms
 
@@ -158,13 +158,22 @@ def import_course(request):
     return render_to_response('import_course.html',
             {'step': 3},
             context_instance=RequestContext(request))
-    
+
+class SearchForm(forms.Form):
+    query = forms.CharField(max_length=100, label="Search for student")
+
 @login_required
 @course_required
 def students_list(request, getcourse):
     course = request.session.get('course', None)
     
-    students_list = Student.objects.filter(course=course)
+    if request.method == 'POST': 
+        form = SearchForm(request.POST) 
+        if form.is_valid():
+            students_list = Student.objects.filter(course=course).filter(Q(first_name__icontains=form.cleaned_data['query']) | Q(last_name__icontains=form.cleaned_data['query']))
+    else:
+        form = SearchForm() # An unbound form
+        students_list = Student.objects.filter(course=course)
     paginator = Paginator(students_list, 25) # Show 25 contacts per page
 
     try:
@@ -178,7 +187,9 @@ def students_list(request, getcourse):
         students = paginator.page(paginator.num_pages)
     
     return render_to_response('students_list.html', 
-            {"students": students},
+            {"students": students,
+             "form": form,
+            },
             context_instance=RequestContext(request),)
             
 @login_required

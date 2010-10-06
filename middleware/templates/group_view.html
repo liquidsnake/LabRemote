@@ -8,6 +8,8 @@
 <h2>{% block content_title %}Group View{% endblock %}</h2>
 
 Group {{ group.name }}:
+
+{% if group.students.all %}
 <table class="object_list">
     <tr>
        <th>student</th>
@@ -21,6 +23,10 @@ Group {{ group.name }}:
     </tr>
 {% endfor %}
 </table>
+{% else %}
+<div>
+There are no students in this group yet. <a href='{% url middleware.frontend.views.group_students request.session.course.id group.id %}'>Edit Students</a></div>
+{% endif %}
 
 <a href='{% url group_students request.session.course.id group.id %}/'>Add/Remove students</a> <br/>
 <a href='/crud/update/group/{{ group.id }}/'>Edit group info</a> <br/>

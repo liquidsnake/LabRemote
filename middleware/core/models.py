@@ -74,7 +74,7 @@ class Course(models.Model):
     start_year = models.IntegerField(help_text = "The year when the activity has started", default = 2010)
     start_week = models.IntegerField(help_text = "The week number when the activity has started", default = 0)
     max_weeks = models.IntegerField(help_text = "Number of activities which will take place", default = 14)
-    inactive_weeks = models.CommaSeparatedIntegerField(max_length = 100, help_text = "Comma separated list of weeks in which the activity will not take place")
+    inactive_weeks = models.CommaSeparatedIntegerField(max_length = 100, help_text = "Comma separated list of weeks in which the activity will not take place", null=True, blank=True)
         
     students = models.ManyToManyField(Student, blank=True)
     

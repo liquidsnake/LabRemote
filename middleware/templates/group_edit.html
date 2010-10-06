@@ -134,7 +134,8 @@ YAHOO.util.Event.addListener(window, "load", function() {
 });
 
 </script>
-
+{% empty %}
+There are no activities for this course. <a href='/crud/add/activity/'>Add more activities</a>
 
 {% endfor %}
 

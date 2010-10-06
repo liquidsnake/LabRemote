@@ -12,25 +12,29 @@
 <table>
     <tr>
         <td>Group </td>
-        <td>{{ student.group }}, {{ student.groups }} </td>
+        <td>{{ student.group }}, {% for group in student.groups %} {{ group }} {% if not forloop.last%}, {% endif %} {% endfor %} </td>
     </tr>
 </table>
 
 <h3>Attendance</h3>
-<table class="object_list">
-    <tr>
-       <th>attendance</th>
-       <th>week</th>
-       <th>grade</th>
-    </tr>
-{% for d in student.attendance %}
-    <tr>
-        <td>{{ d }}</td>
-        <td>{{ d.week }}</td>
-        <td>{{ d.grade }}</td>
-    </tr>
-{% endfor %}
-</table>
+{% if student.attendance %}
+    <table class="object_list">
+        <tr>
+           <th>attendance</th>
+           <th>week</th>
+           <th>grade</th>
+        </tr>
+    {% for d in student.attendance %}
+        <tr>
+            <td>{{ d }}</td>
+            <td>{{ d.week }}</td>
+            <td>{{ d.grade }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    There are no attendances for this student.
+{% endif %}
 
 {% block bottom_buttons %}
 {% for g in student.groups %}

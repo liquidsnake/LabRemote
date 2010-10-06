@@ -20,8 +20,8 @@
         <a href="/crud/update/assistant/{{ d.id }}/">{{ d.first_name }} {{ d.last_name }}</a></td>
         <td>{{ d.profile.user.username}}</td>
         <td>{% if d.profile.approved %}yes{% else %}<strong>no</strong>{% endif %}</td>
-        <td>{{ d.courses.all }}</td>
-        <td>{{ d.groups.all }}</td>
+        <td>{% for course in d.courses.all %}<a href="/crud/update/course/{{course.id}}/">{{ course }}</a>{% if not forloop.last %}, {% endif %} {% endfor %}</td>
+        <td>{% for group in d.groups.all %}<a href="{% url middleware.frontend.views.group_view request.session.course.id group.id %}">{{ group }}</a>{% if not forloop.last %}, {% endif %} {% endfor %}</td>
         <td align="center" class="actions">
         {% block action_buttons %}
         {% if d.profile %}

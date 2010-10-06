@@ -21,6 +21,12 @@
             <a href="?page={{ students.next_page_number }}">next</a>
         {% endif %}
     </span>
+    <form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Search" />
+    </form>
+
 </div>
 
 <table class="object_list">
