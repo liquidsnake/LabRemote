@@ -173,6 +173,7 @@ def group(request, user, session_key, name, course, activity_id, week = None):
         "name": name, 
         "students": students, 
         "activity_id":activity_id, 
+        "max_weeks": max_weeks,
         "week": week, 
         "inactive_weeks" : course.inactive_as_list, 
         "date": text_date
@@ -237,6 +238,7 @@ def current_group(request, user, session_key, course, week = None):
                     "name": group.name, 
                     "students": students, 
                     "activity_id" : act.id, 
+                    "max_weeks": max_weeks,
                     "week" : week, 
                     "inactive_weeks" : course.inactive_as_list, 
                     "date" : text_date
