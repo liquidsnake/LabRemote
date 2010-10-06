@@ -48,6 +48,7 @@ def dashboard(request, getcourse=0):
     """ Show client dashboard or redirect to select client page"""
     info = {}
     course = request.session.get('course', None)
+    course = Course.objects.get(id=course.id)
     
     info['week'] = get_week(course)
     info['actual_week'] = info['week'] + course.start_week

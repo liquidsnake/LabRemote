@@ -12,7 +12,7 @@ from datetime import date
 from models import *
 from middleware.core.functions import get_week
 
-DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"]
+DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
 def json_response(dct, failed = False):
     """ A shorthand for dumping json data """
@@ -122,11 +122,16 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     
     if week in course.inactive_as_list:
         return json_response({"error":"This week is during the holiday"}, failed = True)
-    
+
     try:
         act = Activity.objects.get(id = activity_id)
     except Activity.DoesNotExist:
         return json_response({"error":"No such activity"}, failed = True)
+    
+    #compute day when the respective activity took place
+    comp_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
+    comp_date = comp_date + timedelta(weeks = week, days = act.day)
+    text_date = comp_date.strftime("%a, %d %B")    
     
     try:
         group = Group.objects.get(name=name, course = course)
@@ -140,7 +145,7 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     except Group.DoesNotExist:
         return json_response({"error": "No such group"}, failed = True)
                 
-    return json_response({"name": name, "students": students, "activity_id":activity_id, "week": week, "inactive_weeks" : course.inactive_as_list})
+    return json_response({"name": name, "students": students, "activity_id":activity_id, "week": week, "inactive_weeks" : course.inactive_as_list, "date": text_date})
 
 @valid_key
 def current_group(request, user, session_key, course, week = None):
@@ -171,7 +176,13 @@ def current_group(request, user, session_key, course, week = None):
             start = time(act.time_hour_start, act.time_minute_start)
             end = time(act.time_hour_end, act.time_minute_end)
             today = datetime.today().weekday()
+    
             if today == act.day and start <= now and now <= end:
+                #compute day when the respective activity took place
+                comp_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
+                comp_date = comp_date + timedelta(weeks = week, days = act.day)
+                text_date = comp_date.strftime("%a, %d %B")    
+                
                 students = []
                 for s in group.students.all(): 
                     if week is None:
@@ -181,7 +192,7 @@ def current_group(request, user, session_key, course, week = None):
                         "grade": int(attendance.grade),
                         "id": s.id,
                         "avatar": s.avatar})
-                return json_response({"name": group.name, "students": students, 'activity_id' : act.id, "week" : week, "inactive_weeks" : course.inactive_as_list})
+                return json_response({"name": group.name, "students": students, 'activity_id' : act.id, "week" : week, "inactive_weeks" : course.inactive_as_list, "date" : text_date})
     return json_response({"error":"no current group"}, failed = True)
     
 @valid_key
