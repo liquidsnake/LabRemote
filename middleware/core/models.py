@@ -85,7 +85,7 @@ class Course(models.Model):
     @property
     def inactive_as_list(self):
         l = self.inactive_weeks.strip(',').split(',')
-        if l:
+        if self.inactive_weeks and l:
             return map(int, self.inactive_weeks.strip(',').split(','))
         return []
         

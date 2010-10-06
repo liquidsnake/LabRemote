@@ -1,0 +1,9 @@
+Documentatie în format DocBook -> Rezultă HTML, PDF etc
+Link-uri utile:
+  Crash course DocBook: http://opensource.bureau-cornavin.com/crash-course/en/crash-course.pdf
+  Pachete necesare, alte info: https://help.ubuntu.com/community/DocBook
+
+make pentru documentatia in format pdf. Fisier xml editat cu Jaxe.
+
+Requirements:
+	docbook-xsl -> ubuntu

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><book lang="en">
+<bookinfo>
+<authorgroup>
+<author>
+<firstname>Sergiu</firstname>
+<surname>Iordache</surname>
+<email>sergiu.iordache@korect.ro</email>
+</author>
+</authorgroup>
+<abstract>
+<para>
+<application class="software">LabRemote</application>is a complete solution for teaching assistants. <application class="software">LabRemote</application> is composed of two components: a web application used for advanced tasks such as importing courses, editing groups and students, etc and an Android application used for easily grading students. The current manual provides info for both applications.
+</para>
+</abstract>
+<title>LabRemote manual</title>
+</bookinfo>
+<chapter>
+<title>Web application</title>
+<para>
+<application class="software">LabRemote</application>'s web application provides the complete capabilities of LabRemote. It allows creating and editing the users, importing courses and students from Moodle, editing groups and grades and exporting the current grades to users. The web application is also used by the mobile application for data retrieval and manipulation.
+</para>
+<sect1>
+<title>User administration</title>
+<para>
+The process of using <application class="software">LabRemote</application> starts with the correct setup of the web application. During the Django initialization process (while running the <command>python manage.py syncdb</command> command) an administrator user will be created. This will be referenced from now on as the Admin account
+</para>
+<para>
+The follwing steps describe the process of setting up the web application(they assume that the web server is already capable of running Django web applications):
+</para>
+<orderedlist>
+<listitem>
+<para>
+Access the front page of the <application class="software">LabRemote</application> application.
+</para>
+</listitem>
+<listitem>
+<para>
+Create a new user account for one of the assistants.
+</para>
+</listitem>
+<listitem>
+<para>
+Login using the Admin account and click Edit for the newly created user.
+</para>
+</listitem>
+<listitem>
+<para>
+Fill in the needed details of the user ( be sure to check "Is Updater" and to fill in the Moodle details: url, user, password and course id)
+</para>
+</listitem>
+<listitem>
+<para>
+Click submit and then click the logo to return to the main page.
+</para>
+</listitem>
+<listitem>
+<para>
+Click the now edited user to start the import process.
+</para>
+</listitem>
+<listitem>
+<para>
+Select one of the available courses to perform the import.
+</para>
+</listitem>
+<listitem>
+<para>
+Click submit and then click "go back to course select".
+</para>
+</listitem>
+<listitem>
+<para>
+Select one of the current courses (optionally import another course before).
+</para>
+</listitem>
+<listitem>
+<para>
+Click the assistants tab and click edit for your account.
+</para>
+</listitem>
+<listitem>
+<para>
+Select the courses you want to be assistant at from the course list and save.
+</para>
+</listitem>
+<listitem>
+<para>
+Go back to the assistants tab and click approve.
+</para>
+</listitem>
+<listitem>
+<para>
+Logout and login as the desired assistant to start using the application.
+</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1>
+<title>Dashboard view</title>
+<para>
+The dashboard view contains an overview of the current course. It shows who the logged in assistant is, the current course, the groups that belong to this course and information about the current day.
+</para>
+<para>
+The information about the current day include: the current week relative to when the course started, the current week of the year, whether the current week is inactive or not (e.g. a holiday week) and whether there are any current activities taking place now for this assitant.
+</para>
+<para>
+The dashboard view also contains a QR code that must be scanned with the smartphone in order to login to the application from the mobile phone.
+</para>
+</sect1>
+<sect1>
+<title>Students view</title>
+<para>
+The students view contains a table of the current students imported from Moodle. The table contains their Moodle avatar, the group imported from Moodle and the virtual groups they are part of. Clicking on the name of a student will take you to the student page which contains the attendances of that student.
+</para>
+</sect1>
+<sect1>
+<title>Groups view</title>
+<note>
+<title>Moodle Groups and LabRemote Groups</title>
+<para>
+LabRemote uses Moodle groups only as a base for creating its own groups. This solution has been selected because in practice laboratory groups can be smaller than the actual Moodle groups. For this reason is assigned to only one course.
+</para>
+</note>
+<para>
+The group view lists the groups read from Moodle was well as the groups created in LabRemote. Users can also create a group. When creating a group you have to fill in the parent group, the group name that will be used in LabRemote and the course for that group.
+</para>
+<para>
+Besides each of the existing LabRemote group the user can select one of the many available options:
+</para>
+<itemizedlist>
+<listitem>
+<para>
+Students - Allows adding and removing students to the group based on the parent group
+</para>
+</listitem>
+<listitem>
+<para>
+Edit attendances - Allows editing the attendances of each student in the group
+</para>
+</listitem>
+<listitem>
+<para>
+Export as CSV - Exports the data about the group in CSV format, usable in Excel or OpenOffice.
+</para>
+</listitem>
+<listitem>
+<para>
+Public link - Shareable public link that allows students to view their grades in real time.
+</para>
+</listitem>
+<listitem>
+<para>
+Edit and delete options.
+</para>
+</listitem>
+</itemizedlist>
+</sect1>
+<sect1>
+<title>Timetable view</title>
+<para>
+The timetable view presents an overview of the activities along with their time and duration. Activities can be edited, added or deleted.
+</para>
+</sect1>
+<sect1>
+<title>Assistants and Courses view</title>
+<para>
+The user can modify existing Assistants and Courses using these views.
+</para>
+</sect1>
+</chapter>
+<chapter>
+<title>Procesul de corectare</title>
+<para>
+Utilizatorul are apoi op&#539;iunea de a alege oricare din pa&#537;ii procesului de corectare. Capitolele urm&#259;toare discut&#259; fiecare dintre etape în detaliu.
+</para>
+</chapter>
+<chapter>
+<title>Mobile application</title>
+<para>
+The mobile application has 4 main views: current group, timetable, student search and settings
+</para>
+<section>
+<title>Current group</title>
+<para>
+</para>
+</section>
+<section>
+<title>Timetable</title>
+<para>
+</para>
+</section>
+<section>
+<title>Student search</title>
+<para>
+</para>
+</section>
+<section>
+<title>Settings</title>
+<para>
+</para>
+</section>
+</chapter>
+</book>
