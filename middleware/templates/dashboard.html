@@ -23,7 +23,7 @@
     
     <h3>Today</h3>
     
-    <p>Current week: {{ info.week }} <span class="info">({{ info.actual_week }})</span> Inactive: {{ info.inactive_week }}</p>
+    <p>Current week: {{ info.week }} <span class="info">({{ info.actual_week }})</span> Inactive: Week is {% if not info.inactive_week %} not {% endif %} inactive (e.g. in holiday)</p>
     
     <p>Current group: {{ info.activity.group }} <em>{{ info.activity }}</em> </p>
     

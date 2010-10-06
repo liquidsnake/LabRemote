@@ -9,7 +9,7 @@
 </authorgroup>
 <abstract>
 <para>
-<application class="software">LabRemote</application>is a complete solution for teaching assistants. <application class="software">LabRemote</application> is composed of two components: a web application used for advanced tasks such as importing courses, editing groups and students, etc and an Android application used for easily grading students. The current manual provides info for both applications.
+<application class="software">LabRemote</application> is a complete solution for teaching assistants. <application class="software">LabRemote</application> is composed of two components: a web application used for advanced tasks such as importing courses, editing groups and students, etc and an Android application used for easily grading students. The current manual provides info for both applications.
 </para>
 </abstract>
 <title>LabRemote manual</title>
@@ -167,12 +167,6 @@ The timetable view presents an overview of the activities along with their time 
 The user can modify existing Assistants and Courses using these views.
 </para>
 </sect1>
-</chapter>
-<chapter>
-<title>Procesul de corectare</title>
-<para>
-Utilizatorul are apoi op&#539;iunea de a alege oricare din pa&#537;ii procesului de corectare. Capitolele urm&#259;toare discut&#259; fiecare dintre etape în detaliu.
-</para>
 </chapter>
 <chapter>
 <title>Mobile application</title>

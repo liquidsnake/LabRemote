@@ -77,6 +77,10 @@ def course_select(request, course):
         elif assistant:
             courses = assistant.courses.all()
             # TODO: if there's only one course, redirect to it
+            # Done but if kept you don't get to he import page anymore.
+            # maybe move the link somewhere else
+            #if len(courses) == 1:
+            #    return redirect(reverse('course_selected', args=[courses[0].id]))
         else:
             courses = []
         return render_to_response('course_select.html',
@@ -165,6 +169,7 @@ class SearchForm(forms.Form):
 @login_required
 @course_required
 def students_list(request, getcourse):
+    """Shows a paginated list of imported students"""
     course = request.session.get('course', None)
     
     if request.method == 'POST': 
@@ -195,6 +200,7 @@ def students_list(request, getcourse):
 @login_required
 @course_required
 def student_profile(request, getcourse, stud_id):
+    """Shows the profile of a student"""
     course = request.session.get('course', None)
     
     student = Student.objects.get(id=stud_id)
@@ -208,6 +214,7 @@ def assistants(request, getcourse):
     return _assistants(request)
     
 def _assistants(request):
+    """Shows a list of assistants and details about them"""
     assistants = Assistant.objects.all()
     
     for a in assistants:
@@ -224,6 +231,7 @@ def _assistants(request):
 @login_required
 @course_required
 def courses(request, getcourse):
+    """Shows a list of all the courses"""
     courses = Course.objects.all()
     
     return render_to_response('courses.html', 
@@ -233,6 +241,7 @@ def courses(request, getcourse):
 @login_required
 @course_required
 def assistant_approve(request, getcourse, ass_id):
+    """Approves or disapproves an assistant"""
     if not request.user.is_staff:
         return redirect('/')
         
@@ -266,6 +275,7 @@ def groups_index(request, getcourse):
 @login_required
 @course_required
 def group_students(request, getcourse, group_id):
+    """Shows all the students from a group"""
     group = Group.objects.get(id=group_id)
     students = Student.objects.filter(group=group.parent_group).all()
     
@@ -283,6 +293,7 @@ def group_students(request, getcourse, group_id):
 @login_required
 @course_required
 def group_view(request, getcourse, group_id):
+    """Shows a single group"""
     group = Group.objects.get(id=group_id)
             
     return render_to_response('group_view.html',
@@ -293,6 +304,7 @@ def group_view(request, getcourse, group_id):
 @login_required
 @course_required
 def group_students_add(request, getcourse, group_id, stud_id):
+    """Adds a student to a certain group"""
     group = Group.objects.get(id=group_id)
     student = Student.objects.get(id=stud_id)
     group.students.add(student)
@@ -301,6 +313,7 @@ def group_students_add(request, getcourse, group_id, stud_id):
 @login_required
 @course_required    
 def group_students_rem(request, getcourse, group_id, stud_id):
+    """Removes a student from the group"""
     group = Group.objects.get(id=group_id)
     student = Student.objects.get(id=stud_id)
     group.students.remove(student)
@@ -389,8 +402,8 @@ def form_success(request, object, operation, id):
 @login_required
 @course_required
 def export_group_csv(request, getcourse, group_id):
+    """Exports data about a course in CSV format"""
     course = request.session.get('course', None)
-    #TODO: check for inexistent group
     group = get_object_or_404(Group, id=group_id)
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=%s-group.csv' % slugify(group.name)
@@ -437,6 +450,7 @@ def export_group_csv(request, getcourse, group_id):
     return response
 
 def public_group_link(request, getcourse, group_id):
+    """Public page to be shown to students containing the grades."""
     course = request.session.get('course', None)
     course = Course.objects.get(id=course.id)
     group = get_object_or_404(Group, id=group_id)
@@ -523,6 +537,7 @@ def created(request):
     return render_to_response("accounts/created.html")
 
 def group_edit(request, getcourse, group_id):
+    """Edit the attendances of a group. Uses YUI for asyncronous and seamless saving of the grades. """
     course = request.session.get('course', None)
     #Get the course as saving it in the session has some problems
     course = Course.objects.get(id=course.id)
@@ -564,6 +579,7 @@ def group_edit(request, getcourse, group_id):
 @login_required
 @course_required
 def get_activity(request, getcourse, activity_id):
+    """Gets the student names and grades for an activity. Used by the group edit view """
     course = request.session.get('course', None)
     #TODO error checking
     student_list = []
@@ -594,7 +610,7 @@ def get_activity(request, getcourse, activity_id):
 @login_required
 @course_required
 def update_grade(request, getcourse, activity_id, student_id, week):
-    #TODO error checking
+    """Call that saves the grade of a student. Used for asyncronous saving by the group edit view """
     form = UpdateGradeForm(request.POST)
     new_grade = 0
     if form.is_valid():
@@ -613,6 +629,11 @@ def update_grade(request, getcourse, activity_id, student_id, week):
         course = Course.objects.get(id = getcourse)
     except Course.DoesNotExist:
         return HttpResponse("No such course")
+    if week > course.max_weeks or week < 1:
+        return HttpResponse("Invalid week")
+    if new_grade < 0:
+        return HttpResponse("Invalid grade")
+    
     attendance, created = Attendance.objects.get_or_create(course = course, activity = activity, student = student, week = week, defaults={'grade': new_grade})
     attendance.grade = new_grade
     attendance.save()

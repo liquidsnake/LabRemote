@@ -44,7 +44,7 @@ def get_object(request, object, id):
 
     Arguments:
     object -- type of object to be requested
-    id -- id of the object
+    id     -- id of the object
     """
     if object not in ('student', 'course', 'activity', 'attendance'):
         raise Http404
@@ -73,13 +73,24 @@ def login(request, qr_code):
         return json_response({"error": "Invalid code"}, failed = True)
 
     courses = [{"name" : c.title, "id": c.id, "abbr" : c.name} for c in assistant.courses.all()]
-    response = {"user": assistant.id, "name": assistant.name, "courses": courses}
+    response = {
+        "user": assistant.id, 
+        "name": assistant.name, 
+        "courses": courses
+    }
     
     return json_response(response)
     
 @valid_key
 def timetable(request, user, session_key, course):
-    """ Returns the timetable for the current course. """
+    """ Returns the timetable for the current course. 
+
+    Arguments:
+    user        -- user making the request
+    session_key -- authentication code
+    course      -- id of the course for which the timetable is extracted
+    
+    """
     try:
         course = Course.objects.get(id=course)
     except Course.DoesNotExist:
@@ -87,7 +98,8 @@ def timetable(request, user, session_key, course):
 
     assistant = request.assistant
     timetable = dict()
-    
+   
+    # get the activities for each day 
     for (i, day) in enumerate(DAYS):
         activities = {}
         acts = Activity.objects.filter(course=course).filter(day=i) 
@@ -104,7 +116,18 @@ def timetable(request, user, session_key, course):
 
 @valid_key
 def group(request, user, session_key, name, course, activity_id, week = None):
-    """ Returns a certain group from a certain course """
+    """ Returns a certain group from a certain course 
+
+    Arguments:
+    user        -- user making the request
+    session_key -- authentication code
+    name        -- name of the group requested
+    course      -- id of the course used
+    activity_id -- id of the activity for which the group data is requested
+    week        -- (optional) week for which the data is requested. If ommited 
+                   the current week is used
+    """
+
     assistant = request.assistant
     
     try:
@@ -112,6 +135,7 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
     
+    #week checks
     if week is None:
         week = get_week(course)
     else:
@@ -128,7 +152,7 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     except Activity.DoesNotExist:
         return json_response({"error":"No such activity"}, failed = True)
     
-    #compute day when the respective activity took place
+    #compute day when the respective activity took place so we can show it on the smartphone
     comp_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
     comp_date = comp_date + timedelta(weeks = week, days = act.day)
     text_date = comp_date.strftime("%a, %d %B")    
@@ -145,11 +169,28 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     except Group.DoesNotExist:
         return json_response({"error": "No such group"}, failed = True)
                 
-    return json_response({"name": name, "students": students, "activity_id":activity_id, "week": week, "inactive_weeks" : course.inactive_as_list, "date": text_date})
+    return json_response({
+        "name": name, 
+        "students": students, 
+        "activity_id":activity_id, 
+        "week": week, 
+        "inactive_weeks" : course.inactive_as_list, 
+        "date": text_date
+    })
 
 @valid_key
 def current_group(request, user, session_key, course, week = None):
-    """ Returns the current group for this course and assistant """
+    """ Returns the current group for this course and assistant 
+    
+    Arguments:
+    user        -- user making the request
+    session_key -- authentication code
+    course      -- id of the course used
+    week        -- (optional) week for which the data is requested. If ommited 
+                   the current week is used
+
+    """
+
     assistant = request.assistant
     now = datetime.now().time() # Atentie: nu da valori corecte (timezone)
     
@@ -192,12 +233,26 @@ def current_group(request, user, session_key, course, week = None):
                         "grade": int(attendance.grade),
                         "id": s.id,
                         "avatar": s.avatar})
-                return json_response({"name": group.name, "students": students, 'activity_id' : act.id, "week" : week, "inactive_weeks" : course.inactive_as_list, "date" : text_date})
+                return json_response({
+                    "name": group.name, 
+                    "students": students, 
+                    "activity_id" : act.id, 
+                    "week" : week, 
+                    "inactive_weeks" : course.inactive_as_list, 
+                    "date" : text_date
+                })
     return json_response({"error":"no current group"}, failed = True)
     
 @valid_key
 def student(request, user, session_key, course, id):
-    """ Return a student and the attendances for this course"""
+    """ Return a student and the attendances for this course
+
+    Arguments:
+    user        -- user making the request
+    session_key -- authentication code
+    course      -- id of the course used
+    id          -- id of the student for which the data is retrieved
+    """
     try:
         student = Student.objects.get(pk=id)
     except Student.DoesNotExist:
@@ -210,34 +265,42 @@ def student(request, user, session_key, course, id):
 
     try:
         my_group = student.virtual_group.get(course=course)
-        attendances = {}
+        #send all the attendances even though they don't exist yet
+        attendances = dict([(i, {"grade":0, "grades": []}) for i in range(1, course.max_weeks+1)])
         activities = my_group.activity_set.all().order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start')    
         for i,act in enumerate(activities):
             current_act = {"activity_id":act.id, "activity_day": act.day, "activity_interval":act.interval}
             atts = act.attendance_set.filter(student=student, course=course)
             for a in atts:
                 grd = int(a.grade)
-                if a.week in attendances:
-                    attendances[a.week]['grade'] += grd
-                    attendances[a.week]['grades'].append(grd)
-                else:
-                    attendances[a.week] = {"grade":grd, "grades": [grd]}
+                attendances[a.week]['grade'] += grd
+                attendances[a.week]['grades'].append(grd)
         my_group = my_group.name
     except Group.DoesNotExist:
         my_group = ''
         attendances = {}
         
-    return json_response({"name": student.name,
+    return json_response({
+        "name": student.name,
         "id": student.id,
         "avatar": student.avatar,
         "group": student.group,
         "virtual_group": my_group,
-        "attendances": attendances})
+        "attendances": attendances
+    })
         
 @valid_key
 def search(request, user, session_key, course, query):
     """ Search for users having query in name.
-    Returns a list of maximum 20 results """
+    Returns a list of maximum 20 results
+
+    Arguments:
+    user        -- user making the request
+    session_key -- authentication code
+    course      -- id of the course used
+    query       -- string used to query database
+    
+    """
     
     try:
         c = Course.objects.get(id=course)
@@ -245,7 +308,6 @@ def search(request, user, session_key, course, query):
         return json_response({"error":"No such course"}, failed = True)
     
     limit = 20
-    # TODO: query db, not this crap
     query = query.lower()
     results = []
     for u in Student.objects.all():
@@ -262,7 +324,21 @@ def search(request, user, session_key, course, query):
 
 @csrf_exempt
 def post_data(request):
-    """ Handles the POST requests """
+    """ Handles the POST requests 
+
+    Expects the folowing in POST data:
+    user        -- user making the post
+    session_key -- authentication code
+    course      -- current course id
+    type        -- type of post request (currently only 'group' is supported)
+    contents    -- JSON encoded dictionary containing:
+        week        -- optional week number, otherwise current week is used
+        name        -- group name
+        activity_id -- current activity id for which the grades are saved
+        students    -- list of dictionary elements containing
+            id          -- id of the student
+            grade       -- new grade of the student
+    """
     try:
         user = request.POST['user']
         session_key = request.POST['session_key']
@@ -301,6 +377,7 @@ def post_data(request):
                 act = Activity.objects.get(id = int(data['activity_id']))
             except Activity.DoesNotExist:
                 return json_response({"error":"Activity not found"}, failed = True)
+            #now we try to save the data for each student
             for student in data['students']:
                 try: 
                     current_student = Student.objects.get(id = int(student['id']))
@@ -310,6 +387,7 @@ def post_data(request):
                     attendance.save()
                 except Student.DoesNotExist:
                     return json_response({"error":"Student not found"}, failed = True)
+            #if we succeded then we return status ok
             return json_response({})
         else:
             return json_response({"error":"Wrong query type"}, failed = True)
