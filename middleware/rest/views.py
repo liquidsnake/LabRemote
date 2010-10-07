@@ -146,9 +146,6 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     if week > course.max_weeks:
         return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
     
-    if week in course.inactive_as_list:
-        return json_response({"error":"This week is during the holiday"}, failed = True)
-
     try:
         act = Activity.objects.get(id = activity_id)
     except Activity.DoesNotExist:
@@ -159,6 +156,17 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     comp_date = comp_date + timedelta(weeks = week - 1, days = act.day)
     text_date = comp_date.strftime("%a, %d %B")    
     
+    if week in course.inactive_as_list:
+        return json_response({
+            "name": name, 
+            "students": [], 
+            "activity_id":activity_id, 
+            "max_weeks": course.max_weeks,
+            "week": week, 
+            "inactive_weeks" : course.inactive_as_list, 
+            "date": text_date
+        })
+
     try:
         group = Group.objects.get(name=name, course = course)
         students = []
@@ -210,9 +218,7 @@ def current_group(request, user, session_key, course, week = None):
     if week > course.max_weeks:
         return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
     
-    if week in course.inactive_as_list:
-        return json_response({"error":"This week is during the holiday"}, failed = True)
-    
+   
     #get all the where the user is an assistant for this course
     for group in assistant.groups.filter(course = course):
         for act in group.activity_set.all():
@@ -226,7 +232,17 @@ def current_group(request, user, session_key, course, week = None):
                 comp_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
                 comp_date = comp_date + timedelta(weeks = week - 1, days = act.day)
                 text_date = comp_date.strftime("%a, %d %B")    
-                
+                if week in course.inactive_as_list:
+                    return json_response({
+                        "name": group.name, 
+                        "students": [], 
+                        "activity_id":activity_id, 
+                        "max_weeks": course.max_weeks,
+                        "week": week, 
+                        "inactive_weeks" : course.inactive_as_list, 
+                        "date": text_date
+                    })
+            
                 students = []
                 for s in group.students.all(): 
                     if week is None:
