@@ -45,6 +45,7 @@ def get_object(request, object, id):
     Arguments:
     object -- type of object to be requested
     id     -- id of the object
+
     """
     if object not in ('student', 'course', 'activity', 'attendance'):
         raise Http404
@@ -66,6 +67,7 @@ def login(request, qr_code):
     """ Validates a login request.
     Arguments:
     qr_code -- authentication code
+
     """
     try:
         assistant = Assistant.objects.get(code=qr_code)
@@ -154,7 +156,7 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     
     #compute day when the respective activity took place so we can show it on the smartphone
     comp_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
-    comp_date = comp_date + timedelta(weeks = week, days = act.day)
+    comp_date = comp_date + timedelta(weeks = week - 1, days = act.day)
     text_date = comp_date.strftime("%a, %d %B")    
     
     try:
@@ -222,7 +224,7 @@ def current_group(request, user, session_key, course, week = None):
             if today == act.day and start <= now and now <= end:
                 #compute day when the respective activity took place
                 comp_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
-                comp_date = comp_date + timedelta(weeks = week, days = act.day)
+                comp_date = comp_date + timedelta(weeks = week - 1, days = act.day)
                 text_date = comp_date.strftime("%a, %d %B")    
                 
                 students = []
@@ -274,6 +276,8 @@ def student(request, user, session_key, course, id):
             current_act = {"activity_id":act.id, "activity_day": act.day, "activity_interval":act.interval}
             atts = act.attendance_set.filter(student=student, course=course)
             for a in atts:
+                if a.week < 1 or a.week > course.max_weeks:
+                    continue
                 grd = int(a.grade)
                 attendances[a.week]['grade'] += grd
                 attendances[a.week]['grades'].append(grd)
