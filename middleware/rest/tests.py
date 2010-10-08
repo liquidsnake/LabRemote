@@ -13,6 +13,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 import middleware.settings
 import json
+import hashlib
 
 class AttrDict(dict):
     __getattr__= dict.__getitem__
@@ -147,6 +148,11 @@ class ApiTestCase(TestCase):
     @staticmethod 
     def error_json(error):
         return '{"status": "failed", "error": "%s"}' % error
+        
+    def get_hash(self, code, *args):
+        sir = ''.join(map(str, args))
+        sir += code
+        return str(sir + '0000' + hashlib.md5(sir).hexdigest())
 
 class LoginTestCase(ApiTestCase):
     def test_good_code(self):
@@ -167,7 +173,7 @@ class TimetableTestCase(ApiTestCase):
         ApiTestCase.setUp(self)
         self.params = {
             "user":self.assistant.id, 
-            "session_key":self.assistant.code, 
+            "check_hash": self.get_hash(self.assistant.code, 'timetable', self.course.id, self.assistant.id), 
             "course":self.course.id
         }
         
@@ -176,15 +182,16 @@ class TimetableTestCase(ApiTestCase):
         expected = '{"timetable": {"monday": {}, "tuesday": {}, "friday": {}, "wednesday": {"08:00-10:00": [{"name": "group", "id": 1}]}, "thursday": {}, "sunday": {}, "saturday": {}}, "status": "success"}'
 
         self.assertEqual( tested.content, expected,
-                         'Incorrect timetable response for correct timetable attempt')
+                         'Incorrect timetable response for correct timetable attempt %s' % tested.content)
 
     def test_bad_course(self):
         self.params["course"] = 999
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'timetable', self.course.id, self.assistant.id)
         tested = self.c.get(reverse(views.timetable, kwargs=self.params))
         expected = self.error_json("No such course")
 
         self.assertEqual( tested.content, expected,
-                         'Incorrect timetable response for bad course(should have errored)')
+                         'Incorrect timetable response for bad course(should have errored)%s' % tested.content)
 
 
 class GroupTestCase(ApiTestCase):

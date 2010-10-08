@@ -34,7 +34,7 @@ def valid_key(view_func):
             return json_response({"error":"no such user"}, failed = True)
             
         if assistant.get_check_hash(request) != check_hash:
-            return json_response({"error":"invalid check hash, expected: %s" % assistant.get_check_hash(request)}, failed = True)
+            return json_response({"error":"invalid check hash, expected: %s got %s" % (assistant.get_check_hash(request), check_hash)}, failed = True)
             
         request.assistant = assistant
         return view_func(request, user, *args, **kwargs)
