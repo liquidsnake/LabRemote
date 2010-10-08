@@ -208,7 +208,6 @@ def current_group(request, user, session_key, course, week = None):
                    the current week is used
 
     """
-
     assistant = request.assistant
     now = datetime.now().time() # Atentie: nu da valori corecte (timezone)
     
@@ -307,7 +306,6 @@ def search(request, user, session_key, course, query):
     query       -- string used to query database
     
     """
-    
     try:
         c = Course.objects.get(id=course)
     except Course.DoesNotExist:

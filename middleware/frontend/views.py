@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.template import RequestContext
 from django.views.generic.list_detail import object_list
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
-import views
+import views # wtf?
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from django.db.models import Max, Sum, Q
@@ -19,14 +19,6 @@ import csv
 import datetime
 import unicodedata
 import json
-
-students_list_info = {
-    'queryset' :   Student.objects.all(),
-    'allow_empty': True, 
-    'template_name': 'students_list.html', 
-    'extra_context': {
-    }
-}
 
 def json_response(dct):
     """ A shorthand for dumping json data """
@@ -215,12 +207,7 @@ def student_profile(request, getcourse, stud_id):
     return render_to_response('student_profile.html', 
             {"student": student},
             context_instance=RequestContext(request),)
-            
-@login_required
-@course_required
-def assistants(request, getcourse):
-    return _assistants(request)
-    
+
 def _assistants(request):
     """Shows a list of assistants and details about them"""
     assistants = Assistant.objects.all()
@@ -236,6 +223,11 @@ def _assistants(request):
             {"assistants": assistants},
             context_instance=RequestContext(request),)
 
+@login_required
+@course_required
+def assistants(request, getcourse):
+    return _assistants(request)
+    
 @login_required
 @course_required
 def courses(request, getcourse):
@@ -327,52 +319,109 @@ def group_students_rem(request, getcourse, group_id, stud_id):
     group.students.remove(student)
     return redirect(reverse(group_students, args=[getcourse, group_id]))
 
-@login_required
-@course_required
-def timetable(request, getcourse):
-    """ Show all the current activities for a course."""
+def group_edit(request, getcourse, group_id):
+    """Edit the attendances of a group. Uses YUI for asyncronous and seamless saving of the grades. """
     course = request.session.get('course', None)
-    #defines for the way the timetable will look like:
-    #hour height in pixels
-    hour_height = 40
-    #minimum hour (24 hour format)
-    min_hour = 8
-    #max hour
-    max_hour = 20
-    #how many hours between lines
-    interval = 2 
-   
-    #array for the days of the week
-    days = [
-            'Monday',
-            'Tuesday',
-            'Wednesday',
-            'Thursday',
-            'Friday',
-            'Saturday',
-            'Sunday'
-        ]
-    
-    #get all activities for the current course ordered by the time they take place
-    activities = Activity.objects.filter(course=course).order_by('time_hour_start', 'time_hour_end', 'time_minute_start', 'time_minute_end')
-    activities_per_day = [(day,[]) for day in days]
-    for act in activities:
-        pos_start = (act.time_hour_start + act.time_minute_start/60.0 - min_hour) * hour_height
-        height = ((act.time_hour_end + act.time_minute_end /60) - (act.time_hour_start + act.time_minute_start/60)) * hour_height
-        activities_per_day[act.day][1].append({'activity':act, 'position_start': pos_start, 'height':height})
-    
-    return render_to_response('timetable.html',
-        {'activities_per_day': activities_per_day,
-         'days': days,
-         'min_hour': min_hour,
-         'max_hour': max_hour,
-         'range': range((min_hour + interval), max_hour, interval), #the first row is put manually
-         'rows': (max_hour-min_hour)/interval,
-         'interval_height': hour_height * interval,
+    #Get the course as saving it in the session has some problems
+    course = Course.objects.get(id=course.id)
+    group = get_object_or_404(Group, id=group_id)
+
+    students = group.students.all() 
+    activities = group.activity_set.order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start').all()
+    saved_activities = []
+    for activity in activities:
+        saved_activity = {}
+        saved_activity['interval'] = activity.interval
+        saved_activity['day'] = activity.day_of_the_week
+        saved_activity['activity'] = activity
+        #get the maximum attendance week
+        saved_activities.append(saved_activity)
+
+    #show the weeks in human readable form
+    week_legend = []
+    c_week = datetime.datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
+    for i in range(course.max_weeks):
+        next_date = c_week + timedelta(weeks = 1)
+        end_date = next_date.strftime("%d-%m-%Y")
+        start_date = c_week.strftime("%d-%m-%Y")
+        week_legend.append({'week': i+1, 'week_m1': i, 'start_date': start_date, 'end_date': end_date})
+        c_week = next_date
+                    
+    return render_to_response('group_edit.html',
+        {'saved_activities': saved_activities,
+         'group_name' : group.name,
+         'group' : group,
+         'course' : course,
+         'students': students,
+         'weeks' : range(1,course.max_weeks+1),
+         'week_legend' : week_legend,
+         'inactive' : course.inactive_as_list,
         },
         context_instance=RequestContext(request),
-        )     
+        )   
 
+@login_required
+@course_required
+def get_activity(request, getcourse, activity_id):
+    """Gets the student names and grades for an activity. Used by the group edit view """
+    course = request.session.get('course', None)
+    #TODO error checking
+    student_list = []
+    try:
+        activity = Activity.objects.get(id = activity_id) 
+        student_list = activity.group.students.all()
+    except Activity.DoesNotExist:
+        pass
+    students = []        
+    for student in student_list:
+        max_w = course.max_weeks
+        attendances = Attendance.objects.filter(student = student, course = course, activity = activity)
+        student_data = {"name": student.name}
+        student_data["student_id"] = student.id
+        sum = 0
+        for i in range(1, max_w+1):
+            try:
+                grade = attendances.get(week = i).grade
+                student_data["week_%d" % i] = grade
+                sum += grade
+            except Attendance.DoesNotExist:
+                student_data["week_%d" % i] = 0
+        student_data["sum"] = sum
+        students.append(student_data)
+
+    return json_response({"Results": students})
+
+@login_required
+@course_required
+def update_grade(request, getcourse, activity_id, student_id, week):
+    """Call that saves the grade of a student. Used for asyncronous saving by the group edit view """
+    form = UpdateGradeForm(request.POST)
+    new_grade = 0
+    if form.is_valid():
+        new_grade = form.cleaned_data['new_grade']
+    else:
+        pass
+    try:
+        student = Student.objects.get(id = student_id)
+    except Student.DoesNotExist:
+        return HttpResponse("No such student")
+    try:    
+        activity = Activity.objects.get(id = activity_id)
+    except Activity.DoesNotExist:
+        return HttpResponse("No such activity")
+    try:
+        course = Course.objects.get(id = getcourse)
+    except Course.DoesNotExist:
+        return HttpResponse("No such course")
+    if week > course.max_weeks or week < 1:
+        return HttpResponse("Invalid week")
+    if new_grade < 0:
+        return HttpResponse("Invalid grade")
+    
+    attendance, created = Attendance.objects.get_or_create(course = course, activity = activity, student = student, week = week, defaults={'grade': new_grade})
+    attendance.grade = new_grade
+    attendance.save()
+    return HttpResponse("")
 
 @login_required
 def form_success(request, object, operation, id):
@@ -544,107 +593,48 @@ def register(request):
 def created(request):
     return render_to_response("accounts/created.html")
 
-def group_edit(request, getcourse, group_id):
-    """Edit the attendances of a group. Uses YUI for asyncronous and seamless saving of the grades. """
+@login_required
+@course_required
+def timetable(request, getcourse):
+    """ Show all the current activities for a course."""
     course = request.session.get('course', None)
-    #Get the course as saving it in the session has some problems
-    course = Course.objects.get(id=course.id)
-    group = get_object_or_404(Group, id=group_id)
-
-    students = group.students.all() 
-    activities = group.activity_set.order_by('day', 'time_hour_start', 'time_hour_end', 'time_minute_start').all()
-    saved_activities = []
-    for activity in activities:
-        saved_activity = {}
-        saved_activity['interval'] = activity.interval
-        saved_activity['day'] = activity.day_of_the_week
-        saved_activity['activity'] = activity
-        #get the maximum attendance week
-        saved_activities.append(saved_activity)
-
-    #show the weeks in human readable form
-    week_legend = []
-    c_week = datetime.datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
-    for i in range(course.max_weeks):
-        next_date = c_week + timedelta(weeks = 1)
-        end_date = next_date.strftime("%d-%m-%Y")
-        start_date = c_week.strftime("%d-%m-%Y")
-        week_legend.append({'week': i+1, 'week_m1': i, 'start_date': start_date, 'end_date': end_date})
-        c_week = next_date
-                    
-    return render_to_response('group_edit.html',
-        {'saved_activities': saved_activities,
-         'group_name' : group.name,
-         'group' : group,
-         'course' : course,
-         'students': students,
-         'weeks' : range(1,course.max_weeks+1),
-         'week_legend' : week_legend,
-         'inactive' : course.inactive_as_list,
+    #defines for the way the timetable will look like:
+    #hour height in pixels
+    hour_height = 40
+    #minimum hour (24 hour format)
+    min_hour = 8
+    #max hour
+    max_hour = 20
+    #how many hours between lines
+    interval = 2 
+   
+    #array for the days of the week
+    days = [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+            'Sunday'
+        ]
+    
+    #get all activities for the current course ordered by the time they take place
+    activities = Activity.objects.filter(course=course).order_by('time_hour_start', 'time_hour_end', 'time_minute_start', 'time_minute_end')
+    activities_per_day = [(day,[]) for day in days]
+    for act in activities:
+        pos_start = (act.time_hour_start + act.time_minute_start/60.0 - min_hour) * hour_height
+        height = ((act.time_hour_end + act.time_minute_end /60) - (act.time_hour_start + act.time_minute_start/60)) * hour_height
+        activities_per_day[act.day][1].append({'activity':act, 'position_start': pos_start, 'height':height})
+    
+    return render_to_response('timetable.html',
+        {'activities_per_day': activities_per_day,
+         'days': days,
+         'min_hour': min_hour,
+         'max_hour': max_hour,
+         'range': range((min_hour + interval), max_hour, interval), #the first row is put manually
+         'rows': (max_hour-min_hour)/interval,
+         'interval_height': hour_height * interval,
         },
         context_instance=RequestContext(request),
-        )   
-
-@login_required
-@course_required
-def get_activity(request, getcourse, activity_id):
-    """Gets the student names and grades for an activity. Used by the group edit view """
-    course = request.session.get('course', None)
-    #TODO error checking
-    student_list = []
-    try:
-        activity = Activity.objects.get(id = activity_id) 
-        student_list = activity.group.students.all()
-    except Activity.DoesNotExist:
-        pass
-    students = []        
-    for student in student_list:
-        max_w = course.max_weeks
-        attendances = Attendance.objects.filter(student = student, course = course, activity = activity)
-        student_data = {"name": student.name}
-        student_data["student_id"] = student.id
-        sum = 0
-        for i in range(1, max_w+1):
-            try:
-                grade = attendances.get(week = i).grade
-                student_data["week_%d" % i] = grade
-                sum += grade
-            except Attendance.DoesNotExist:
-                student_data["week_%d" % i] = 0
-        student_data["sum"] = sum
-        students.append(student_data)
-
-    return json_response({"Results": students})
-
-@login_required
-@course_required
-def update_grade(request, getcourse, activity_id, student_id, week):
-    """Call that saves the grade of a student. Used for asyncronous saving by the group edit view """
-    form = UpdateGradeForm(request.POST)
-    new_grade = 0
-    if form.is_valid():
-        new_grade = form.cleaned_data['new_grade']
-    else:
-        pass
-    try:
-        student = Student.objects.get(id = student_id)
-    except Student.DoesNotExist:
-        return HttpResponse("No such student")
-    try:    
-        activity = Activity.objects.get(id = activity_id)
-    except Activity.DoesNotExist:
-        return HttpResponse("No such activity")
-    try:
-        course = Course.objects.get(id = getcourse)
-    except Course.DoesNotExist:
-        return HttpResponse("No such course")
-    if week > course.max_weeks or week < 1:
-        return HttpResponse("Invalid week")
-    if new_grade < 0:
-        return HttpResponse("Invalid grade")
-    
-    attendance, created = Attendance.objects.get_or_create(course = course, activity = activity, student = student, week = week, defaults={'grade': new_grade})
-    attendance.grade = new_grade
-    attendance.save()
-    return HttpResponse("")
-
+        )     
