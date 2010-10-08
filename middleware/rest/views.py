@@ -27,17 +27,17 @@ def json_response(dct, failed = False):
     
 def valid_key(view_func):
     """ A decorator checking the key for validity """
-    def _decorated(request, user, session_key, *args, **kwargs):
+    def _decorated(request, user, check_hash, *args, **kwargs):
         try:
             assistant = Assistant.objects.get(pk=user)
         except Assistant.DoesNotExist:
             return json_response({"error":"no such user"}, failed = True)
             
-        if assistant.get_session_key() != session_key:
-            return json_response({"error":"invalid session key"}, failed = True)
+        if assistant.get_check_hash(request) != check_hash:
+            return json_response({"error":"invalid check hash, expected: %s" % assistant.get_check_hash(request)}, failed = True)
             
         request.assistant = assistant
-        return view_func(request, user, session_key, *args, **kwargs)
+        return view_func(request, user, *args, **kwargs)
     return _decorated
 
 def get_object(request, object, id):
@@ -85,12 +85,11 @@ def login(request, qr_code):
     return json_response(response)
     
 @valid_key
-def timetable(request, user, session_key, course):
+def timetable(request, user, course):
     """ Returns the timetable for the current course. 
 
     Arguments:
     user        -- user making the request
-    session_key -- authentication code
     course      -- id of the course for which the timetable is extracted
     
     """
@@ -156,12 +155,11 @@ def _group(request, course, group, activity, week):
     })
     
 @valid_key
-def group(request, user, session_key, name, course, activity_id, week = None):
+def group(request, user, name, course, activity_id, week = None):
     """ Returns a certain group from a certain course 
 
     Arguments:
     user        -- user making the request
-    session_key -- authentication code
     name        -- name of the group requested
     course      -- id of the course used
     activity_id -- id of the activity for which the group data is requested
@@ -197,12 +195,11 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     return _group(request, course, group, act, week)
 
 @valid_key
-def current_group(request, user, session_key, course, week = None):
+def current_group(request, user, course, week = None):
     """ Returns the current group for this course and assistant 
     
     Arguments:
     user        -- user making the request
-    session_key -- authentication code
     course      -- id of the course used
     week        -- (optional) week for which the data is requested. If ommited 
                    the current week is used
@@ -247,12 +244,11 @@ def current_group(request, user, session_key, course, week = None):
     return json_response({"error":"no current group", "groups": activities}, failed = True)
     
 @valid_key
-def student(request, user, session_key, course, id):
+def student(request, user, course, id):
     """ Return a student and the attendances for this course
 
     Arguments:
     user        -- user making the request
-    session_key -- authentication code
     course      -- id of the course used
     id          -- id of the student for which the data is retrieved
     """
@@ -295,13 +291,12 @@ def student(request, user, session_key, course, id):
     })
         
 @valid_key
-def search(request, user, session_key, course, query):
+def search(request, user, course, query):
     """ Search for users having query in name.
     Returns a list of maximum 20 results
 
     Arguments:
     user        -- user making the request
-    session_key -- authentication code
     course      -- id of the course used
     query       -- string used to query database
     
@@ -332,7 +327,6 @@ def post_data(request):
 
     Expects the folowing in POST data:
     user        -- user making the post
-    session_key -- authentication code
     course      -- current course id
     type        -- type of post request (currently only 'group' is supported)
     contents    -- JSON encoded dictionary containing:
