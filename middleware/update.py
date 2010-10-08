@@ -80,8 +80,10 @@ def main(args):
                     if course.students.filter(id=student.id).count() == 0:
                         # Add student to course
                         course.students.add(student)
-                            
-            print "Updated course: ", a.moodle_course_id
+            # Assign the current assistant to the newly created course:
+            a.courses.add(course)
+            
+            print "Updated course: ", a.moodle_course_id, " for ", a
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

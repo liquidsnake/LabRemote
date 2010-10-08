@@ -18,7 +18,7 @@
     Course: {{ request.session.course.name }} <br/>
     Groups: 
     {% for group in user.get_profile.assistant.groups.all %}
-    <a href="{% url group_students request.session.course.id group.id %}">{{ group.name }}</a>
+    <a href="{% url middleware.frontend.views.group_view request.session.course.id group.id %}">{{ group.name }}</a>
     {% endfor %} <br/>
     
     <h3>Today</h3>
@@ -27,6 +27,28 @@
     
     <p>Current group: {{ info.activity.group }} <em>{{ info.activity }}</em> </p>
     
+    <h3>Timetable</h3>
+    
+    <table class="object_list minitimetable">
+        <tr>
+            <th></th>
+            <th>m</th>
+            <th>t</th>
+            <th>w</th>
+            <th>t</th>
+            <th>f</th>
+            <th>sa</th>
+            <th>su</th>
+        </tr>
+        {% for h in timetable.hours %}
+        <tr>
+            <td align="right">{{ h }}:00</td>
+            {% for d in h.days %}
+            <td align="right" {% if d.day == info.current_day %}class="today"{% endif %}>{% for a in d.activities %}<a href="{% url middleware.frontend.views.group_view request.session.course.id a.group.id %}">{{ a.group }}</a><br/>{% endfor %}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
     
     <p style="clear:both"></p>
     {% endif %}

@@ -200,7 +200,7 @@ class GroupTestCase(ApiTestCase):
     
     def test_good_parameters_no_week_normal(self):
         tested = self.c.get(reverse('views.group', kwargs = self.params))
-        expected = '{"week": %d, "status": "success", "activity_id": "1", "name": "group", "students": [{"grade": 5, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (self.current_week, compute_date(self.course, self.current_week, self.activity))
+        expected = '{"week": %d, "status": "success", "activity_id": 1, "name": "group", "students": [{"grade": 5, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (self.current_week, compute_date(self.course, self.current_week, self.activity))
 
         self.assertEqual( tested.content, expected,
                          'Incorrect group response for group view, no week, good parameters')
@@ -212,7 +212,7 @@ class GroupTestCase(ApiTestCase):
         self.attendances[selected_week - 1].save()
         self.params["week"] = selected_week
         tested = self.c.get(reverse('views.group_week', kwargs = self.params))
-        expected = '{"week": %d, "status": "success", "activity_id": "1", "name": "group", "students": [{"grade": 7, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (selected_week, compute_date(self.course, selected_week, self.activity))
+        expected = '{"week": %d, "status": "success", "activity_id": 1, "name": "group", "students": [{"grade": 7, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (selected_week, compute_date(self.course, selected_week, self.activity))
 
         self.assertEqual( tested.content, expected,
                          'Incorrect group response for group view, normal week, good parameters')
@@ -222,7 +222,7 @@ class GroupTestCase(ApiTestCase):
         selected_week = 4
         self.params["week"] = selected_week
         tested = self.c.get(reverse('views.group_week', kwargs = self.params))
-        expected = '{"week": %d, "status": "success", "activity_id": "1", "name": "group", "students": [], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (selected_week, compute_date(self.course, selected_week, self.activity))
+        expected = '{"week": %d, "status": "success", "activity_id": 1, "name": "group", "students": [], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (selected_week, compute_date(self.course, selected_week, self.activity))
 
         self.assertEqual( tested.content, expected,
                          'Incorrect group response for group view, no week, good parameters')
@@ -279,8 +279,7 @@ class CurrentGroupTestCase(ApiTestCase):
     
     def test_good_parameters_no_week_normal(self):
         tested = self.c.get(reverse('views.current_group', kwargs = self.params))
-        expected = '{"week": 6, "status": "success", "activity_id": 2, "name": "group", "students": [{"grade": 0, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "Fri, 08 October", "max_weeks": 10}'
-
+        expected = '{"week": %d, "status": "success", "activity_id": 2, "name": "group", "students": [{"grade": 0, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (self.current_week, compute_date(self.course, self.current_week, self.current_activity))
         self.assertEqual( tested.content, expected,
                          'Incorrect group response for current group view, no week, good parameters')
 
@@ -329,7 +328,7 @@ class CurrentGroupTestCase(ApiTestCase):
     def test_no_current_group(self):
         self.current_activity.delete()
         tested = self.c.get(reverse('views.current_group', kwargs = self.params))
-        expected = self.error_json("No current group") 
+        expected = '{"status": "failed", "groups": [{"activity_id": 1, "group": "group", "name": "group Wed 08:00"}], "error": "no current group"}'
         self.assertEqual( tested.content, expected,
                          'Incorrect group response for current group view, no current group (should have errored)')
 

@@ -18,7 +18,7 @@
         <td>
         <a href="/crud/update/course/{{ d.id }}/">{{ d.name }}</a></td>
         <td>{{ d.title}}</td>
-        <td>{% for group in d.groups.all %}{{ group }}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
+        <td>{% for group in d.group_set.all %}{{ group }}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
         <td>{% for student in d.students.all %}<a href="{% url middleware.frontend.views.student_profile request.session.course.id student.id %}">{{ student.name }}</a>{% if not forloop.last %}, {% endif %} {% endfor %}</td>
         <td align="center" class="actions" nowrap>
         {% block action_buttons %}

@@ -7,11 +7,12 @@ from django.contrib.auth.models import User
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)    
     
-    def get_new_count(self):
-        """ Utility used in template """
-        return UserProfile.objects.filter(approved=False).count()
     assistant = models.ForeignKey('Assistant', default=None, blank=True, null=True)
     approved = models.BooleanField(default=False)
+    
+    def get_new_count(self):
+        """ Utility used in template """
+        return UserProfile.objects.filter(approved=False).exclude(assistant=None).count()
     
     def __unicode__(self):
         return u"profile: %s, %s" % (self.assistant, self.approved)
@@ -63,6 +64,15 @@ class Assistant(Student):
         #computed_hash = hashlib.sha256(self.code).hexdigest()
         computed_hash = self.code # TODO change this before release
         return computed_hash
+    
+    @property
+    def activities(self):
+        """ Returns an array of activities for current assistant """
+        activities = []
+        for g in self.groups.all():
+            acts = Activity.objects.filter(group=g).all()
+            activities.extend(acts)
+        return activities
         
     def __unicode__(self):
         return u"%s" % self.name
@@ -104,7 +114,7 @@ class Group(models.Model):
     students = models.ManyToManyField(Student,related_name='virtual_group', blank=True)  
     
     def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.parent_group)
+        return u"%s" % (self.name,)
 
 class Activity(models.Model):
     DAY_CHOICES = (

@@ -8,7 +8,7 @@
 <h2>{% block content_title %}Timetable{% endblock %}</h2>
 
 <a href='/crud/add/activity/'>Add more activities</a>
-<table class="weekdays timetable" style="width:100%;" cellpadding="0" cellspacing="0">
+<table class="object_list weekdays timetable" style="width:100%;" >
     <tr>
         <th>Hours</th>
         {% for day, activities in activities_per_day %}
