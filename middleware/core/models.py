@@ -7,11 +7,12 @@ from django.contrib.auth.models import User
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)    
     
-    def get_new_count(self):
-        """ Utility used in template """
-        return UserProfile.objects.filter(approved=False).count()
     assistant = models.ForeignKey('Assistant', default=None, blank=True, null=True)
     approved = models.BooleanField(default=False)
+    
+    def get_new_count(self):
+        """ Utility used in template """
+        return UserProfile.objects.filter(approved=False).exclude(assistant=None).count()
     
     def __unicode__(self):
         return u"profile: %s, %s" % (self.assistant, self.approved)
