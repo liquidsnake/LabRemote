@@ -68,7 +68,7 @@ class Assistant(Student):
     def get_check_hash(self, request):
         sir = ''.join(request.path.split('/')[2:-2])
         sir = "%s%s" % (sir, self.code)
-        return sir + '0000' + hashlib.md5(sir).hexdigest()
+        return hashlib.md5(sir).hexdigest()
         
     @property
     def activities(self):
