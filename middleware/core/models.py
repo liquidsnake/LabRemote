@@ -64,6 +64,15 @@ class Assistant(Student):
         #computed_hash = hashlib.sha256(self.code).hexdigest()
         computed_hash = self.code # TODO change this before release
         return computed_hash
+    
+    @property
+    def activities(self):
+        """ Returns an array of activities for current assistant """
+        activities = []
+        for g in self.groups.all():
+            acts = Activity.objects.filter(group=g).all()
+            activities.extend(acts)
+        return activities
         
     def __unicode__(self):
         return u"%s" % self.name

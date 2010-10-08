@@ -13,6 +13,7 @@ from models import *
 from middleware.core.functions import get_week
 
 DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+DAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 def json_response(dct, failed = False):
     """ A shorthand for dumping json data """
@@ -261,7 +262,14 @@ def current_group(request, user, session_key, course, week = None):
                     "inactive_weeks" : course.inactive_as_list, 
                     "date" : text_date
                 })
-    return json_response({"error":"no current group"}, failed = True)
+    # If I'm here, I'm going to return no current group. 
+    # Fetch the list of groups assigned to this teaching assistant
+    activities = [{"name": "%s %s %02d:%02d" % (a.group.name, DAYS_SHORT[a.day % 7], a.time_hour_start, a.time_minute_start), 
+            "group": a.group.name,
+            "activity_id": a.id} 
+                for a in assistant.activities]
+    
+    return json_response({"error":"no current group", "groups": activities}, failed = True)
     
 @valid_key
 def student(request, user, session_key, course, id):

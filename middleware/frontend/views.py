@@ -13,7 +13,7 @@ from django import forms
 
 from middleware.core.models import *
 from middleware.core.functions import *
-from middleware.frontend.forms import RegisterForm, UpdateGradeForm
+from middleware.frontend.forms import RegisterForm, UpdateGradeForm, SearchForm
 
 import csv
 import datetime
@@ -165,9 +165,6 @@ def import_course(request):
     return render_to_response('import_course.html',
             {'step': 3},
             context_instance=RequestContext(request))
-
-class SearchForm(forms.Form):
-    query = forms.CharField(max_length=100, label="Search for student")
 
 @login_required
 @course_required
