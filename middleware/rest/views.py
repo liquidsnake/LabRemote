@@ -64,7 +64,7 @@ def get_object(request, object, id):
     data = serializers.serialize('json', [obj])
     return HttpResponse(data, mimetype='application/json')
 
-def login(request, qr_code):
+def login(request, qr_code, check_hash):
     """ Validates a login request.
     Arguments:
     qr_code -- authentication code
@@ -74,7 +74,10 @@ def login(request, qr_code):
         assistant = Assistant.objects.get(code=qr_code)
     except Assistant.DoesNotExist:
         return json_response({"error": "Invalid code"}, failed = True)
-
+    
+    if assistant.get_check_hash(request) != check_hash:
+         return json_response({"error":"invalid check hash, expected: %s got %s" % (assistant.get_check_hash(request), check_hash)}, failed = True)
+    
     courses = [{"name" : c.title, "id": c.id, "abbr" : c.name} for c in assistant.courses.all()]
     response = {
         "user": assistant.id, 
@@ -234,15 +237,20 @@ def current_group(request, user, course, week = None):
             if today == act.day and start <= now and now <= end:
                 # This is the activity I have to return
                 return _group(request, course, group, act, week)
-                
-    # If I'm here, I'm going to return no current group. 
+        
+    return json_response({"error":"no current group"}, failed = True)
+
+@valid_key
+def groups(request, user, course):
+    assistant = request.assistant
+    
     # Fetch the list of groups assigned to this teaching assistant
     activities = [{"name": "%s %s %02d:%02d" % (a.group.name, DAYS_SHORT[a.day % 7], a.time_hour_start, a.time_minute_start), 
             "group": a.group.name,
             "activity_id": a.id} 
                 for a in assistant.activities]
-    
-    return json_response({"error":"no current group", "groups": activities}, failed = True)
+                
+    return json_response({"activities":activities})
     
 @valid_key
 def student(request, user, course, id):

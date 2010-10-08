@@ -152,7 +152,7 @@ class ApiTestCase(TestCase):
     def get_hash(self, code, *args):
         sir = ''.join(map(str, args))
         sir += code
-        return str(sir + '0000' + hashlib.md5(sir).hexdigest())
+        return sir + '0000' + hashlib.md5(sir).hexdigest()
 
 class LoginTestCase(ApiTestCase):
     def test_good_code(self):
@@ -186,7 +186,7 @@ class TimetableTestCase(ApiTestCase):
 
     def test_bad_course(self):
         self.params["course"] = 999
-        self.params["check_hash"] = self.get_hash(self.assistant.code, 'timetable', self.course.id, self.assistant.id)
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'timetable', self.params["course"], self.assistant.id)
         tested = self.c.get(reverse(views.timetable, kwargs=self.params))
         expected = self.error_json("No such course")
 
@@ -345,7 +345,7 @@ class StudentTestCase(ApiTestCase):
         ApiTestCase.setUp(self)
         self.params = {
             "user":self.assistant.id, 
-            "session_key":self.assistant.code, 
+            "check_hash": self.get_hash(self.assistant.code, 'student', self.course.id, self.assistant.id, self.student.id), 
             "course":self.course.id, 
             "id" : self.student.id,
         }
@@ -355,21 +355,23 @@ class StudentTestCase(ApiTestCase):
         expected = '{"status": "success", "attendances": {"1": {"grade": 5, "grades": [5]}, "2": {"grade": 5, "grades": [5]}, "3": {"grade": 5, "grades": [5]}, "4": {"grade": 5, "grades": [5]}, "5": {"grade": 5, "grades": [5]}, "6": {"grade": 5, "grades": [5]}, "7": {"grade": 5, "grades": [5]}, "8": {"grade": 5, "grades": [5]}, "9": {"grade": 5, "grades": [5]}, "10": {"grade": 5, "grades": [5]}}, "group": "", "name": "Test Student", "avatar": "", "virtual_group": "group", "id": 1}'
 
         self.assertEqual( tested.content, expected,
-                         'Incorrect group response for group view, no week, good parameters')
+                         'Incorrect group response for group view, no week, good parameters %s' %tested.content)
 
     def test_bad_course(self):
         self.params["course"] = 999
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'student', self.params["course"], self.assistant.id, self.student.id)
         tested = self.c.get(reverse(views.student, kwargs = self.params))
         expected = self.error_json("No such course") 
         self.assertEqual( tested.content, expected,
-                         'Incorrect group response for group view, bad course (should have errored)')
+                         'Incorrect group response for group view, bad course (should have errored)%s' %tested.content)
     
     def test_bad_student(self):
         self.params["id"] = 999
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'student', self.course.id, self.assistant.id, self.params["id"])
         tested = self.c.get(reverse(views.student, kwargs = self.params))
         expected = self.error_json("No such student") 
         self.assertEqual( tested.content, expected,
-                         'Incorrect group response for group view, bad student (should have errored)')
+                         'Incorrect group response for group view, bad student (should have errored)%s' %tested.content)
     
     def test_no_attendances(self):
         for att in self.attendances:
@@ -385,7 +387,7 @@ class SearchTestCase(ApiTestCase):
         ApiTestCase.setUp(self)
         self.params = {
             "user":self.assistant.id, 
-            "session_key":self.assistant.code, 
+            "check_hash":self.get_hash(self.assistant.code, 'search', self.course.id, self.assistant.id, "test"), 
             "course":self.course.id,
             "query":"test", 
         }
@@ -395,7 +397,7 @@ class SearchTestCase(ApiTestCase):
         expected = '{"students": [{"id": 1, "avatar": "", "name": "Test Student"}], "status": "success"}'
 
         self.assertEqual( tested.content, expected,
-                         'Incorrect student response for valid search')
+                         'Incorrect student response for valid search%s' %tested.content)
 
     def test_non_existing_student(self):
         self.params["query"] = 'zxzxz'
