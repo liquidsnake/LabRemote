@@ -378,6 +378,7 @@ def get_activity(request, getcourse, activity_id):
         attendances = Attendance.objects.filter(student = student, course = course, activity = activity)
         student_data = {"name": student.name}
         student_data["student_id"] = student.id
+        student_data["image"] = student.avatar
         sum = 0
         for i in range(1, max_w+1):
             try:

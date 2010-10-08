@@ -69,8 +69,16 @@ YAHOO.util.Event.addListener(window, "load", function() {
         }
         var textEditor = new YAHOO.widget.TextboxCellEditor({ disableBtns: false, asyncSubmitter: submitter, validator:YAHOO.widget.DataTable.validateNumber});
 
+        this.myCustomFormatter = function(elLiner, oRecord, oColumn, oData) {
+            var url = oData;
+            elLiner.innerHTML = ' <img src="'+url+'" \>';
+        };
+        
+        // Add the custom formatter to the shortcuts
+        YAHOO.widget.DataTable.Formatter.imageFormatter = this.myCustomFormatter;
 
         var myColumnDefs = [
+            {key:"image", label:"Image", formatter:"imageFormatter"},
             {key:"name", label:"Name", sortable:true},
             {% for week in weeks %}
                 {% if week in inactive %}
@@ -87,7 +95,9 @@ YAHOO.util.Event.addListener(window, "load", function() {
         myDataSource.connXhrMode = "queueRequests";
         myDataSource.responseSchema = {
             resultsList: "Results",
-            fields: ["name",
+            fields: [
+                "image",
+                "name",
                 "student_id",
                 {% for week in weeks %}
                     {key:"week_{{ week }}", parser:"number"},
