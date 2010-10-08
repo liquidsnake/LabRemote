@@ -178,9 +178,10 @@ def group(request, user, name, course, activity_id, week = None):
     if week is None:
         week = get_week(course)
     else:
-        week = int(week)   
-    if week > course.max_weeks:
-        return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
+        week = int(week)
+   
+    if week < 1 or week > course.max_weeks:
+        return json_response({"error":"The selected week is invalid"}, failed = True)
     
     try:
         act = Activity.objects.get(id = activity_id)
@@ -218,8 +219,8 @@ def current_group(request, user, course, week = None):
     else:
         week = int(week)
     
-    if week > course.max_weeks:
-        return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
+    if week < 1 or week > course.max_weeks:
+        return json_response({"error":"The selected week is invalid"}, failed = True)
     
     
     today = datetime.today().weekday()
@@ -347,10 +348,10 @@ def post_data(request):
     try:
         assistant = Assistant.objects.get(pk=user)
     except Assistant.DoesNotExist:
-        return json_response({"error":"no such user"}, failed = True)
+        return json_response({"error":"No such user"}, failed = True)
         
     if assistant.get_session_key() != session_key:
-        return json_response({"error":"invalid session key"}, failed = True)
+        return json_response({"error":"Invalid session key"}, failed = True)
         
     try:
         course = Course.objects.get(id=course)
