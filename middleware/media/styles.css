@@ -79,10 +79,13 @@ table.object_list th {
     padding: 4px;
 }
 td.actions a, a.button{
+    color: #000;
     background-color: #eee;
     border-radius: 4px;
     padding: 2px 6px 2px 6px;
     white-space: nowrap;
+    border-right: 2px solid #999;
+    border-bottom: 2px solid #999;
 }
 td.actions a:hover, a.button:hover {
     background-color: #aaa;
@@ -133,4 +136,7 @@ div.profile_picture {
 }
 .info {
     color: #888;
+}
+.yui-dt td, .yui-dt th {
+    font-size: 0.8em;
 }

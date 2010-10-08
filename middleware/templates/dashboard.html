@@ -18,7 +18,7 @@
     Course: {{ request.session.course.name }} <br/>
     Groups: 
     {% for group in user.get_profile.assistant.groups.all %}
-    <a href="{% url group_students request.session.course.id group.id %}">{{ group.name }}</a>
+    <a href="{% url middleware.frontend.views.group_view request.session.course.id group.id %}">{{ group.name }}</a>
     {% endfor %} <br/>
     
     <h3>Today</h3>

@@ -7,19 +7,20 @@
 {% block content %}
 <h2>{% block content_title %}Group View{% endblock %}</h2>
 
-Group {{ group.name }}:
+Group {{ group.name }}{% if group.parent_group %}, based on <a href="/course/{{ request.session.course.id }}/students/?query={{ group.parent_group }}">{{ group.parent_group }}</a>{% endif %}:
 
 {% if group.students.all %}
 <table class="object_list">
     <tr>
+       <th></th>
        <th>student</th>
        <th>group</th>
     </tr>
 {% for d in group.students.all %}
     <tr>
+        <td><img src="{{ d.avatar }}" width="50" /></td>
         <td><a href="{% url middleware.frontend.views.student_profile request.session.course.id d.id %}">{{ d.name }}</a></td>
         <td>{{ d.group }}</td>
-        <td><a href='{% url middleware.frontend.views.group_students_rem request.session.course.id group.id d.id %}'>remove</a></td>
     </tr>
 {% endfor %}
 </table>
@@ -28,8 +29,9 @@ Group {{ group.name }}:
 There are no students in this group yet. <a href='{% url middleware.frontend.views.group_students request.session.course.id group.id %}'>Edit Students</a></div>
 {% endif %}
 
-<a href='{% url group_students request.session.course.id group.id %}/'>Add/Remove students</a> <br/>
-<a href='/crud/update/group/{{ group.id }}/'>Edit group info</a> <br/>
-<a href='{% url middleware.frontend.views.groups_index request.session.course.id %}'>Back to groups</a>
+<a href='{% url group_students request.session.course.id group.id %}/' class="button">Add/Remove students</a> 
+<a href='{% url middleware.frontend.views.group_edit request.session.course.id group.id %}' class="button">Edit attendances</a>
+<a href='/crud/update/group/{{ group.id }}/' class="button">Edit group info</a> <br/><br/>
+<a href='{% url middleware.frontend.views.groups_index request.session.course.id %}'>« Back to groups</a>
 {% endblock %}
 

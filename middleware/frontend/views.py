@@ -171,14 +171,21 @@ class SearchForm(forms.Form):
 def students_list(request, getcourse):
     """Shows a paginated list of imported students"""
     course = request.session.get('course', None)
+    request.csrf_processing_done = True
+    query = request.GET.get('query', '')
     
-    if request.method == 'POST': 
-        form = SearchForm(request.POST) 
+    if query: 
+        form = SearchForm(request.GET) 
         if form.is_valid():
-            students_list = Student.objects.filter(course=course).filter(Q(first_name__icontains=form.cleaned_data['query']) | Q(last_name__icontains=form.cleaned_data['query']))
+            students_list = Student.objects.filter(course=course).filter(
+                    Q(first_name__icontains=form.cleaned_data['query']) | 
+                    Q(last_name__icontains=form.cleaned_data['query']) |
+                    Q(group__icontains=form.cleaned_data['query'])
+            )
     else:
         form = SearchForm() # An unbound form
         students_list = Student.objects.filter(course=course)
+        
     paginator = Paginator(students_list, 25) # Show 25 contacts per page
 
     try:
@@ -194,6 +201,7 @@ def students_list(request, getcourse):
     return render_to_response('students_list.html', 
             {"students": students,
              "form": form,
+             "query": query,
             },
             context_instance=RequestContext(request),)
             
@@ -567,6 +575,7 @@ def group_edit(request, getcourse, group_id):
     return render_to_response('group_edit.html',
         {'saved_activities': saved_activities,
          'group_name' : group.name,
+         'group' : group,
          'course' : course,
          'students': students,
          'weeks' : range(1,course.max_weeks+1),

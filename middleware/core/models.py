@@ -104,7 +104,7 @@ class Group(models.Model):
     students = models.ManyToManyField(Student,related_name='virtual_group', blank=True)  
     
     def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.parent_group)
+        return u"%s" % (self.name,)
 
 class Activity(models.Model):
     DAY_CHOICES = (

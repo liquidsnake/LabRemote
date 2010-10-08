@@ -10,7 +10,7 @@
 <div class="pagination">
     <span class="step-links">
         {% if students.has_previous %}
-            <a href="?page={{ students.previous_page_number }}">previous</a>
+            <a href="?page={{ students.previous_page_number }}&query={{ query }}">previous</a>
         {% endif %}
 
         <span class="current">
@@ -18,11 +18,10 @@
         </span>
 
         {% if students.has_next %}
-            <a href="?page={{ students.next_page_number }}">next</a>
+            <a href="?page={{ students.next_page_number }}&query={{ query }}">next</a>
         {% endif %}
     </span>
-    <form action="" method="post">
-    {% csrf_token %}
+    <form action="" method="get">
     {{ form.as_p }}
     <input type="submit" value="Search" />
     </form>
@@ -63,7 +62,7 @@
 <div class="pagination">
     <span class="step-links">
         {% if students.has_previous %}
-            <a href="?page={{ students.previous_page_number }}">previous</a>
+            <a href="?page={{ students.previous_page_number }}&query={{ query }}">previous</a>
         {% endif %}
 
         <span class="current">
@@ -71,7 +70,7 @@
         </span>
 
         {% if students.has_next %}
-            <a href="?page={{ students.next_page_number }}">next</a>
+            <a href="?page={{ students.next_page_number }}&query={{ query }}">next</a>
         {% endif %}
     </span>
 </div>
