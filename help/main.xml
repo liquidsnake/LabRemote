@@ -6,6 +6,11 @@
 <surname>Iordache</surname>
 <email>sergiu.iordache@korect.ro</email>
 </author>
+<author>
+<firstname>Eftimie</firstname>
+<surname>Alexandru</surname>
+<email>alex.eftimie@korect.ro</email>
+</author>
 </authorgroup>
 <abstract>
 <para>
@@ -25,7 +30,7 @@
 The process of using <application class="software">LabRemote</application> starts with the correct setup of the web application. During the Django initialization process (while running the <command>python manage.py syncdb</command> command) an administrator user will be created. This will be referenced from now on as the Admin account
 </para>
 <para>
-The follwing steps describe the process of setting up the web application(they assume that the web server is already capable of running Django web applications):
+The following steps describe the process of setting up the web application(they assume that the web server is already capable of running Django web applications):
 </para>
 <orderedlist>
 <listitem>
@@ -40,23 +45,12 @@ Create a new user account for one of the assistants.
 </listitem>
 <listitem>
 <para>
-Login using the Admin account and click Edit for the newly created user.
+Fill in the needed details of the user ( be sure to check "Is Updater" and to fill in the Moodle details: url, user, password and course id), then logout.
 </para>
 </listitem>
 <listitem>
 <para>
-Fill in the needed details of the user ( be sure to check "Is Updater" and to fill in the Moodle details: url, user, password and course id)
-</para>
-</listitem>
-<listitem>
-<para>
-Click submit and then click the logo to return to the main page.
-</para>
-</listitem>
-<listitem>
-<para>
-Click the now edited user to start the import process.
-</para>
+Login using the Admin account and click the previously edited user to start the import process.</para>
 </listitem>
 <listitem>
 <para>
@@ -70,22 +64,7 @@ Click submit and then click "go back to course select".
 </listitem>
 <listitem>
 <para>
-Select one of the current courses (optionally import another course before).
-</para>
-</listitem>
-<listitem>
-<para>
-Click the assistants tab and click edit for your account.
-</para>
-</listitem>
-<listitem>
-<para>
-Select the courses you want to be assistant at from the course list and save.
-</para>
-</listitem>
-<listitem>
-<para>
-Go back to the assistants tab and click approve.
+Go back to the assistants tab and click approve to approve the previously created teaching assistant.
 </para>
 </listitem>
 <listitem>

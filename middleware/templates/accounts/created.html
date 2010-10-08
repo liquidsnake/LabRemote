@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block content %}<br/>
-    Your account has been created. Please wait for another assitant to 
-    validate your account.
+    Your account has been created. 
+    <br/>
+    You can now <a href="{% url django.contrib.auth.views.login %}">login</a> with your newly created account.
 {% endblock %}

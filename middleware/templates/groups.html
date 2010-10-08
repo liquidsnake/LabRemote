@@ -9,23 +9,6 @@
 
 <table width="100%">
     <tr>
-        <td width="30%" valign="top"> 
-Moodle:
-{% if moodle_groups %}
-    <table class="object_list">
-        <tr>
-           <th>group</th>
-        </tr>
-    {% for d in moodle_groups %}
-        <tr>
-            <td>{{ d.group }}</td>
-        </tr>
-    {% endfor %}
-    </table>
-{% else %}
-    <div>There are no Moodle groups.</div>
-{% endif %}
-        </td>
         <td width="70%" valign="top">
 LabRemote:
 {% if groups %}
@@ -56,7 +39,24 @@ LabRemote:
 {% else %}
     <div>There are no LabRemote groups.</div>
 {% endif %}
-            <a href='/crud/add/group/'>Add a new group</a>
+            <a href='/crud/add/group/' class="button">Add a new group</a>
+        </td>
+        <td width="30%" valign="top" align="right"> 
+Moodle:
+{% if moodle_groups %}
+    <table class="object_list">
+        <tr>
+           <th>group</th>
+        </tr>
+    {% for d in moodle_groups %}
+        <tr>
+            <td><a href="/course/{{ request.session.course.id }}/students/?query={{ d.group }}">{{ d.group }}</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <div>There are no Moodle groups.</div>
+{% endif %}
         </td>
     </tr>
 </table>

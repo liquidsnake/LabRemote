@@ -13,8 +13,12 @@
 </ul>
 {% else %}
 {% if not request.user.is_staff %}
-You are not enroled to any course. Please wait for another teaching assistant
-to validate your account.
+<p>You are not enroled to any course. Please wait for another teaching assistant
+to validate your account.</p>
+
+<p>If this is your first time here, use the <a href="/crud/update/assistant/{{ request.user.get_profile.assistant.id}}/" class="button">edit account</a> 
+form, for adding your moodle credentials, to setup synchronisation.</p>
+
 {% endif %}
 {% endif %}
 
