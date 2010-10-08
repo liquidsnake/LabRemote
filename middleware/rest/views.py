@@ -117,6 +117,44 @@ def timetable(request, user, session_key, course):
     return json_response({"timetable" : timetable})
 
 
+def _group(request, course, group, activity, week):
+    """ Dump given group and activity, without checking.
+    Used by current_group and group API calls
+    """
+    # compute day when the respective activity took place so we can show it on the smartphone
+    comp_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
+    comp_date = comp_date + timedelta(weeks = week - 1, days = activity.day)
+    text_date = comp_date.strftime("%a, %d %B")    
+    
+    if week in course.inactive_as_list:
+        return json_response({
+            "name": group.name, 
+            "students": [], 
+            "activity_id":activity.id, 
+            "max_weeks": course.max_weeks,
+            "week": week, 
+            "inactive_weeks" : course.inactive_as_list, 
+            "date": text_date
+        })
+    
+    students = []
+    for s in group.students.all():
+        attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = activity, week = week, defaults={'grade': 0})
+        students.append({"name": s.name, 
+            "grade": int(attendance.grade),
+            "id": s.id,
+            "avatar": s.avatar})
+
+    return json_response({
+        "name": group.name, 
+        "students": students, 
+        "activity_id": activity.id, 
+        "max_weeks": course.max_weeks,
+        "week": week, 
+        "inactive_weeks" : course.inactive_as_list, 
+        "date": text_date
+    })
+    
 @valid_key
 def group(request, user, session_key, name, course, activity_id, week = None):
     """ Returns a certain group from a certain course 
@@ -138,12 +176,11 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     except Course.DoesNotExist:
         return json_response({"error":"No such course"}, failed = True)
     
-    #week checks
+    # week checks
     if week is None:
         week = get_week(course)
     else:
-        week = int(week)
-   
+        week = int(week)   
     if week > course.max_weeks:
         return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
     
@@ -152,43 +189,12 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     except Activity.DoesNotExist:
         return json_response({"error":"No such activity"}, failed = True)
     
-    #compute day when the respective activity took place so we can show it on the smartphone
-    comp_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
-    comp_date = comp_date + timedelta(weeks = week - 1, days = act.day)
-    text_date = comp_date.strftime("%a, %d %B")    
-    
-    if week in course.inactive_as_list:
-        return json_response({
-            "name": name, 
-            "students": [], 
-            "activity_id":activity_id, 
-            "max_weeks": course.max_weeks,
-            "week": week, 
-            "inactive_weeks" : course.inactive_as_list, 
-            "date": text_date
-        })
-
     try:
         group = Group.objects.get(name=name, course = course)
-        students = []
-        for s in group.students.all():
-            attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = week, defaults={'grade': 0})
-            students.append({"name": s.name, 
-                "grade": int(attendance.grade),
-                "id": s.id,
-                "avatar": s.avatar})
     except Group.DoesNotExist:
         return json_response({"error": "No such group"}, failed = True)
-                
-    return json_response({
-        "name": name, 
-        "students": students, 
-        "activity_id":activity_id, 
-        "max_weeks": course.max_weeks,
-        "week": week, 
-        "inactive_weeks" : course.inactive_as_list, 
-        "date": text_date
-    })
+
+    return _group(request, course, group, act, week)
 
 @valid_key
 def current_group(request, user, session_key, course, week = None):
@@ -219,49 +225,19 @@ def current_group(request, user, session_key, course, week = None):
     if week > course.max_weeks:
         return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
     
-   
-    #get all the where the user is an assistant for this course
+    
+    today = datetime.today().weekday()
+    # get all the where the user is an assistant for this course
     for group in assistant.groups.filter(course = course):
         for act in group.activity_set.all():
-            #see if the group activity is taking place now
+            # see if the group activity is taking place now
             start = time(act.time_hour_start, act.time_minute_start)
             end = time(act.time_hour_end, act.time_minute_end)
-            today = datetime.today().weekday()
     
             if today == act.day and start <= now and now <= end:
-                #compute day when the respective activity took place
-                comp_date = datetime.strptime('%d %d 1' % (course.start_year, course.start_week), '%Y %W %w')
-                comp_date = comp_date + timedelta(weeks = week - 1, days = act.day)
-                text_date = comp_date.strftime("%a, %d %B")    
-                if week in course.inactive_as_list:
-                    return json_response({
-                        "name": group.name, 
-                        "students": [], 
-                        "activity_id":activity_id, 
-                        "max_weeks": course.max_weeks,
-                        "week": week, 
-                        "inactive_weeks" : course.inactive_as_list, 
-                        "date": text_date
-                    })
-            
-                students = []
-                for s in group.students.all(): 
-                    if week is None:
-                        week = get_week(act.day_start)
-                    attendance, created = Attendance.objects.get_or_create(course = course, student = s, activity = act, week = week, defaults={'grade': 0})
-                    students.append({"name": s.name, 
-                        "grade": int(attendance.grade),
-                        "id": s.id,
-                        "avatar": s.avatar})
-                return json_response({
-                    "name": group.name, 
-                    "students": students, 
-                    "activity_id" : act.id, 
-                    "max_weeks": course.max_weeks,
-                    "week" : week, 
-                    "inactive_weeks" : course.inactive_as_list, 
-                    "date" : text_date
-                })
+                # This is the activity I have to return
+                return _group(request, course, group, act, week)
+                
     # If I'm here, I'm going to return no current group. 
     # Fetch the list of groups assigned to this teaching assistant
     activities = [{"name": "%s %s %02d:%02d" % (a.group.name, DAYS_SHORT[a.day % 7], a.time_hour_start, a.time_minute_start), 

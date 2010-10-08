@@ -29,7 +29,7 @@ Group {{ group.name }}{% if group.parent_group %}, based on <a href="/course/{{ 
 There are no students in this group yet. <a href='{% url middleware.frontend.views.group_students request.session.course.id group.id %}'>Edit Students</a></div>
 {% endif %}
 
-<a href='{% url group_students request.session.course.id group.id %}/' class="button">Add/Remove students</a> 
+<a href='{% url group_students request.session.course.id group.id %}' class="button">Add/Remove students</a> 
 <a href='{% url middleware.frontend.views.group_edit request.session.course.id group.id %}' class="button">Edit attendances</a>
 <a href='/crud/update/group/{{ group.id }}/' class="button">Edit group info</a> <br/><br/>
 <a href='{% url middleware.frontend.views.groups_index request.session.course.id %}'>« Back to groups</a>
