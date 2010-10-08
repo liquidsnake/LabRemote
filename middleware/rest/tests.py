@@ -152,17 +152,26 @@ class ApiTestCase(TestCase):
     def get_hash(self, code, *args):
         sir = ''.join(map(str, args))
         sir += code
-        return str(sir + '0000' + hashlib.md5(sir).hexdigest())
+        return hashlib.md5(sir).hexdigest()
 
 class LoginTestCase(ApiTestCase):
+    def setUp(self):
+        ApiTestCase.setUp(self)
+        self.params = {
+            "qr_code": self.assistant.code, 
+            "check_hash": self.get_hash(self.assistant.code, 'login', self.assistant.code), 
+        }
+        
     def test_good_code(self):
-        tested = self.c.get(reverse(views.login, args=[ self.assistant.code ]))
+        tested = self.c.get(reverse(views.login, kwargs=self.params))
         expected = '{"status": "success", "courses": [{"name": "Test course", "abbr": "Test course", "id": 1}], "user": 2, "name": "Tester Assistant"}'
         self.assertEqual( tested.content, expected,
                          'Incorrect login response for correct login attempt')
 
     def test_bad_code(self):
-        tested = self.c.get(reverse(views.login, args=[ "bad_code" ]))
+        self.params["qr_code"] = "bad_code121"
+        self.params["check_hash"] = self.get_hash(self.params["qr_code"], 'login', self.params["qr_code"])
+        tested = self.c.get(reverse(views.login, kwargs=self.params))
         expected = self.error_json("Invalid code")
         self.assertEqual( tested.content, expected,
                          'Incorrect login response for incorrect login attempt')
@@ -186,7 +195,7 @@ class TimetableTestCase(ApiTestCase):
 
     def test_bad_course(self):
         self.params["course"] = 999
-        self.params["check_hash"] = self.get_hash(self.assistant.code, 'timetable', self.course.id, self.assistant.id)
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'timetable', self.params["course"], self.assistant.id)
         tested = self.c.get(reverse(views.timetable, kwargs=self.params))
         expected = self.error_json("No such course")
 
@@ -199,7 +208,7 @@ class GroupTestCase(ApiTestCase):
         ApiTestCase.setUp(self)
         self.params = {
             "user":self.assistant.id, 
-            "session_key":self.assistant.code, 
+            "check_hash": self.get_hash(self.assistant.code, 'group', self.course.id, self.assistant.id, "group", self.activity.id), 
             "course":self.course.id, 
             "name": "group", 
             "activity_id" : self.activity.id 
@@ -210,7 +219,7 @@ class GroupTestCase(ApiTestCase):
         expected = '{"week": %d, "status": "success", "activity_id": 1, "name": "group", "students": [{"grade": 5, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (self.current_week, compute_date(self.course, self.current_week, self.activity))
 
         self.assertEqual( tested.content, expected,
-                         'Incorrect group response for group view, no week, good parameters')
+                         'Incorrect group response for group view, no week, good parameters ')
 
     def test_good_parameters_week_normal(self):
         #change grade for week 3
@@ -218,6 +227,7 @@ class GroupTestCase(ApiTestCase):
         self.attendances[selected_week - 1].grade = 7
         self.attendances[selected_week - 1].save()
         self.params["week"] = selected_week
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'group', self.course.id, self.assistant.id, "group", self.activity.id, self.params["week"]) 
         tested = self.c.get(reverse('views.group_week', kwargs = self.params))
         expected = '{"week": %d, "status": "success", "activity_id": 1, "name": "group", "students": [{"grade": 7, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (selected_week, compute_date(self.course, selected_week, self.activity))
 
@@ -228,6 +238,7 @@ class GroupTestCase(ApiTestCase):
         #use week 4 which is in holiday
         selected_week = 4
         self.params["week"] = selected_week
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'group', self.course.id, self.assistant.id, "group", self.activity.id, self.params["week"]) 
         tested = self.c.get(reverse('views.group_week', kwargs = self.params))
         expected = '{"week": %d, "status": "success", "activity_id": 1, "name": "group", "students": [], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (selected_week, compute_date(self.course, selected_week, self.activity))
 
@@ -237,6 +248,7 @@ class GroupTestCase(ApiTestCase):
     def test_bad_week(self):
         selected_week = 0
         self.params["week"] = selected_week
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'group', self.course.id, self.assistant.id, "group", self.activity.id, self.params["week"]) 
         tested = self.c.get(reverse('views.group_week', kwargs = self.params))
         expected = self.error_json("The selected week is invalid") 
         self.assertEqual( tested.content, expected,
@@ -249,6 +261,7 @@ class GroupTestCase(ApiTestCase):
 
     def test_bad_course(self):
         self.params["course"] = 999
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'group', self.params["course"], self.assistant.id, "group", self.activity.id) 
         tested = self.c.get(reverse('views.group', kwargs = self.params))
         expected = self.error_json("No such course") 
         self.assertEqual( tested.content, expected,
@@ -256,6 +269,7 @@ class GroupTestCase(ApiTestCase):
         
     def test_bad_activity(self):
         self.params["activity_id"] = 999
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'group', self.params["course"], self.assistant.id, "group", self.params["activity_id"])
         tested = self.c.get(reverse('views.group', kwargs = self.params))
         expected = self.error_json("No such activity") 
         self.assertEqual( tested.content, expected,
@@ -280,7 +294,7 @@ class CurrentGroupTestCase(ApiTestCase):
         self.current_activity.save()
         self.params = {
             "user":self.assistant.id, 
-            "session_key":self.assistant.code, 
+            "check_hash": self.get_hash(self.assistant.code, 'current_group', self.course.id, self.assistant.id),
             "course":self.course.id, 
         }
     
@@ -295,7 +309,8 @@ class CurrentGroupTestCase(ApiTestCase):
         selected_week = 3
         self.attendances[selected_week - 1].grade = 7
         self.attendances[selected_week - 1].save()
-        self.params["week"] = selected_week
+        self.params["week"] = selected_week        
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'current_group', self.course.id, self.assistant.id, self.params["week"])
         tested = self.c.get(reverse('views.current_group_week', kwargs = self.params))
         expected = '{"week": 3, "status": "success", "activity_id": 2, "name": "group", "students": [{"grade": 0, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "Fri, 17 September", "max_weeks": 10}'
 
@@ -305,7 +320,8 @@ class CurrentGroupTestCase(ApiTestCase):
     def test_good_parameters_week_holiday(self):
         #use week 4 which is in holiday
         selected_week = 4
-        self.params["week"] = selected_week
+        self.params["week"] = selected_week        
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'current_group', self.course.id, self.assistant.id, self.params["week"])
         tested = self.c.get(reverse('views.current_group_week', kwargs = self.params))
         expected = '{"week": 4, "status": "success", "activity_id": 2, "name": "group", "students": [], "inactive_weeks": [1, 4, 7], "date": "Fri, 24 September", "max_weeks": 10}'
 
@@ -315,11 +331,15 @@ class CurrentGroupTestCase(ApiTestCase):
     def test_bad_week(self):
         selected_week = 0
         self.params["week"] = selected_week
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'current_group', self.course.id, self.assistant.id, self.params["week"])
         tested = self.c.get(reverse('views.current_group_week', kwargs = self.params))
         expected = self.error_json("The selected week is invalid") 
         self.assertEqual( tested.content, expected,
                          'Incorrect group response for current group view, week 0 (should have errored)')
+                         
         selected_week = self.course.max_weeks + 1
+        self.params["week"] = selected_week
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'current_group', self.course.id, self.assistant.id, self.params["week"])
         tested = self.c.get(reverse('views.current_group_week', kwargs = self.params))
         expected = self.error_json("The selected week is invalid") 
         self.assertEqual( tested.content, expected,
@@ -327,6 +347,7 @@ class CurrentGroupTestCase(ApiTestCase):
 
     def test_bad_course(self):
         self.params["course"] = 999
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'current_group', self.params["course"], self.assistant.id)
         tested = self.c.get(reverse('views.current_group', kwargs = self.params))
         expected = self.error_json("No such course") 
         self.assertEqual( tested.content, expected,
@@ -335,9 +356,9 @@ class CurrentGroupTestCase(ApiTestCase):
     def test_no_current_group(self):
         self.current_activity.delete()
         tested = self.c.get(reverse('views.current_group', kwargs = self.params))
-        expected = '{"status": "failed", "groups": [{"activity_id": 1, "group": "group", "name": "group Wed 08:00"}], "error": "no current group"}'
+        expected = '{"status": "failed", "error": "no current group"}'
         self.assertEqual( tested.content, expected,
-                         'Incorrect group response for current group view, no current group (should have errored)')
+                         'Incorrect group response for current group view, no current group (should have errored)%s'% tested.content)
 
 
 class StudentTestCase(ApiTestCase):
@@ -345,7 +366,7 @@ class StudentTestCase(ApiTestCase):
         ApiTestCase.setUp(self)
         self.params = {
             "user":self.assistant.id, 
-            "session_key":self.assistant.code, 
+            "check_hash": self.get_hash(self.assistant.code, 'student', self.course.id, self.assistant.id, self.student.id), 
             "course":self.course.id, 
             "id" : self.student.id,
         }
@@ -355,10 +376,11 @@ class StudentTestCase(ApiTestCase):
         expected = '{"status": "success", "attendances": {"1": {"grade": 5, "grades": [5]}, "2": {"grade": 5, "grades": [5]}, "3": {"grade": 5, "grades": [5]}, "4": {"grade": 5, "grades": [5]}, "5": {"grade": 5, "grades": [5]}, "6": {"grade": 5, "grades": [5]}, "7": {"grade": 5, "grades": [5]}, "8": {"grade": 5, "grades": [5]}, "9": {"grade": 5, "grades": [5]}, "10": {"grade": 5, "grades": [5]}}, "group": "", "name": "Test Student", "avatar": "", "virtual_group": "group", "id": 1}'
 
         self.assertEqual( tested.content, expected,
-                         'Incorrect group response for group view, no week, good parameters')
+                         'Incorrect group response for group view, no week, good parameters ')
 
     def test_bad_course(self):
         self.params["course"] = 999
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'student', self.params["course"], self.assistant.id, self.student.id)
         tested = self.c.get(reverse(views.student, kwargs = self.params))
         expected = self.error_json("No such course") 
         self.assertEqual( tested.content, expected,
@@ -366,6 +388,7 @@ class StudentTestCase(ApiTestCase):
     
     def test_bad_student(self):
         self.params["id"] = 999
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'student', self.course.id, self.assistant.id, self.params["id"])
         tested = self.c.get(reverse(views.student, kwargs = self.params))
         expected = self.error_json("No such student") 
         self.assertEqual( tested.content, expected,
@@ -385,7 +408,7 @@ class SearchTestCase(ApiTestCase):
         ApiTestCase.setUp(self)
         self.params = {
             "user":self.assistant.id, 
-            "session_key":self.assistant.code, 
+            "check_hash": self.get_hash(self.assistant.code, 'search', self.course.id, self.assistant.id, "test"), 
             "course":self.course.id,
             "query":"test", 
         }
@@ -399,6 +422,7 @@ class SearchTestCase(ApiTestCase):
 
     def test_non_existing_student(self):
         self.params["query"] = 'zxzxz'
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'search', self.course.id, self.assistant.id, self.params["query"])
         tested = self.c.get(reverse(views.search, kwargs = self.params))
         expected = '{"students": [], "status": "success"}'
 
@@ -407,6 +431,7 @@ class SearchTestCase(ApiTestCase):
     
     def test_bad_course(self):
         self.params["course"] = 999
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'search', self.params["course"], self.assistant.id, "test")
         tested = self.c.get(reverse(views.search, kwargs = self.params))
         expected = self.error_json("No such course") 
         self.assertEqual( tested.content, expected,
