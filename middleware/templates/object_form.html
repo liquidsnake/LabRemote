@@ -1,18 +1,33 @@
 {% extends 'base.html' %}
 
+{% load uni_form_tags %}
+
 {% block title %}{{ block.super }} | Edit {{object_name}}{% endblock %}
 
-{% block css %}#menu-{{object_name}}s {background-color: #eee;}{% endblock %}
+{% block css %}
+    #menu-{{object_name}}s {background-color: #eee;}
+
+{% endblock %}
+
+{% block javascript%}
+    <link rel="stylesheet" href="/media/uni_form/css/uni-form.css" type="text/css" />
+    <link rel="stylesheet" href="/media/uni_form/css/blue.uni-form.css" type="text/css" />
+    <!-- note that there's also blue.uni-form.css and dark.uni-form.css available if you want to try changing things up -->
+    <script src="/media/uni_form/js/uni-form.jquery.js" type="text/javascript"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+{% endblock %}
 
 {% block content %}
 <h2>{% block content_title %}{{ object_name }}{% endblock %}</h2>
 
-<form action="" method="post">
+<form action="" method="post" class="uniForm">
 {% csrf_token %}
-{{ form.as_p }}
-<input type="submit" value="Submit" />
+{{ form|as_uni_form }}
+      <div class="buttonHolder">
+        <button type="submit" class="secondaryAction">← Cancel and go back</button>
+        <button type="submit" class="primaryAction">Submit</button>
+      </div>
 </form>
-
 
 {% block bottom_buttons %}
 {% endblock %}

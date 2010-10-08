@@ -88,6 +88,7 @@ INSTALLED_APPS = (
     'core',
     'rest',
     'frontend',
+    'uni_form',
 )
 
 AUTH_PROFILE_MODULE = 'core.UserProfile'
