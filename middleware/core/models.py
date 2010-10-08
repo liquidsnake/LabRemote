@@ -65,6 +65,11 @@ class Assistant(Student):
         computed_hash = self.code # TODO change this before release
         return computed_hash
     
+    def get_check_hash(self, request):
+        sir = ''.join(request.path.split('/')[2:-2])
+        sir = "%s%s" % (sir, self.code)
+        return hashlib.md5(sir).hexdigest()
+        
     @property
     def activities(self):
         """ Returns an array of activities for current assistant """
