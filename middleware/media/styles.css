@@ -147,3 +147,14 @@ table.minitimetable td.today {
     background-color: #A9D0F5;
 }
 
+img {
+    border: 0;
+}
+
+table.object_list tr td {
+    vertical-align:top;
+}
+
+.showMore {
+    font-weight: bold;
+}

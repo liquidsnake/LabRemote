@@ -30,10 +30,10 @@
 
 <table class="object_list">
     <tr>
-       <th>id</th>
-       <th>student</th>
-       <th>group</th>
-       <th>virtual groups</th>
+       <th>Id</th>
+       <th>Student</th>
+       <th>Moodle group</th>
+       <th>Labremote groups</th>
     </tr>
 {% for d in students.object_list %}
     {% if d.external_id %}
@@ -46,10 +46,6 @@
         {% for group in d.groups %}
             <a href="{% url group_students request.session.course.id group.id %}">{{ group.name }}</a>{% if not forloop.last %}, {% endif %}
         {% endfor %}
-        </td>
-        <td>
-        {% block action_buttons %}
-        {% endblock %}
         </td>
     </tr>
     {% endif %}

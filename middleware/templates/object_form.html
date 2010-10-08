@@ -12,9 +12,7 @@
 {% block javascript%}
     <link rel="stylesheet" href="/media/uni_form/css/uni-form.css" type="text/css" />
     <link rel="stylesheet" href="/media/uni_form/css/blue.uni-form.css" type="text/css" />
-    <!-- note that there's also blue.uni-form.css and dark.uni-form.css available if you want to try changing things up -->
-    <script src="/media/uni_form/js/uni-form.jquery.js" type="text/javascript"></script>
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<!--    <script src="/media/uni_form/js/uni-form.jquery.js" type="text/javascript"></script> -->
 {% endblock %}
 
 {% block content %}
@@ -22,7 +20,9 @@
 
 <form action="" method="post" class="uniForm">
 {% csrf_token %}
+<fieldset class="inlineLabels">
 {{ form|as_uni_form }}
+</fieldset>
       <div class="buttonHolder">
         <button type="submit" class="secondaryAction">← Cancel and go back</button>
         <button type="submit" class="primaryAction">Submit</button>

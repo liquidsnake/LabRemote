@@ -4,6 +4,19 @@
 
 {% block css %}#menu-courses {background-color: #eee;}{% endblock %}
 
+{% block javascript %}
+<script type="text/javascript">
+$(document).ready(function() {
+    $(".showMore").click(function () {
+      $(this).hide("fast");
+      $(this).parent().find("span").show("fast");
+    });
+});
+
+</script>
+
+{% endblock %}
+
 {% block content %}
 <h2>{% block content_title %}Courses{% endblock %}</h2>
 <table class="object_list">
@@ -19,7 +32,10 @@
         <a href="/crud/update/course/{{ d.id }}/">{{ d.name }}</a></td>
         <td>{{ d.title}}</td>
         <td>{% for group in d.group_set.all %}{{ group }}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
-        <td>{% for student in d.students.all %}<a href="{% url middleware.frontend.views.student_profile request.session.course.id student.id %}">{{ student.name }}</a>{% if not forloop.last %}, {% endif %} {% endfor %}</td>
+        <td>{% for student in d.students.all|slice:":20" %}<a href="{% url middleware.frontend.views.student_profile request.session.course.id student.id %}">{{ student.name }}</a>{% if not forloop.last %}, {% endif %} {% endfor %}
+{% if d.students.all|slice:"20:" %}
+<a href="#" class="showMore">Showing the first 20 students, click to see them all</a><span style="display:none">{% for student in d.students.all|slice:"20:" %}<a href="{% url middleware.frontend.views.student_profile request.session.course.id student.id %}">{{ student.name }}</a>{% if not forloop.last %}, {% endif %} {% endfor %} {% endif %}
+</td>
         <td align="center" class="actions" nowrap>
         {% block action_buttons %}
         <a href="/crud/update/course/{{ d.id }}/">Edit</a>
