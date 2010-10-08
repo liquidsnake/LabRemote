@@ -31,7 +31,7 @@ def valid_key(view_func):
         try:
             assistant = Assistant.objects.get(pk=user)
         except Assistant.DoesNotExist:
-            return json_response({"error":"no such user"}, failed = True)
+            return json_response({"error":"No such user"}, failed = True)
             
         if assistant.get_check_hash(request) != check_hash:
             return json_response({"error":"invalid check hash, expected: %s got %s" % (assistant.get_check_hash(request), check_hash)}, failed = True)
@@ -64,20 +64,16 @@ def get_object(request, object, id):
     data = serializers.serialize('json', [obj])
     return HttpResponse(data, mimetype='application/json')
 
-def login(request, qr_code, check_hash):
+
+@valid_key
+def login(request, user):
     """ Validates a login request.
     Arguments:
-    qr_code -- authentication code
+    user -- id of the user logging in
 
     """
-    try:
-        assistant = Assistant.objects.get(code=qr_code)
-    except Assistant.DoesNotExist:
-        return json_response({"error": "Invalid code"}, failed = True)
     
-    if assistant.get_check_hash(request) != check_hash:
-         return json_response({"error":"invalid check hash, expected: %s got %s" % (assistant.get_check_hash(request), check_hash)}, failed = True)
-    
+    assistant = request.assistant
     courses = [{"name" : c.title, "id": c.id, "abbr" : c.name} for c in assistant.courses.all()]
     response = {
         "user": assistant.id, 

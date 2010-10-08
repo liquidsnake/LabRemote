@@ -1,8 +1,6 @@
 """
-This file demonstrates two different styles of tests (one doctest and one
-unittest). These will both pass when you run "manage.py test".
+API unit tests
 
-Replace these with more appropriate tests for your application.
 """
 
 from django.test import TestCase, Client
@@ -158,21 +156,21 @@ class LoginTestCase(ApiTestCase):
     def setUp(self):
         ApiTestCase.setUp(self)
         self.params = {
-            "qr_code": self.assistant.code, 
-            "check_hash": self.get_hash(self.assistant.code, 'login', self.assistant.code), 
+            "user": self.assistant.id, 
+            "check_hash": self.get_hash(self.assistant.code, 'login', self.assistant.id) 
         }
         
     def test_good_code(self):
-        tested = self.c.get(reverse(views.login, kwargs=self.params))
+        tested = self.c.get(reverse(views.login, kwargs = self.params))
         expected = '{"status": "success", "courses": [{"name": "Test course", "abbr": "Test course", "id": 1}], "user": 2, "name": "Tester Assistant"}'
         self.assertEqual( tested.content, expected,
                          'Incorrect login response for correct login attempt')
 
-    def test_bad_code(self):
-        self.params["qr_code"] = "bad_code121"
-        self.params["check_hash"] = self.get_hash(self.params["qr_code"], 'login', self.params["qr_code"])
+    def test_bad_user(self):
+        self.params["user"] = 999
+        self.params["check_hash"] = self.get_hash(self.assistant.code, 'login', self.params["user"])
         tested = self.c.get(reverse(views.login, kwargs=self.params))
-        expected = self.error_json("Invalid code")
+        expected = self.error_json("No such user")
         self.assertEqual( tested.content, expected,
                          'Incorrect login response for incorrect login attempt')
 
