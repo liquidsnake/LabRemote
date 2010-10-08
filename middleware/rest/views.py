@@ -143,8 +143,8 @@ def group(request, user, session_key, name, course, activity_id, week = None):
     else:
         week = int(week)
    
-    if week > course.max_weeks:
-        return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
+    if week < 1 or week > course.max_weeks:
+        return json_response({"error":"The selected week is invalid"}, failed = True)
     
     try:
         act = Activity.objects.get(id = activity_id)
@@ -215,8 +215,8 @@ def current_group(request, user, session_key, course, week = None):
     else:
         week = int(week)
     
-    if week > course.max_weeks:
-        return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
+    if week < 1 or week > course.max_weeks:
+        return json_response({"error":"The selected week is invalid"}, failed = True)
     
    
     #get all the where the user is an assistant for this course
@@ -236,7 +236,7 @@ def current_group(request, user, session_key, course, week = None):
                     return json_response({
                         "name": group.name, 
                         "students": [], 
-                        "activity_id":activity_id, 
+                        "activity_id": act.id, 
                         "max_weeks": course.max_weeks,
                         "week": week, 
                         "inactive_weeks" : course.inactive_as_list, 
@@ -261,7 +261,7 @@ def current_group(request, user, session_key, course, week = None):
                     "inactive_weeks" : course.inactive_as_list, 
                     "date" : text_date
                 })
-    return json_response({"error":"no current group"}, failed = True)
+    return json_response({"error":"No current group"}, failed = True)
     
 @valid_key
 def student(request, user, session_key, course, id):
@@ -371,10 +371,10 @@ def post_data(request):
     try:
         assistant = Assistant.objects.get(pk=user)
     except Assistant.DoesNotExist:
-        return json_response({"error":"no such user"}, failed = True)
+        return json_response({"error":"No such user"}, failed = True)
         
     if assistant.get_session_key() != session_key:
-        return json_response({"error":"invalid session key"}, failed = True)
+        return json_response({"error":"Invalid session key"}, failed = True)
         
     try:
         course = Course.objects.get(id=course)
