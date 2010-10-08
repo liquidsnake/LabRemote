@@ -16,12 +16,15 @@
  {% if user.is_superuser %}
  <a href="/admin/">Administration</a> |
  {% endif %}
+ {% if user.get_profile.assistant %}
+ <a href="/crud/update/assistant/{{user.get_profile.assistant.id}}/">Edit account</a> |
+ {% endif %}
  <a href="/accounts/logout/">Log out</a></div>
  </div>
  {% endif %}
  <h1><img src="/media/labremote.png" width="300" align="baseline" /></h1>
  
- {% if request.session.course %}
+ {% if request.session.course and not hide_menu%}
  <div id="menu">
  {% if user.get_profile.assistant.is_updater or user.is_staff %}
     <div class="menu-right">
@@ -34,9 +37,9 @@
     </div>
  {% endif %}
  <a href="{% url middleware.frontend.views.dashboard request.session.course.id %}" id="menu-dashboard">Dashboard</a>
- <a href="{% url middleware.frontend.views.students_list request.session.course.id %}" id="menu-students">Students</a>
- <a href="{% url middleware.frontend.views.groups_index request.session.course.id %}" id="menu-groups">Groups</a>
  <a href="{% url middleware.frontend.views.timetable request.session.course.id %}" id="menu-timetable">Timetable</a>
+ <a href="{% url middleware.frontend.views.groups_index request.session.course.id %}" id="menu-groups">Groups</a>
+ <a href="{% url middleware.frontend.views.students_list request.session.course.id %}" id="menu-students">Students</a>
  </div>
  {% endif %}
   

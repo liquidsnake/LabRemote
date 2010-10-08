@@ -51,15 +51,18 @@ def dashboard(request, getcourse=0):
     course = Course.objects.get(id=course.id)
     
     info['week'] = get_week(course)
+    info['current_day'] = datetime.datetime.now().weekday()
     info['actual_week'] = info['week'] + course.start_week
     info['inactive_week'] = info['week'] in course.inactive_as_list
     try:
         info['activity'] = get_current_activity(request.user.get_profile().assistant, course)
     except Exception as e:
         info['activity'] = str(e)
+        
+    t = get_timetable(course)
     
     return render_to_response('dashboard.html', 
-        {'info': info, 'course': course},
+        {'info': info, 'course': course, 'timetable': t},
         context_instance=RequestContext(request),
         )      
 
@@ -84,7 +87,7 @@ def course_select(request, course):
         else:
             courses = []
         return render_to_response('course_select.html',
-            {'courses': courses},
+            {'courses': courses, 'hide_menu': True},
             context_instance=RequestContext(request))
    
     course = get_object_or_404(Course, pk=course)

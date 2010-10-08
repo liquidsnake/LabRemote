@@ -1,4 +1,5 @@
 from datetime import datetime, time
+from middleware.core.models import Activity
 
 def get_week(course):
     td = datetime.now()
@@ -19,3 +20,22 @@ def get_current_activity(assistant, course):
                 return act
                 
     return None
+
+def get_timetable(course):
+    """ Return a special timetable object """
+    class Day:
+        def __init__(self, i, a):
+            self.day, self.activities = i,a
+    class Hour:
+        def __init__(self, i):
+            self.id = i
+        @property
+        def days(self):
+            return [Day(i,Activity.objects.filter(course=course).filter(day=i).filter(time_hour_start=self.id)) for i in range(0,7)]
+        def __str__(self):
+            return "%d" % self.id            
+    class Timetable:
+        hours = [Hour(i) for i in range(8,20)]        
+        def __getattr__(self,name):
+            return "%s"%name
+    return Timetable()
