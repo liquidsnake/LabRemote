@@ -116,7 +116,7 @@ public class GroupItemView extends LinearLayout {
 		/** Grade */ 
 		if (mItem.getGrade() != null) {
 			mGrade = (TextView) findViewById(res);
-			String grade = mItem.getGrade();
+			String grade = mItem.getGrade().replaceAll("^\\s+", "").replaceAll("\\s+$", "");
 			if (grade.equals("0"))
 				mGrade.setText("--");	
 			else
@@ -158,7 +158,8 @@ public class GroupItemView extends LinearLayout {
 		popupEdit.setTextColor(R.color.black);
 		popupEdit.setInputType(InputType.TYPE_CLASS_NUMBER);
 		try {
-			grade = Integer.parseInt(mGrade.getText().toString());
+			grade = Integer.parseInt(mGrade.getText().toString().				
+					replaceAll("^\\s+", "").replaceAll("\\s+$", ""));
 			popupEdit.setText(grade+"");
 		} catch (NumberFormatException e) {
 			popupEdit.setText("0");
@@ -171,7 +172,8 @@ public class GroupItemView extends LinearLayout {
 				popupGrade.update(ViewGroup.LayoutParams.WRAP_CONTENT, 
 						ViewGroup.LayoutParams.WRAP_CONTENT);
 				try {
-					int grade = Integer.parseInt(popupEdit.getText().toString());
+					int grade = Integer.parseInt(popupEdit.getText().toString().
+							replaceAll("^\\s+", "").replaceAll("\\s+$", ""));
 					setGrade(grade+"");
 				} catch (NumberFormatException e) {
 					setGrade("0"); 

@@ -7,15 +7,15 @@
 
 	<TextView android:id="@+id/labIndex" android:layout_width="fill_parent" android:textSize="17dip"
 		android:layout_height="wrap_content" android:layout_weight="1" android:gravity="right"
-		android:textColor="@color/black" android:paddingRight="5dip" android:text="3"/>
+		android:textColor="@color/black" android:paddingRight="7dip" android:text="3"/>
 
 	<LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content" 
 		android:layout_gravity="bottom" android:paddingLeft="2dip" android:paddingRight="2dip"
-		android:layout_weight="0.3" android:background="@layout/attendance_dots"/>
+		android:layout_weight="0.4" android:background="@layout/attendance_dots"/>
 
 	<TextView android:id="@+id/labGrade" android:singleLine="true" 
 		android:textSize="17dip" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:gravity="right"
-		android:layout_weight="1" android:textColor="@color/black" android:text="100"/>
+		android:layout_height="wrap_content" android:gravity="right" android:paddingRight="10dip"
+		android:layout_weight="1" android:textColor="@color/black" />
 
 </LinearLayout>

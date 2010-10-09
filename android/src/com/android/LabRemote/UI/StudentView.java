@@ -30,19 +30,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
@@ -51,13 +48,14 @@ import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.CustomDate;
 
-/** TODO: equals 0 si l gr
+/** 
  * Informations about a selected student
  */
-public class StudentView extends ListActivity {
+public class StudentView extends LabRemoteActivity {
 	
 	/** JSON data received from server */
 	private JSONObject data;
+	private ListView mListView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -67,34 +65,11 @@ public class StudentView extends ListActivity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.individual_view);
+		
+        mListView = (ListView) findViewById(android.R.id.list);
+		mListView.setEmptyView(findViewById(android.R.id.empty));
 
 		receiveData();
-	}
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.menu, menu);
-	    return true;
-	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-	    // Handle item selection
-	    switch (item.getItemId()) {
-	    case R.id.cgroup:
-	        Intent in = new Intent(this, GroupView.class);
-	        startActivity(in);
-	        return true;
-	    case R.id.timetable:
-	    	Intent inn = new Intent(this, TimeTable.class);
-	        startActivity(inn);
-	        return true;
-	    case R.id.search:
-	    	onSearchRequested();
-	    default:
-	        return super.onOptionsItemSelected(item);
-	    }
 	}
 
 	/**
@@ -133,12 +108,17 @@ public class StudentView extends ListActivity {
 		
 		try {
 			JSONObject grades = data.getJSONObject("attendances"); 
-			System.out.println("Test " + Integer.parseInt(" 0 ")); //false :( => pun trim //exceptie
             for(int i = 1; i <= grades.length(); i++) {
                  HashMap<String, String> map = new HashMap<String, String>();
                  map.put("index", i+".");
-                 String grade = grades.getJSONObject(i+"").getString("grade");
-                 gradeSum += Integer.parseInt(grades.getJSONObject(i+"").getString("grade"));
+                 String grade = grades.getJSONObject(i+"").getString("grade").
+                 		replaceAll("^\\s+", "").replaceAll("\\s+$", "");
+                 try {
+                	 int g = Integer.parseInt(grade);
+                	 gradeSum += g;
+                 } catch (NumberFormatException e) {
+                	 e.printStackTrace();
+                 }
                	 map.put("grade", grade.equals("0") ? "--" :
                			 " " + grades.getJSONObject(i+"").getString("grade"));
                  contentMap.add(map);
@@ -164,7 +144,7 @@ public class StudentView extends ListActivity {
 		}
 
         SimpleAdapter mAdapter = new SimpleAdapter(this, contentMap, R.layout.individual_grade, from, to);
-        setListAdapter(mAdapter);
+        mListView.setAdapter(mAdapter);
 		TextView gr = (TextView) findViewById(R.id.individualGrade);
 		gr.setText(gradeSum + " p.");
 	}

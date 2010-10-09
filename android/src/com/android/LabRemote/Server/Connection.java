@@ -199,11 +199,12 @@ public class Connection {
 	public ServerResponse getGroup(String group, String aid, String week) {
 		String request = mHost + groupQuery + mCourse + "/" + mID + "/" 
 				+ group + "/" + aid + "/";
-		String signature = md5("group" + mCourse + mID + group + aid + mCode);
+		String signature = "group" + mCourse + mID + group + aid;
 		if (week != null) {
 			request += week + "/";
 			signature += week;
 		}			
+		signature = md5(signature+mCode);
 		return get(request+signature+"/");
 	}
 	
@@ -247,15 +248,20 @@ public class Connection {
 	public ServerResponse post(JSONObject data, String type) {
 		String url = mHost + "/api/post/";
 		HttpPost httpost = new HttpPost(url);
+		String signature = new String();
 		HttpResponse res = null;
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(5);  
-        
         nameValuePairs.add(new BasicNameValuePair("user", mID));  
+        signature += mID;
         nameValuePairs.add(new BasicNameValuePair("course", mCourse));  
-        nameValuePairs.add(new BasicNameValuePair("session_key", mCode));  
+        signature += mCourse;
         nameValuePairs.add(new BasicNameValuePair("type", type));
+        signature += type;
         nameValuePairs.add(new BasicNameValuePair("contents", data.toString()));  
-        System.out.println("am trimis " + nameValuePairs);
+        signature += data.toString();
+        signature += mCode;
+        nameValuePairs.add(new BasicNameValuePair("hash", md5(signature)));  
+    
         
         /** Send post */
 		try {

@@ -6,10 +6,10 @@
 	android:background="@color/white" android:orientation="vertical">
 
 	<!-- Course header -->
-	<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="fill_parent" android:layout_height="wrap_content">
 		<include layout="@layout/header" />
-	</TableLayout>
+	</LinearLayout>
 
 	<!-- Student header -->
 	<LinearLayout android:layout_width="fill_parent"
@@ -21,16 +21,17 @@
 				android:layout_height="fill_parent" android:background="@drawable/empty"/>
 		</FrameLayout>
 		<RelativeLayout android:layout_width="wrap_content" android:layout_height="fill_parent">
-			<TextView android:id="@+id/individualName" 
-				android:textColor="@color/black" android:text="PRESA Irina-Cristiana" android:padding="10dip"
-				android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="19sp"/>
-			<TextView android:id="@+id/individualGroup" android:text="334CBb" android:paddingLeft="10dip"
-				android:textColor="@color/black" android:layout_width="wrap_content" android:textSize="16sp"
+			<TextView android:id="@+id/individualName" android:textColor="@color/black" 
+				android:paddingTop="10dip" android:paddingBottom="10dip" 
+				android:layout_width="wrap_content" android:singleLine="true"
+				android:layout_height="wrap_content" android:textSize="19sp"/>
+			<TextView android:id="@+id/individualGroup" android:textColor="@color/black" 
+				android:layout_width="wrap_content" android:textSize="16sp" android:singleLine="true"
 				android:layout_height="wrap_content" android:layout_below="@id/individualName"/>
-			<TextView android:id="@+id/individualGrade" android:layout_gravity="center" android:text="35 p."
+			<TextView android:id="@+id/individualGrade" android:layout_gravity="center" android:textSize="20sp"
 				android:background="@layout/round_grey" android:textColor="@color/black" android:layout_margin="10dip"
-				android:layout_alignParentRight="true" android:layout_alignParentBottom="true" android:padding="4dip"
-				android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="20sp" >
+				android:layout_alignParentRight="true" android:layout_alignParentBottom="true" android:padding="5dip"
+				android:layout_width="wrap_content" android:singleLine="true" android:layout_height="wrap_content" >
 			</TextView>
 		</RelativeLayout>
 	</LinearLayout>
@@ -43,12 +44,11 @@
 	<TextView android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:text="Attendance" android:paddingLeft="20dip"
 		android:textSize="20dip" android:textColor="@color/black" android:paddingRight="20dip"/>
-	<LinearLayout android:layout_width="fill_parent" android:layout_height="2dip" />
+	<LinearLayout android:layout_width="fill_parent" android:layout_height="2dip" android:background="@color/grey" />
 	</LinearLayout>
-	<ListView android:id="@android:id/list" android:divider="@color/white"
-		android:layout_width="fill_parent" android:layout_height="fill_parent"
-		android:background="@color/white" android:orientation="vertical" 
-		android:paddingRight="55dip" android:paddingLeft="30dip">
+	<ListView android:id="@android:id/list" android:divider="@color/white" android:layout_width="fill_parent" 
+		android:layout_height="fill_parent" android:background="@color/white" android:orientation="vertical" 
+		android:cacheColorHint="#00000000" android:paddingRight="30dip" android:paddingLeft="25dip">
 	</ListView>
 
 </LinearLayout>

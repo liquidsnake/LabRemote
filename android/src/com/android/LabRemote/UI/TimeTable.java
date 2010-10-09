@@ -53,7 +53,7 @@ import com.android.LabRemote.Utils.GroupID;
 /** 
  * Select a class group based on a specific day and a time interval
  */
-public class TimeTable extends Activity {
+public class TimeTable extends LabRemoteActivity {
 
 	/** Starts group view activity */
 	private Intent mGroupIntent;
@@ -227,7 +227,7 @@ public class TimeTable extends Activity {
 		mDays = (ExpandableListView) findViewById(R.id.exp_list);
 		mDays.setOnGroupExpandListener(new OnGroupExpandListener() {
 			public void onGroupExpand(int groupPosition) {
-				for (int i = 0; i < 5; i++)
+				for (int i = 0; i < 7; i++)
 					if (i != groupPosition)
 						mDays.collapseGroup(i);
 			}
@@ -245,14 +245,6 @@ public class TimeTable extends Activity {
 		mGroupIntent.putExtra("Date", date);
 		mGroupIntent.putExtra("AID", aid);
 		startActivityForResult(mGroupIntent, REQUEST_FROM_SERVER);
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == Activity.RESULT_CANCELED) 
-			if (data != null)
-				if (data.getStringExtra("serverError") != null)
-					Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
 	}
 
 	/**

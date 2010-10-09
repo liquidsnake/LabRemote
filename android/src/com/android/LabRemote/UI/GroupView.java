@@ -27,6 +27,7 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -45,8 +46,8 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Gallery;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
@@ -58,17 +59,18 @@ import com.android.LabRemote.Utils.AvatarCallback;
 import com.android.LabRemote.Utils.GroupAdapter;
 import com.android.LabRemote.Utils.GroupItem;
 import com.android.LabRemote.Utils.ShowAvatar;
-//TODO: selector + vacante + post
+
 /** 
  * Lists the students of a specific group
  * @see GroupItemView
  * @see GroupAdapter
  * @see GroupItem
  */
-public class GroupView extends ListActivity implements AvatarCallback {
+public class GroupView extends LabRemoteActivity implements AvatarCallback {
  
 	/** Group's name */
 	private String mGroup;
+	private ListView mListView;
 	/** Activity id associated to the request */
 	private String mAID;
 	/** Informations about the students in the group */
@@ -120,8 +122,11 @@ public class GroupView extends ListActivity implements AvatarCallback {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.group_view);
 		
+		mListView = (ListView) findViewById(android.R.id.list);
+		mListView.setEmptyView(findViewById(android.R.id.empty));
+		
 		/** Dropbox week switcher */
-		TableLayout header = (TableLayout) findViewById(R.id.header);
+		LinearLayout header = (LinearLayout) findViewById(R.id.header);
 		header.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				showWeeksBar(v);
@@ -190,6 +195,7 @@ public class GroupView extends ListActivity implements AvatarCallback {
 			mGroup = mData.getString("name");
 			TextView groupText = (TextView) findViewById(R.id.classHeader);
 			groupText.setText(mGroup);
+			mCurrentWeek = mData.getString("week"); 
 			String mDate = mData.getString("date"); 
 			TextView dateText = (TextView) findViewById(R.id.dateHeader);
 			dateText.setText(mDate + " [" + mCurrentWeek + "]"); 
@@ -198,13 +204,12 @@ public class GroupView extends ListActivity implements AvatarCallback {
 			for (int i = 0; i < inactive.length(); i++)
 				mInactiveWeeks.add(i, inactive.getString(i));
 			mAID = mData.getString("activity_id");
-			mCurrentWeek = mData.getString("week"); 
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 			
 		mAdapter = new GroupAdapter(this, mList, this, onItemClick);
-		setListAdapter(mAdapter);
+		mListView.setAdapter(mAdapter);
 	}
 	
 	@Override
@@ -213,13 +218,6 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		super.onPause();
 	}
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (resultCode == Activity.RESULT_CANCELED) 
-	    	if (data != null)
-	    		if (data.getStringExtra("serverError") != null)
-	    			Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
-	}
 	
 	/**
 	 * Sends activity data to the server
@@ -325,19 +323,27 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	 * updates the list with the resulted activity
 	 */
 	private class Week extends AsyncTask<String, String, String> {
+		private ProgressDialog dialog;
 
-	     protected void onPostExecute(String result) {
+		protected void onPreExecute() {
+			 dialog =  ProgressDialog.show(GroupView.this, " " , " Loading. Please wait ... ", true);
+		}
+
+		protected void onPostExecute(String result) {
 	    	 if (mData != null) 
 	 			fillList();
+	    	 dialog.dismiss();
 	    }
 
 		@Override
 		protected String doInBackground(String... params) {
+			publishProgress("");
 			ServerResponse response = new Connection(getApplicationContext()).
 			getGroup(params[0], params[1], params[2]); 
 			mData = (JSONObject) response.getRespone();
 			return "";
 		}
+
 	 }
 	
 	/**

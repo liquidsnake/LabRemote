@@ -8,8 +8,8 @@
  <LinearLayout
  	android:layout_width="fill_parent" android:layout_height="wrap_content"
  	android:layout_margin="3dip" android:background="@drawable/selector">
-	<FrameLayout android:id="@+id/imageframe" android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:padding="4dip" android:layout_margin="5dip">
+	<FrameLayout android:id="@+id/imageframe" android:layout_width="wrap_content" 
+		android:layout_height="wrap_content" android:padding="4dip" android:layout_margin="5dip">
 		<ImageView android:id="@+id/groupPhoto"
 			android:layout_width="50dip" android:layout_height="50dip" 
 			android:layout_margin="2dip" />
@@ -32,7 +32,7 @@
 		android:layout_height="wrap_content" android:layout_weight="1">
 		<TextView  android:id="@+id/groupGrade" android:layout_width="wrap_content" 
 			android:layout_height="wrap_content" android:padding="2dip" android:textStyle="bold"
-			android:textColor="@color/black" android:layout_gravity="center">                                           
+			android:textColor="@color/black" android:layout_gravity="center" android:singleLine="true">                                           
 		</TextView>
 	</FrameLayout>
 

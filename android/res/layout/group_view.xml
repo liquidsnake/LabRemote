@@ -4,10 +4,10 @@
 			android:layout_width="fill_parent" android:background="@color/header_color"
     	android:layout_height="fill_parent" android:orientation="vertical">
 
-	<TableLayout android:layout_width="fill_parent"
+	<LinearLayout android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<include android:id="@+id/header" layout="@layout/header" />
-	</TableLayout>
+	</LinearLayout>
 
 	<ListView android:id="@android:id/list" android:layout_width="fill_parent" android:layout_height="fill_parent"
 		android:divider="@color/grey" android:dividerHeight="1dip" android:background="@color/white"

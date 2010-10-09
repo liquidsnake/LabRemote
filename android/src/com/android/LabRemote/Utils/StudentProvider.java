@@ -72,7 +72,7 @@ public class StudentProvider extends ContentProvider {
 				throw new IllegalArgumentException(
 						"selectionArgs must be provided for the Uri: " + uri);
 			}
-			return search(selectionArgs[0]); //TODO: poate fi null
+			return search(selectionArgs[0]); 
 		default:
 			throw new IllegalArgumentException("Unknown Uri: " + uri);
 		}
@@ -82,17 +82,20 @@ public class StudentProvider extends ContentProvider {
 	 * Loads search suggestions from server 
 	 */
 	private Cursor getSuggestions(String query) {
-		query = query.toLowerCase();
 		String[] columns = new String[] {
 				BaseColumns._ID,
 				SearchManager.SUGGEST_COLUMN_TEXT_1,
 				SearchManager.SUGGEST_COLUMN_INTENT_DATA};
-
 		MatrixCursor res = new MatrixCursor(columns);
+		if (query == null)
+			return res;
+
+		query = query.toLowerCase();
 		ServerResponse result = new Connection(getContext()).getSearch(query); 
 		JSONObject mData = (JSONObject)result.getRespone();
+		if (mData != null)
 		try {
-			JSONArray ar = mData.getJSONArray("students"); //TODO: de cde null pointer ex?
+			JSONArray ar = mData.getJSONArray("students"); 
 			for(int i = 0; i < ar.length(); i++) {
 				JSONObject student = ar.getJSONObject(i);
 				res.addRow(new String[]{student.getString("id"), 
@@ -109,14 +112,17 @@ public class StudentProvider extends ContentProvider {
 	 * Loads search results from server
 	 */
 	private Cursor search(String query) {
-		query = query.toLowerCase();
 		String[] columns = new String[] {
 				BaseColumns._ID,
 				SearchManager.SUGGEST_COLUMN_TEXT_1}; 
-
 		MatrixCursor res = new MatrixCursor(columns);
+		if (query == null)
+			return null;
+		
+		query = query.toLowerCase();
 		ServerResponse result = new Connection(getContext()).getSearch(query); 
 		JSONObject mData = (JSONObject)result.getRespone();
+		if (mData != null)
 		try {
 			JSONArray ar = mData.getJSONArray("students");
 			for(int i = 0; i < ar.length(); i++) {

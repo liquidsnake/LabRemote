@@ -19,8 +19,6 @@
 
 package com.android.LabRemote.UI;
 
-import android.app.Activity;
-import android.app.ListActivity;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.database.Cursor;
@@ -29,7 +27,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.android.LabRemote.R;
@@ -39,7 +36,7 @@ import com.android.LabRemote.Utils.StudentProvider;
  * Activity that handles search query and lists the results
  * @see StudentProvider
  */
-public class SearchActivity extends ListActivity {
+public class SearchActivity extends LabRemoteActivity {
 	/** List filled with resulted students */
 	private ListView mListView;
 	/** Requests that a child activity returns with error message 
@@ -51,6 +48,7 @@ public class SearchActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.search_result);
 		mListView = (ListView) findViewById(android.R.id.list);	 
+		mListView.setEmptyView(findViewById(android.R.id.empty));
 
 		Intent intent = getIntent();
 		if (Intent.ACTION_VIEW.equals(intent.getAction())) { /** click on a suggestion */
@@ -74,10 +72,10 @@ public class SearchActivity extends ListActivity {
 		if (cursor != null) {
 			String[] from = new String[] {SearchManager.SUGGEST_COLUMN_TEXT_1};
 			int[] to = new int[] {R.id.resultName};
-
+			
 			SimpleCursorAdapter words = new SimpleCursorAdapter(this,
-					R.layout.search_result_item, cursor, from, to);
-			setListAdapter(words);
+				R.layout.search_result_item, cursor, from, to);
+			mListView.setAdapter(words);
 
 			mListView.setOnItemClickListener(new OnItemClickListener() {
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -86,14 +84,6 @@ public class SearchActivity extends ListActivity {
 					startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
 				}
 			});
-		}
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == Activity.RESULT_CANCELED) 
-			if (data != null)
-				if (data.getStringExtra("serverError") != null)
-					Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
+		} 
 	}
 }
