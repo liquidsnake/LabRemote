@@ -1,6 +1,7 @@
 /**
  * StudentView.java
  *     
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,16 +19,6 @@
  */
 
 package com.android.LabRemote.UI;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -48,13 +39,24 @@ import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.CustomDate;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 /** 
  * Informations about a selected student
  */
 public class StudentView extends LabRemoteActivity {
-	
+
 	/** JSON data received from server */
 	private JSONObject data;
+	/** ListView that list a student's attendances */
 	private ListView mListView;
 
 	@Override
@@ -65,15 +67,15 @@ public class StudentView extends LabRemoteActivity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.individual_view);
-		
-        mListView = (ListView) findViewById(android.R.id.list);
+
+		mListView = (ListView) findViewById(android.R.id.list);
 		mListView.setEmptyView(findViewById(android.R.id.empty));
 
 		receiveData();
 	}
 
 	/**
-	 * Receive data from the previous activity
+	 * Receives data from the previous activity
 	 * name, group, date, course, stud_id
 	 */
 	private void receiveData() {
@@ -98,31 +100,30 @@ public class StudentView extends LabRemoteActivity {
 	}
 
 	/**
-	 * Fill list with grades
+	 * Fills list with grades
 	 */
 	private void fillList() {
 		List<HashMap<String, String>> contentMap = new ArrayList<HashMap<String, String>>();
-	    String[] from = new String[] {"index", "grade"};
-        int[] to = new int[] { R.id.labIndex, R.id.labGrade};
+		String[] from = new String[] {"index", "grade"};
+		int[] to = new int[] { R.id.labIndex, R.id.labGrade};
 		int gradeSum = 0;
-		
+
 		try {
 			JSONObject grades = data.getJSONObject("attendances"); 
-            for(int i = 1; i <= grades.length(); i++) {
-                 HashMap<String, String> map = new HashMap<String, String>();
-                 map.put("index", i+".");
-                 String grade = grades.getJSONObject(i+"").getString("grade").
-                 		replaceAll("^\\s+", "").replaceAll("\\s+$", "");
-                 try {
-                	 int g = Integer.parseInt(grade);
-                	 gradeSum += g;
-                 } catch (NumberFormatException e) {
-                	 e.printStackTrace();
-                 }
-               	 map.put("grade", grade.equals("0") ? "--" :
-               			 " " + grades.getJSONObject(i+"").getString("grade"));
-                 contentMap.add(map);
-            }
+			for(int i = 1; i <= grades.length(); i++) {
+				HashMap<String, String> map = new HashMap<String, String>();
+				map.put("index", i+".");
+				String grade = grades.getJSONObject(i+"").getString("grade").trim();
+				try {
+					int g = Integer.parseInt(grade);
+					gradeSum += g;
+				} catch (NumberFormatException e) {
+					e.printStackTrace();
+				}
+				map.put("grade", grade.equals("0") ? "--" :
+					" " + grades.getJSONObject(i+"").getString("grade"));
+				contentMap.add(map);
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -143,12 +144,17 @@ public class StudentView extends LabRemoteActivity {
 			e.printStackTrace();
 		}
 
-        SimpleAdapter mAdapter = new SimpleAdapter(this, contentMap, R.layout.individual_grade, from, to);
-        mListView.setAdapter(mAdapter);
+		SimpleAdapter mAdapter = new SimpleAdapter(this, contentMap, R.layout.individual_grade, from, to);
+		mListView.setAdapter(mAdapter);
 		TextView gr = (TextView) findViewById(R.id.individualGrade);
 		gr.setText(gradeSum + " p.");
 	}
 
+	/** 
+	 * Displays the student's avatar 
+	 * @param avatar The imageView layout that will hold the avatar
+	 * @param avatarUrl The url address of the avatar
+	 */
 	public void setAvatar(ImageView avatar, String avatarUrl) {
 		Bitmap b = BitmapFactory.decodeResource
 		(getResources(), R.drawable.empty);
@@ -165,7 +171,7 @@ public class StudentView extends LabRemoteActivity {
 			e.printStackTrace();
 		} 
 	}
-		
+
 	/**
 	 * If the server request failed the activity exists
 	 * returns an error message to the parent activity

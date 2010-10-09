@@ -2,6 +2,7 @@
  * GroupID.java
  *     
  * Copyright (C) 2010 LabRemote Team
+ * Version 1.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,20 +21,20 @@
 package com.android.LabRemote.Utils;
 
 /**
- * 
+ * Indentifies a group by its name and activity id
  */
 public class GroupID {
 	private String mName, mActivity;
-	
+
 	public GroupID(String name, String activity_id) {
 		mName = name;
 		mActivity = activity_id;
 	}
-	
+
 	public String getName() {
 		return mName;
 	}
-	
+
 	public String getActivity() {
 		return mActivity;
 	}

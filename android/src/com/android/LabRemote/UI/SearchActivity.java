@@ -2,6 +2,7 @@
  * SearchActivity.java
  *     
  * Copyright (C) 2010 LabRemote Team
+ * Version 1.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,9 +40,6 @@ import com.android.LabRemote.Utils.StudentProvider;
 public class SearchActivity extends LabRemoteActivity {
 	/** List filled with resulted students */
 	private ListView mListView;
-	/** Requests that a child activity returns with error message 
-	 * if there was a server communication error during its initialization */
-	public static final int REQUEST_FROM_SERVER = 4;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -54,7 +52,7 @@ public class SearchActivity extends LabRemoteActivity {
 		if (Intent.ACTION_VIEW.equals(intent.getAction())) { /** click on a suggestion */
 			Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
 			individualIntent .putExtra("ID", intent.getDataString());
-			startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
+			startActivityForResult(individualIntent, LabRemoteActivity.REQUEST_FROM_STUDENT);
 			finish();
 		} else if (Intent.ACTION_SEARCH.equals(intent.getAction())) { /** click on search */
 			String query = intent.getStringExtra(SearchManager.QUERY);
@@ -72,16 +70,16 @@ public class SearchActivity extends LabRemoteActivity {
 		if (cursor != null) {
 			String[] from = new String[] {SearchManager.SUGGEST_COLUMN_TEXT_1};
 			int[] to = new int[] {R.id.resultName};
-			
+
 			SimpleCursorAdapter words = new SimpleCursorAdapter(this,
-				R.layout.search_result_item, cursor, from, to);
+					R.layout.search_result_item, cursor, from, to);
 			mListView.setAdapter(words);
 
 			mListView.setOnItemClickListener(new OnItemClickListener() {
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 					Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
 					individualIntent.putExtra("ID", String.valueOf(id));
-					startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
+					startActivityForResult(individualIntent, LabRemoteActivity.REQUEST_FROM_STUDENT);
 				}
 			});
 		} 

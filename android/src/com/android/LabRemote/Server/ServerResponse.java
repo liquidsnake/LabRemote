@@ -1,6 +1,7 @@
 /**
  * ServerResponse.java
  *     
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,16 +26,16 @@ package com.android.LabRemote.Server;
 public class ServerResponse {
 	private Object mResult; 
 	private String mError;
-	
+
 	public ServerResponse(Object result, String error) {
 		this.mResult = result;
 		this.mError = error;
 	}
-	
+
 	public Object getRespone() {
 		return mResult;
 	}
-	
+
 	public String getError() {
 		return mError;
 	}

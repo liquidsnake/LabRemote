@@ -1,6 +1,7 @@
 /**
  * Login.java
- *     
+ *  
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -42,13 +43,13 @@ public class Login extends Activity {
 	private SharedPreferences mPreferences;
 	/** Displayed when login failed */
 	private AlertDialog mInvalidLogin;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
-		
+
 		/** Initialize invalid login dialog */
 		mInvalidLogin = new AlertDialog.Builder(this).create();
 		DialogInterface.OnClickListener lis = new DialogInterface.OnClickListener() {
@@ -58,7 +59,7 @@ public class Login extends Activity {
 			}
 		};
 		mInvalidLogin.setButton(AlertDialog.BUTTON_POSITIVE, "OK", lis);
-		
+
 		/** Check host and code */
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		Editor ed = mPreferences.edit();

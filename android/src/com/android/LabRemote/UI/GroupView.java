@@ -1,6 +1,7 @@
 /**
  * GroupView.java
  *     
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -48,6 +48,7 @@ import android.widget.Gallery;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
@@ -67,9 +68,10 @@ import com.android.LabRemote.Utils.ShowAvatar;
  * @see GroupItem
  */
 public class GroupView extends LabRemoteActivity implements AvatarCallback {
- 
+
 	/** Group's name */
 	private String mGroup;
+	/** ListView that displays the group's students */
 	private ListView mListView;
 	/** Activity id associated to the request */
 	private String mAID;
@@ -79,9 +81,6 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 	private JSONObject mData;
 	/** Adapter that manages the group's items */
 	private GroupAdapter mAdapter;
-	/** Requests that a child activity returns with error message 
-	 * if there was a server communication error during its initialization */
-	public static final int REQUEST_FROM_SERVER = 3;
 	/** A list of the invalid weeks for the current activity (e.g. vacation) */
 	private ArrayList<String> mInactiveWeeks;
 	/** The number of weeks associated with this activity */
@@ -109,7 +108,7 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 			mIndividualIntent.putExtra("Name", ((GroupItemView)v).getName().getText()); 
 			mIndividualIntent.putExtra("ID", ((GroupItemView)v).getmId()); 
 			mIndividualIntent.putExtra("AID", mAID); 
-			startActivityForResult(mIndividualIntent, REQUEST_FROM_SERVER);
+			startActivityForResult(mIndividualIntent, LabRemoteActivity.REQUEST_FROM_STUDENT);
 		}
 	};
 
@@ -121,28 +120,29 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.group_view);
-		
+
 		mListView = (ListView) findViewById(android.R.id.list);
 		mListView.setEmptyView(findViewById(android.R.id.empty));
-		
+
 		/** Dropbox week switcher */
-		LinearLayout header = (LinearLayout) findViewById(R.id.header);
+		RelativeLayout header = (RelativeLayout) findViewById(R.id.header);
 		header.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				showWeeksBar(v);
 			}
 		});
 
+		/** Gets content data */
 		mInactiveWeeks = new ArrayList<String>();
 		receiveData();
-		TextView t;
+
+		/** Invalid activity */
 		if (mInactiveWeeks.contains(mCurrentWeek)) {
-			t = (TextView)findViewById(android.R.id.empty);
-			t.setText("Invalid activity");
-			//showWeeksBar(header);
+			TextView t = (TextView)findViewById(android.R.id.empty);
+			t.setText((String) getResources().getString(R.string.invalid_activity));
 		}
 	}
-	
+
 	/**
 	 * Receives data from the previous activity and from the server
 	 * @see Connection
@@ -163,7 +163,7 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 			response = new Connection(this).getCurrentGroup();
 		else
 			response = new Connection(this).getGroup(mGroup, mAID, null);
-		
+
 		mData = (JSONObject) response.getRespone();
 		if (mData != null) 
 			fillList();
@@ -177,7 +177,7 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 	private void fillList() {
 		JSONArray students;
 		mList = new ArrayList<GroupItem>();
-		
+
 		/** Students */
 		try {
 			students = mData.getJSONArray("students"); 
@@ -189,7 +189,7 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-			
+
 		/** Other data from server */
 		try {
 			mGroup = mData.getString("name");
@@ -207,18 +207,18 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-			
+
 		mAdapter = new GroupAdapter(this, mList, this, onItemClick);
 		mListView.setAdapter(mAdapter);
 	}
-	
+
 	@Override
 	protected void onPause() {
-		post();
+		if (!mInactiveWeeks.contains(mCurrentWeek))
+			post();
 		super.onPause();
 	}
 
-	
 	/**
 	 * Sends activity data to the server
 	 */
@@ -236,12 +236,17 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 				students.put(stud);
 			}			
 			result.put("students", students);
-			new Connection(this).post(result, "group"); //TODO: check response
+
+			ServerResponse res = new Connection(this).post(result, "group"); 
+			if (res.getError() != null)
+				Toast.makeText(getApplicationContext(), 
+						"Post Error: " + res.getError(), 1).show();
+
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}		
 	}
-	
+
 	/**
 	 * If the server request failed the activity exists
 	 * returns an error message to the parent activity
@@ -253,17 +258,17 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 		setResult(Activity.RESULT_CANCELED, back);
 		finish();
 	}
-	
+
 	/******************************** Switch week ********************************/
 	/*****************************************************************************/
-	
+
 	/**
 	 * Initializes select week bar and shows it as a dropbox 
 	 */
 	private void showWeeksBar(View v) {
 		final WeekAdapter adapter;
 		final Gallery weeksList;
-		
+
 		ArrayList<String> wee = new ArrayList<String>();
 		for (int i = 1; i <= mMaxWeeks; i++) 
 			wee.add(i+"");
@@ -274,7 +279,7 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 		title.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
 		title.setText("Select week:");
 		layout.addView(title);
-		
+
 		weeksList = new Gallery(getApplicationContext());
 		weeksList.setSpacing(5);
 		adapter = new WeekAdapter(getApplicationContext(), 
@@ -298,7 +303,7 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 			}
 		});
 		layout.addView(weeksList);
-		
+
 		mWeeksBar = new PopupWindow(layout, ViewGroup.LayoutParams.FILL_PARENT, 
 				ViewGroup.LayoutParams.WRAP_CONTENT);
 		mWeeksBar.setBackgroundDrawable(getResources().
@@ -314,10 +319,11 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 	 * @param id Week's identifier
 	 */
 	private void getWeek(int id) {
-		post();		
+		if (!mInactiveWeeks.contains(mCurrentWeek))
+			post();		
 		new Week().execute(mGroup, mAID, id+"");
 	}
-	
+
 	/**
 	 * Handles a group server request in the background and
 	 * updates the list with the resulted activity
@@ -326,14 +332,15 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 		private ProgressDialog dialog;
 
 		protected void onPreExecute() {
-			 dialog =  ProgressDialog.show(GroupView.this, " " , " Loading. Please wait ... ", true);
+			dialog =  ProgressDialog.show(GroupView.this, "Switch week" , 
+					" Loading. Please wait ... ", true);
 		}
 
 		protected void onPostExecute(String result) {
-	    	 if (mData != null) 
-	 			fillList();
-	    	 dialog.dismiss();
-	    }
+			if (mData != null) 
+				fillList();
+			dialog.dismiss();
+		}
 
 		@Override
 		protected String doInBackground(String... params) {
@@ -344,8 +351,8 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 			return "";
 		}
 
-	 }
-	
+	}
+
 	/**
 	 * Adapter that handles the list of weeks from the dropbox bar
 	 */
@@ -376,11 +383,11 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 		public long getItemId(int index) {
 			return index;
 		}
-		
+
 		public View getView(int index, View convertView, ViewGroup parent) {
 			View item;
 			LayoutInflater layoutInflater = (LayoutInflater)
-					mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			item = layoutInflater.inflate(R.layout.week_number, null, false);
 
 			String it = mItems.get(index);
@@ -394,7 +401,7 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 
 			/** Invalid week */
 			if (mInvalid.contains(index+""))
-				text.setTextColor(R.color.grey);
+				text.setTextColor(R.color.snow);
 
 			return item;
 		}

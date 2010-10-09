@@ -1,6 +1,7 @@
 /**
  * GroupAdapter.java
- *     
+ *  
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,11 +20,6 @@
 
 package com.android.LabRemote.Utils;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -34,6 +30,11 @@ import android.widget.BaseAdapter;
 
 import com.android.LabRemote.UI.GroupItemView;
 import com.android.LabRemote.UI.GroupView;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 
 /**
  *  Adapter class for the groups's content 
@@ -69,11 +70,11 @@ public class GroupAdapter extends BaseAdapter {
 	public long getItemId(int index) {
 		return index;
 	}
-	
+
 	public View getView(int index, View convertView, ViewGroup parent) {
 		GroupItemView item;
 		GroupItem it = mItems.get(index);
-		
+
 		item = new GroupItemView(mContext, mItems.get(index));
 		if (it.getAvatar() == null)
 			new DownloadAvatar(it.getImgUrl(), mAvatarCallback, item);

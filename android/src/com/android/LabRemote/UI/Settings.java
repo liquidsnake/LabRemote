@@ -1,6 +1,7 @@
 /**
  * Settings.java
  *     
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,11 +19,6 @@
  */
 
 package com.android.LabRemote.UI;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -52,6 +48,11 @@ import com.android.LabRemote.R;
 import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
 /** 
  * Application's settings activity. <br>
  * Allows the users to set the middleware's host, load the login code
@@ -66,7 +67,7 @@ public class Settings extends Activity {
 	/** Writes application's private data: host, login code and course */
 	private SharedPreferences.Editor mEditor;
 	/** Default value for select course button when no course is selected */
-	private static String sDefSelect = "Click for course";
+	private static String sDefSelect;
 
 	/** Edit text box where user inserts the server's address */
 	private EditText mHost;
@@ -92,14 +93,22 @@ public class Settings extends Activity {
 	private static final String QR_CODE_MODE = "QR_CODE_MODE";
 	private static final String SCAN_RESULT = "SCAN_RESULT";
 	private static final int REQCODE_SCAN = 0;
-	
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-	    if (keyCode == KeyEvent.KEYCODE_BACK) {
-	        return true;
-	    }
-	    return super.onKeyDown(keyCode, event);
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
+
+	@Override
+	protected void onResume() {
+		invalidateLogin();
+		super.onResume();
+	}
+
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +118,7 @@ public class Settings extends Activity {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.settings);
 
+		sDefSelect = (String) getResources().getString(R.string.change_course);
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		mEditor = mPreferences.edit(); 
 		mLogin = false;
@@ -144,7 +154,7 @@ public class Settings extends Activity {
 				}
 			}
 		});	
-		
+
 		/** Load login code manual */
 		Button manualLoad = (Button)findViewById(R.id.loadManual);
 		manual = (RelativeLayout)findViewById(R.id.loadCodeManual);
@@ -175,14 +185,14 @@ public class Settings extends Activity {
 				ServerResponse result = checkLogin();
 				if (result.getError() == null) {
 					ArrayList<Map<String, String>> courses = 
-							(ArrayList<Map<String, String>>)result.getRespone();
+						(ArrayList<Map<String, String>>)result.getRespone();
 					String[] names = new String[courses.size()];
 					String[] ids = new String[courses.size()];
 					for (int i = 0; i < courses.size(); i++) {
 						names[i] = courses.get(i).get("name");
 						ids[i] = courses.get(i).get("id");
 					}
-						
+
 					showSelect(names, ids);
 					mLogin = true;
 				} else 
@@ -210,7 +220,6 @@ public class Settings extends Activity {
 				}
 				Intent mIntent = new Intent(getApplicationContext(), Main.class);
 				startActivity(mIntent);
-				finish();
 			}
 		});
 	}
@@ -275,11 +284,13 @@ public class Settings extends Activity {
 	 */
 	private void storeCode(String code) {
 		if (code != null) {
-			StringTokenizer st = new StringTokenizer(code, "|"); //TODO: trat cand nu are token
-			mEditor.putString("userId", st.nextToken());
-			mEditor.putString("loginCode", st.nextToken()); 
-			mEditor.commit();
-			mCodeChecked.setChecked(true);
+			StringTokenizer st = new StringTokenizer(code, "|"); 
+			if (st.countTokens() == 2) {
+				mEditor.putString("userId", st.nextToken());
+				mEditor.putString("loginCode", st.nextToken()); 
+				mEditor.commit();
+				mCodeChecked.setChecked(true);
+			}
 		}
 	}
 
@@ -298,7 +309,7 @@ public class Settings extends Activity {
 	 * Manages server address
 	 */
 	private String parseAddress(String host) {
-		String result = host.replaceAll("^\\s+", "").replaceAll("\\s+$", "");
+		String result = host.trim();
 		return (result.startsWith("http://") ? result : "http://" + result);
 	}
 
