@@ -368,7 +368,7 @@ def post_data(request):
             except:
                 week = get_week(course)
             
-            hash_list = map(str,[request.POST['user'], request.POST['course'], request.POST['type'], request.POST['contents'].strip("\"'"), assistant.code])
+            hash_list = map(str,[request.POST['user'], request.POST['course'], request.POST['type'], request.POST['contents'], assistant.code])
             post_check_hash =''.join(hash_list)
 
             computed_hash = hashlib.md5(post_check_hash).hexdigest()

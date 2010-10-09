@@ -470,7 +470,7 @@ class PostTestCase(ApiTestCase):
             "students" : [{ "id" : self.student.id, "grade" : self.new_grade }],
         }
         hash_list = map(str,[self.params['user'],self.params['course'],self.params['type'],json.dumps(self.data), self.assistant.code])
-        self.params['hash'] = hashlib.md5(''.join(hash_list).strip("\"'")).hexdigest()
+        self.params['hash'] = hashlib.md5(''.join(hash_list)).hexdigest()
     
     def test_empty_post(self):
         tested = self.c.post(reverse(views.post_data), {})
