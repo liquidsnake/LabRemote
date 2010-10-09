@@ -21,7 +21,6 @@ package com.android.LabRemote.UI;
 
 import java.util.ArrayList;
 
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,7 +58,7 @@ import com.android.LabRemote.Utils.AvatarCallback;
 import com.android.LabRemote.Utils.GroupAdapter;
 import com.android.LabRemote.Utils.GroupItem;
 import com.android.LabRemote.Utils.ShowAvatar;
-//TODO: current week chenar, selector + vacante + post
+//TODO: selector + vacante + post
 /** 
  * Lists the students of a specific group
  * @see GroupItemView
@@ -81,10 +80,14 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	/** Requests that a child activity returns with error message 
 	 * if there was a server communication error during its initialization */
 	public static final int REQUEST_FROM_SERVER = 3;
+	/** A list of the invalid weeks for the current activity (e.g. vacation) */
 	private ArrayList<String> mInactiveWeeks;
-	private String mCurrentWeek;
-	private Gallery content;
-	private PopupWindow week;
+	/** The number of weeks associated with this activity */
+	private int mMaxWeeks = -1;
+	/** Week id for the current attendance */
+	private String mCurrentWeek = "-1";
+	/** Dropbox bar that allows the user to select a new week */
+	private PopupWindow mWeeksBar;
 
 	/**
 	 * Displays a newly downloaded avatar
@@ -117,98 +120,22 @@ public class GroupView extends ListActivity implements AvatarCallback {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.group_view);
 		
-		/** Test schimbare saptamana */
-
-		
-		/** Test popup week */
-		TableLayout he = (TableLayout) findViewById(R.id.header);
-		he.setOnClickListener(new OnClickListener() {
+		/** Dropbox week switcher */
+		TableLayout header = (TableLayout) findViewById(R.id.header);
+		header.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				ArrayList<String> wee = new ArrayList<String>();
-
-				for (int i = 0; i < 18; i++) {//TODO: max weeks
-					wee.add(i+"");
-				}
-				LinearLayout layout = new LinearLayout(getApplicationContext());
-				layout.setOrientation(LinearLayout.VERTICAL);
-				TextView title = new TextView(getApplicationContext());
-				title.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
-				title.setTextColor(R.color.black);
-				title.setText("Select weeeek:");
-				layout.addView(title);
-				content = new Gallery(getApplicationContext());
-				content.setSpacing(5);
-				final WeekAdapter adap = new WeekAdapter(getApplicationContext(), wee, null, mInactiveWeeks, mCurrentWeek);
-				content.setAdapter(adap);
-				content.setSelection(Integer.parseInt(mCurrentWeek), true);
-				content.setOnItemClickListener(new OnItemClickListener() {
-					public void onItemClick(AdapterView<?> arg0, View arg1,
-							int arg2, long arg3) {
-						if (mInactiveWeeks.contains(arg2+""))
-							Toast.makeText(getApplicationContext(), "vacanta", 1).show();
-						else {
-							TextView sel = (TextView)arg1.findViewById(R.id.resultName);
-							sel.setTypeface(Typeface.DEFAULT_BOLD);
-							getWeek(arg2); //in alt thread + dc e sapt curent nu mai cer
-							week.dismiss();							
-						}
-					}
-				});
-				
-				layout.addView(content);
-				week = new PopupWindow(layout, ViewGroup.LayoutParams.FILL_PARENT, 
-						ViewGroup.LayoutParams.WRAP_CONTENT);
-				//week.setBackgroundDrawable(getResources().getDrawable(android.R.drawable.editbox_dropdown_light_frame));
-				week.setBackgroundDrawable(getResources().getDrawable(android.R.drawable.spinner_dropdown_background));
-				week.setFocusable(true);
-				week.setTouchable(true);
-				week.setOutsideTouchable(true);
-				week.showAsDropDown(v);
+				showWeeksBar(v);
 			}
 		});
 
+		mInactiveWeeks = new ArrayList<String>();
 		receiveData();
-	}
-
-	private class Week extends AsyncTask<String, String, String> {
-	     protected void onProgressUpdate(Integer... progress) {
-	     }
-
-	     protected void onPostExecute(String result) {
-	    	 if (mData != null) 
-	 			fillList();
-	    }
-
-		@Override
-		protected String doInBackground(String... params) {
-			ServerResponse response = new Connection(getApplicationContext()).
-			getGroup(params[0], params[1], params[2]); //stiu oricand group si mAID ?
-			mData = (JSONObject) response.getRespone();
-			return "";
+		TextView t;
+		if (mInactiveWeeks.contains(mCurrentWeek)) {
+			t = (TextView)findViewById(android.R.id.empty);
+			t.setText("Invalid activity");
+			//showWeeksBar(header);
 		}
-	 }
-	 
-	private void getWeek(int id) {
-		JSONObject result = new JSONObject();
-		try {
-			result.put("name", mGroup);
-			result.put("activity_id", mAID);
-			result.put("week", mCurrentWeek);
-			System.out.println("prntru " + mCurrentWeek);
-			JSONArray students = new JSONArray();
-			for (int i = 0; i < mList.size(); i++) {
-				JSONObject stud = new JSONObject();
-				stud.put("id", mList.get(i).getID());
-				stud.put("grade", mList.get(i).getGrade());
-				students.put(stud);
-			}			
-			result.put("students", students);
-			new Connection(this).post(result, "group"); //TODO: check response
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		
-		new Week().execute(mGroup, mAID, id+"");
 	}
 	
 	/**
@@ -218,9 +145,6 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	private void receiveData() {
 
 		/** Header informations */
-		String mDate = getIntent().getStringExtra("Date"); //TODO: iau week day si eu trim si week
-		TextView dateText = (TextView) findViewById(R.id.dateHeader);
-		dateText.setText(mDate); 
 		mAID = getIntent().getStringExtra("AID"); 
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		String course = preferences.getString("course", null);
@@ -249,6 +173,7 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		JSONArray students;
 		mList = new ArrayList<GroupItem>();
 		
+		/** Students */
 		try {
 			students = mData.getJSONArray("students"); 
 			for (int i = 0; i < students.length(); i++) {
@@ -260,16 +185,20 @@ public class GroupView extends ListActivity implements AvatarCallback {
 			e.printStackTrace();
 		}
 			
+		/** Other data from server */
 		try {
 			mGroup = mData.getString("name");
 			TextView groupText = (TextView) findViewById(R.id.classHeader);
 			groupText.setText(mGroup);
+			String mDate = mData.getString("date"); 
+			TextView dateText = (TextView) findViewById(R.id.dateHeader);
+			dateText.setText(mDate + " [" + mCurrentWeek + "]"); 
 			JSONArray inactive = mData.getJSONArray("inactive_weeks");
-			mInactiveWeeks = new ArrayList<String>();
+			mMaxWeeks = mData.getInt("max_weeks");
 			for (int i = 0; i < inactive.length(); i++)
 				mInactiveWeeks.add(i, inactive.getString(i));
 			mAID = mData.getString("activity_id");
-			mCurrentWeek = mData.getString("week");
+			mCurrentWeek = mData.getString("week"); 
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -280,10 +209,27 @@ public class GroupView extends ListActivity implements AvatarCallback {
 	
 	@Override
 	protected void onPause() {
+		post();
+		super.onPause();
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    if (resultCode == Activity.RESULT_CANCELED) 
+	    	if (data != null)
+	    		if (data.getStringExtra("serverError") != null)
+	    			Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
+	}
+	
+	/**
+	 * Sends activity data to the server
+	 */
+	private void post() {
 		JSONObject result = new JSONObject();
 		try {
 			result.put("name", mGroup);
 			result.put("activity_id", mAID);
+			result.put("week", mCurrentWeek);
 			JSONArray students = new JSONArray();
 			for (int i = 0; i < mList.size(); i++) {
 				JSONObject stud = new JSONObject();
@@ -295,16 +241,7 @@ public class GroupView extends ListActivity implements AvatarCallback {
 			new Connection(this).post(result, "group"); //TODO: check response
 		} catch (JSONException e) {
 			e.printStackTrace();
-		}
-		super.onPause();
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (resultCode == Activity.RESULT_CANCELED) 
-	    	if (data != null)
-	    		if (data.getStringExtra("serverError") != null)
-	    			Toast.makeText(this, data.getStringExtra("serverError"), 1).show();
+		}		
 	}
 	
 	/**
@@ -319,22 +256,105 @@ public class GroupView extends ListActivity implements AvatarCallback {
 		finish();
 	}
 	
+	/******************************** Switch week ********************************/
+	/*****************************************************************************/
+	
+	/**
+	 * Initializes select week bar and shows it as a dropbox 
+	 */
+	private void showWeeksBar(View v) {
+		final WeekAdapter adapter;
+		final Gallery weeksList;
+		
+		ArrayList<String> wee = new ArrayList<String>();
+		for (int i = 1; i <= mMaxWeeks; i++) 
+			wee.add(i+"");
+
+		LinearLayout layout = new LinearLayout(getApplicationContext());
+		layout.setOrientation(LinearLayout.VERTICAL);
+		TextView title = new TextView(getApplicationContext());
+		title.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+		title.setText("Select week:");
+		layout.addView(title);
+		
+		weeksList = new Gallery(getApplicationContext());
+		weeksList.setSpacing(5);
+		adapter = new WeekAdapter(getApplicationContext(), 
+				wee, null, mInactiveWeeks, mCurrentWeek);
+		weeksList.setAdapter(adapter);
+		weeksList.setSelection(Integer.parseInt(mCurrentWeek), true);
+		weeksList.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> arg0, View arg1,
+					int arg2, long arg3) {
+				arg2++;
+				if (mInactiveWeeks.contains(arg2+""))
+					Toast.makeText(getApplicationContext(), "Inactive activity", 1).show();
+				else {
+					TextView sel = (TextView)arg1.findViewById(R.id.weekId);
+					sel.setTypeface(Typeface.DEFAULT_BOLD);
+					if (arg2 != Integer.parseInt(mCurrentWeek)) {
+						getWeek(arg2); 
+					}
+					mWeeksBar.dismiss();
+				}
+			}
+		});
+		layout.addView(weeksList);
+		
+		mWeeksBar = new PopupWindow(layout, ViewGroup.LayoutParams.FILL_PARENT, 
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		mWeeksBar.setBackgroundDrawable(getResources().
+				getDrawable(android.R.drawable.spinner_dropdown_background));
+		mWeeksBar.setFocusable(true);
+		mWeeksBar.setTouchable(true);
+		mWeeksBar.setOutsideTouchable(true);
+		mWeeksBar.showAsDropDown(v);
+	}
+
+	/**
+	 * Saves the current week and get's the newly selected week from the server
+	 * @param id Week's identifier
+	 */
+	private void getWeek(int id) {
+		post();		
+		new Week().execute(mGroup, mAID, id+"");
+	}
+	
+	/**
+	 * Handles a group server request in the background and
+	 * updates the list with the resulted activity
+	 */
+	private class Week extends AsyncTask<String, String, String> {
+
+	     protected void onPostExecute(String result) {
+	    	 if (mData != null) 
+	 			fillList();
+	    }
+
+		@Override
+		protected String doInBackground(String... params) {
+			ServerResponse response = new Connection(getApplicationContext()).
+			getGroup(params[0], params[1], params[2]); 
+			mData = (JSONObject) response.getRespone();
+			return "";
+		}
+	 }
+	
+	/**
+	 * Adapter that handles the list of weeks from the dropbox bar
+	 */
 	private class WeekAdapter extends BaseAdapter {
 
 		/** Array filled with list's elements */
 		private ArrayList<String> mItems = new ArrayList<String>();
-		/** Called when a list item is clicked */
-		private OnClickListener mOnItemClick;
+		private ArrayList<String> mInvalid;
 		private Context mContext;
 		private String mWeek;
-		private TextView current;
-		private ArrayList<String> mInvalid;
 
 		public WeekAdapter(Context context, ArrayList<String> items, 
 				OnClickListener onItemClick, ArrayList<String> invalid, String week) {
 			mWeek = week;
 			mInvalid = invalid;
-			mOnItemClick = onItemClick;
 			mContext = context;
 			mItems = items;
 		}
@@ -355,16 +375,18 @@ public class GroupView extends ListActivity implements AvatarCallback {
 			View item;
 			LayoutInflater layoutInflater = (LayoutInflater)
 					mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			item = layoutInflater.inflate(R.layout.search_result_item, null, false);
+			item = layoutInflater.inflate(R.layout.week_number, null, false);
 
 			String it = mItems.get(index);
-			TextView text = (TextView)item.findViewById(R.id.resultName);
+			TextView text = (TextView)item.findViewById(R.id.weekId);
 			text.setText(it);
-			
-			if (mWeek.equals(index+"")) {
+
+			index++;
+			/** Selected week */
+			if (mWeek.equals(index+"")) 
 				text.setTypeface(Typeface.DEFAULT_BOLD);
-				current = text;
-			}
+
+			/** Invalid week */
 			if (mInvalid.contains(index+""))
 				text.setTextColor(R.color.grey);
 

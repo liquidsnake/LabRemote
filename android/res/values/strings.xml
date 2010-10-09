@@ -6,9 +6,11 @@
 	<string name="settings">LabRemote Settings</string>
 	<string name="load_code">Login code</string>
 	<string name="insert_host">Insert server address</string>
+	<string name="insert_code">Insert new code</string>
 	<string name="select_course">Current course</string>
 	<string name="load_text">Click here to load a new code.</string>
 	<string name="host">Host Address</string>
 	<string name="change_course">Click for course</string>
 	<string name="empty_group">No students in this group</string>
+	<string name="no_result">No student was found for the given query</string>
 </resources>

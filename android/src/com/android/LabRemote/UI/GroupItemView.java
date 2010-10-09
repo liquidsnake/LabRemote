@@ -22,7 +22,9 @@ package com.android.LabRemote.UI;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.StateListDrawable;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -32,6 +34,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -74,6 +77,15 @@ public class GroupItemView extends LinearLayout {
 		LayoutInflater layoutInflater = (LayoutInflater) 
 		getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		layoutInflater.inflate(R.layout.group_item, this, true);
+		FrameLayout fr = (FrameLayout)findViewById(R.id.imageframe);
+		StateListDrawable st = new StateListDrawable();
+	    st.addState(new int[] {-android.R.attr.state_selected}, 
+	    		getResources().getDrawable(R.drawable.att));
+	    st.addState(new int[] {android.R.attr.state_selected}, 
+	    		getResources().getDrawable(R.color.darkgrey));
+        st.addState(new int[] {android.R.attr.state_pressed}, 
+        		getResources().getDrawable(R.color.darkgrey));
+		fr.setBackgroundDrawable(st);
 		initImage(R.id.groupPhoto);
 		initName(R.id.groupName);
 		initGrade(R.id.groupGrade);
@@ -84,7 +96,6 @@ public class GroupItemView extends LinearLayout {
 	 */
 	private void initImage(int res) {
 		mImg = (ImageView) findViewById(res);
-		//mImg.setBackgroundResource(android.R.drawable.picture_frame);
 		Bitmap avatar = mItem.getAvatar();
 		setImage(avatar);
 	}
@@ -105,7 +116,11 @@ public class GroupItemView extends LinearLayout {
 		/** Grade */ 
 		if (mItem.getGrade() != null) {
 			mGrade = (TextView) findViewById(res);
-			mGrade.setText(mItem.getGrade());
+			String grade = mItem.getGrade();
+			if (grade.equals("0"))
+				mGrade.setText("--");	
+			else
+				mGrade.setText(grade);
 			mGrade.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					int[] location 	= new int[2];
@@ -137,16 +152,30 @@ public class GroupItemView extends LinearLayout {
 	 * Initializes popup editor 
 	 */
 	private void initPopupEdit() {
+		int grade;
+
 		popupEdit = new EditText(mContext);
 		popupEdit.setTextColor(R.color.black);
-		popupEdit.setText(mGrade.getText().toString());
+		popupEdit.setInputType(InputType.TYPE_CLASS_NUMBER);
+		try {
+			grade = Integer.parseInt(mGrade.getText().toString());
+			popupEdit.setText(grade+"");
+		} catch (NumberFormatException e) {
+			popupEdit.setText("0");
+		}
+
 		popupEdit.setLayoutParams(
 				new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		popupEdit.addTextChangedListener(new TextWatcher() {
 			public void afterTextChanged(Editable s) {
 				popupGrade.update(ViewGroup.LayoutParams.WRAP_CONTENT, 
 						ViewGroup.LayoutParams.WRAP_CONTENT);
-				setGrade(popupEdit.getText().toString());
+				try {
+					int grade = Integer.parseInt(popupEdit.getText().toString());
+					setGrade(grade+"");
+				} catch (NumberFormatException e) {
+					setGrade("0"); 
+				}
 			}
 			public void onTextChanged(CharSequence s, int start, int before, int count) {}
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -193,15 +222,19 @@ public class GroupItemView extends LinearLayout {
 		@Override
 		public boolean onFling(MotionEvent e1, MotionEvent e2, 
 				float velocityX, float velocityY) {
+			int newGrade;
 
-			int newGrade = Integer.parseInt(mGrade.getText().toString());
-			if (e2.getX() > e1.getX()) {
-				newGrade++;
-				setGrade(new String(newGrade + ""));
-			} else {
-				newGrade--;
-				setGrade(new String(newGrade + ""));
+			try {
+				newGrade = Integer.parseInt(mGrade.getText().toString());
+			} catch (NumberFormatException e) {
+				newGrade = 0;
 			}
+			
+			if (e2.getX() > e1.getX()) 
+				newGrade++;
+			else if (newGrade > 0)
+				newGrade--;
+			setGrade(newGrade+"");
 			return true;
 		}
 	}
@@ -224,7 +257,10 @@ public class GroupItemView extends LinearLayout {
 	}
 
 	public void setGrade(String grade) {
-		mGrade.setText(grade);	
+		if (grade.equals("0"))
+			mGrade.setText("--");	
+		else
+			mGrade.setText(grade);
 		mItem.setGrade(grade);
 	}
 

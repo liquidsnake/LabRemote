@@ -21,9 +21,8 @@ package com.android.LabRemote.UI;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -36,7 +35,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -88,8 +86,6 @@ public class Settings extends Activity {
 	private RelativeLayout manual;
 	/** Allows the user to insert a new login code */
 	private EditText editCode;
-	private String[] courses;
-	private String[] coursesId;
 
 	private static final String INTENT_SCAN = "com.google.zxing.client.android.SCAN";
 	private static final String SCAN_MODE = "SCAN_MODE";
@@ -178,11 +174,16 @@ public class Settings extends Activity {
 			public void onClick(View v) {
 				ServerResponse result = checkLogin();
 				if (result.getError() == null) {
-					ArrayList<Pair<String, String>> s = (ArrayList<Pair<String, String>>)result.getRespone();
-					String[] res = new String[s.size()];
-					for (int i = 0; i < s.size(); i++)
-						res[i] = s.get(i).second;
-					showSelect(res);
+					ArrayList<Map<String, String>> courses = 
+							(ArrayList<Map<String, String>>)result.getRespone();
+					String[] names = new String[courses.size()];
+					String[] ids = new String[courses.size()];
+					for (int i = 0; i < courses.size(); i++) {
+						names[i] = courses.get(i).get("name");
+						ids[i] = courses.get(i).get("id");
+					}
+						
+					showSelect(names, ids);
 					mLogin = true;
 				} else 
 					showLoginFailed(result.getError());		
@@ -240,12 +241,14 @@ public class Settings extends Activity {
 	/**
 	 * Shows select courses dialog
 	 */
-	private void showSelect(String[] courses) {
-		final String[] values = courses;
+	private void showSelect(String[] courses, String[] courseIds) {
+		final String[] names = courses;
+		final String[] ids = courseIds;
 		mSelCourseDialog.setItems(courses, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
-				mEditor.putString("course", values[item]);//TODO: course id
-				mSelectCourse.setText(values[item]);
+				mEditor.putString("course", names[item]);
+				mEditor.putString("courseId", ids[item]);
+				mSelectCourse.setText(names[item]);
 			}
 		});
 		mSelCourseDialog.create().show();		
@@ -272,7 +275,9 @@ public class Settings extends Activity {
 	 */
 	private void storeCode(String code) {
 		if (code != null) {
-			mEditor.putString("loginCode", code); 
+			StringTokenizer st = new StringTokenizer(code, "|"); //TODO: trat cand nu are token
+			mEditor.putString("userId", st.nextToken());
+			mEditor.putString("loginCode", st.nextToken()); 
 			mEditor.commit();
 			mCodeChecked.setChecked(true);
 		}

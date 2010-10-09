@@ -92,7 +92,7 @@ public class StudentProvider extends ContentProvider {
 		ServerResponse result = new Connection(getContext()).getSearch(query); 
 		JSONObject mData = (JSONObject)result.getRespone();
 		try {
-			JSONArray ar = mData.getJSONArray("students");
+			JSONArray ar = mData.getJSONArray("students"); //TODO: de cde null pointer ex?
 			for(int i = 0; i < ar.length(); i++) {
 				JSONObject student = ar.getJSONObject(i);
 				res.addRow(new String[]{student.getString("id"), 
