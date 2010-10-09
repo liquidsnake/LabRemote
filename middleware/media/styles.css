@@ -158,3 +158,7 @@ table.object_list tr td {
 .showMore {
     font-weight: bold;
 }
+
+.week_column div{
+    font-size: larger;
+}

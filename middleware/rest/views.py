@@ -333,6 +333,7 @@ def post_data(request):
     Expects the folowing in POST data:
     user        -- user making the post
     course      -- current course id
+    hash        -- hash to check validity of data
     type        -- type of post request (currently only 'group' is supported)
     contents    -- JSON encoded dictionary containing:
         week        -- optional week number, otherwise current week is used
@@ -343,9 +344,9 @@ def post_data(request):
             grade       -- new grade of the student
     """
     try:
-        user = request.POST['user']
-        session_key = request.POST['session_key']
-        course = request.POST['course']
+        user = int(request.POST['user'])
+        hash = request.POST['hash']
+        course = int(request.POST['course'])
     except:
         return json_response({"error":"Malformed post request"}, failed = True)
 
@@ -353,9 +354,6 @@ def post_data(request):
         assistant = Assistant.objects.get(pk=user)
     except Assistant.DoesNotExist:
         return json_response({"error":"No such user"}, failed = True)
-        
-    if assistant.get_session_key() != session_key:
-        return json_response({"error":"Invalid session key"}, failed = True)
         
     try:
         course = Course.objects.get(id=course)
@@ -369,6 +367,13 @@ def post_data(request):
                 week = int(data['week'])
             except:
                 week = get_week(course)
+            
+            hash_list = map(str,[request.POST['user'], request.POST['course'], request.POST['type'], request.POST['contents'].strip("\"'"), assistant.code])
+            post_check_hash =''.join(hash_list)
+
+            computed_hash = hashlib.md5(post_check_hash).hexdigest()
+            if computed_hash != hash:
+                return json_response({"error":"Invalid check hash, expected: %s got %s" % (computed_hash, hash)}, failed = True)
 
             if week > course.max_weeks:
                 return json_response({"error":"The selected week is larger than the number of weeks for this course"}, failed = True)
@@ -376,6 +381,7 @@ def post_data(request):
             if week in course.inactive_as_list:
                 return json_response({"error":"This week is during the holiday"}, failed = True)
             
+    
             try:
                 act = Activity.objects.get(id = int(data['activity_id']))
             except Activity.DoesNotExist:

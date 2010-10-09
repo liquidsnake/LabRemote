@@ -12,6 +12,7 @@ from django.core.urlresolvers import reverse
 import middleware.settings
 import json
 import hashlib
+import difflib
 
 class AttrDict(dict):
     __getattr__= dict.__getitem__
@@ -68,6 +69,7 @@ class ApiTestCase(TestCase):
                 "grade" : 5,
             }),
         })
+        self.fixtures = fixtures
         self.course = Course(
             external_id = fixtures.course.external_id,
             name = fixtures.course.name, 
@@ -290,6 +292,9 @@ class CurrentGroupTestCase(ApiTestCase):
             time_minute_end = 0
         )
         self.current_activity.save()
+
+
+
         self.params = {
             "user":self.assistant.id, 
             "check_hash": self.get_hash(self.assistant.code, 'current_group', self.course.id, self.assistant.id),
@@ -305,26 +310,40 @@ class CurrentGroupTestCase(ApiTestCase):
     def test_good_parameters_week_normal(self):
         #change grade for week 3
         selected_week = 3
-        self.attendances[selected_week - 1].grade = 7
-        self.attendances[selected_week - 1].save()
+        self.current_attendance = Attendance(
+            student = self.student,
+            course = self.course,
+            activity = self.current_activity,
+            grade = self.fixtures.attendance.grade,
+            week = selected_week
+        )
+        self.current_attendance.save()
+        self.current_attendance.grade = 7
+        self.current_attendance.save()
         self.params["week"] = selected_week        
         self.params["check_hash"] = self.get_hash(self.assistant.code, 'current_group', self.course.id, self.assistant.id, self.params["week"])
         tested = self.c.get(reverse('views.current_group_week', kwargs = self.params))
-        expected = '{"week": 3, "status": "success", "activity_id": 2, "name": "group", "students": [{"grade": 0, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "Fri, 17 September", "max_weeks": 10}'
+        expected = '{"week": %d, "status": "success", "activity_id": %d, "name": "group", "students": [{"grade": 7, "name": "Test Student", "avatar": "", "id": 1}], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (selected_week, self.current_activity.id, compute_date(self.course, selected_week, self.current_activity))
 
-        self.assertEqual( tested.content, expected,
-                         'Incorrect group response for current group view, normal week, good parameters')
+        self.assertEqual( tested.content, expected)
 
     def test_good_parameters_week_holiday(self):
         #use week 4 which is in holiday
         selected_week = 4
+        self.current_attendance = Attendance(
+            student = self.student,
+            course = self.course,
+            activity = self.current_activity,
+            grade = self.fixtures.attendance.grade,
+            week = selected_week
+        )
+        self.current_attendance.save()
         self.params["week"] = selected_week        
         self.params["check_hash"] = self.get_hash(self.assistant.code, 'current_group', self.course.id, self.assistant.id, self.params["week"])
         tested = self.c.get(reverse('views.current_group_week', kwargs = self.params))
-        expected = '{"week": 4, "status": "success", "activity_id": 2, "name": "group", "students": [], "inactive_weeks": [1, 4, 7], "date": "Fri, 24 September", "max_weeks": 10}'
+        expected = '{"week": %d, "status": "success", "activity_id": %d, "name": "group", "students": [], "inactive_weeks": [1, 4, 7], "date": "%s", "max_weeks": 10}' % (selected_week, self.current_activity.id, compute_date(self.course, selected_week, self.current_activity))
 
-        self.assertEqual( tested.content, expected,
-                         'Incorrect group response for current group view, no week, good parameters')
+        self.assertEqual( tested.content, expected )
 
     def test_bad_week(self):
         selected_week = 0
@@ -441,7 +460,6 @@ class PostTestCase(ApiTestCase):
         ApiTestCase.setUp(self)
         self.params = {
             "user":self.assistant.id, 
-            "session_key":self.assistant.code, 
             "course":self.course.id,
             "type": "group",
         }
@@ -451,6 +469,8 @@ class PostTestCase(ApiTestCase):
             "activity_id" : self.activity.id,
             "students" : [{ "id" : self.student.id, "grade" : self.new_grade }],
         }
+        hash_list = map(str,[self.params['user'],self.params['course'],self.params['type'],json.dumps(self.data), self.assistant.code])
+        self.params['hash'] = hashlib.md5(''.join(hash_list).strip("\"'")).hexdigest()
     
     def test_empty_post(self):
         tested = self.c.post(reverse(views.post_data), {})
@@ -468,12 +488,10 @@ class PostTestCase(ApiTestCase):
                          'Incorrect post for bad user (should have errored)')
     
     def test_bad_key(self):
-        self.params["session_key"] = "qwerty"
+        self.params["hash"] = "badhash"
+        self.params["contents"] = json.dumps(self.data)
         tested = self.c.post(reverse(views.post_data), self.params)
-        expected = '{"status": "failed", "error": "Invalid session key"}'
-        
-        self.assertEqual( tested.content, expected,
-                         'Incorrect post for bad code (should have errored)')
+        self.assertEqual("Invalid check hash" in tested.content, True)
 
     def test_bad_course(self):
         self.params["course"] = 999
@@ -486,6 +504,5 @@ class PostTestCase(ApiTestCase):
         self.params["contents"] = json.dumps(self.data)
         tested = self.c.post(reverse(views.post_data), self.params)
         expected = '{"status": "success"}'
-        self.assertEqual( tested.content, expected,
-                         'Incorrect post for good data')
+        self.assertEqual( tested.content, expected)
         self.assertEqual( Attendance.objects.get(student = self.student, course = self.course, activity = self.activity, week = self.current_week).grade, self.new_grade, "Incorrect post for new grade")

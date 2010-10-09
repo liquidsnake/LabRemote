@@ -82,12 +82,12 @@ YAHOO.util.Event.addListener(window, "load", function() {
             {key:"name", label:"Name", sortable:true},
             {% for week in weeks %}
                 {% if week in inactive %}
-                    {key:"week_{{ week }}", label:"{{ week }}", abbr: "Week {{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, className: "inactive_column" },
+                    {key:"week_{{ week }}", label:"{{ week }}", abbr: "Week {{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, className: "inactive_column week_column" },
                 {% else %}
-                    {key:"week_{{ week }}", label:"{{ week }}", abbr: "Week {{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, editor: textEditor },
+                    {key:"week_{{ week }}", label:"{{ week }}", abbr: "Week {{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, editor: textEditor, className: "week_column" },
                 {% endif %}
             {% endfor %}
-            {key:"sum", label:"Sum", formatter:YAHOO.widget.DataTable.formatNumber },
+            {key:"sum", label:"Sum", formatter:YAHOO.widget.DataTable.formatNumber, className: "week_column" },
         ];
 
         var myDataSource = new YAHOO.util.DataSource("/course/{{ course.id }}/get_activity/{{activity.activity.id}}/");
@@ -134,7 +134,6 @@ YAHOO.util.Event.addListener(window, "load", function() {
         myDataTable.subscribe("cellMouseoutEvent", myDataTable.onEventUnhighlightCell);
         myDataTable.subscribe("cellClickEvent", myDataTable.onEventShowCellEditor);
 
-                
         return {
             oDS: myDataSource,
             oDT: myDataTable
