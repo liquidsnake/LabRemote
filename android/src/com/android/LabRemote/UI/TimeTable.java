@@ -240,7 +240,7 @@ public class TimeTable extends Activity {
 	 * @param date scheduled lab date 
 	 * @see GroupView
 	 */
-	private void startGroupView(String group, String aid, String date) {
+	private void startGroupView(String group, String aid, String date) { //TODO: scot date
 		mGroupIntent.putExtra("Group", group);
 		mGroupIntent.putExtra("Date", date);
 		mGroupIntent.putExtra("AID", aid);

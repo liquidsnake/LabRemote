@@ -24,8 +24,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -44,7 +49,6 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Pair;
 
 //TODO: return null la catch
 /**
@@ -69,6 +73,7 @@ public class Connection {
 	private static final String searchQuery = "/api/search/";
 	private static final String individualQuery = "/api/student/";
 	private static final String groupQuery = "/api/group/";
+	private static final String groupsQuery = "/api/groups/";
 	private static final String timeQuery = "/api/timetable/";
 	private static final String currentQuery = "/api/current_group/";
 	
@@ -127,34 +132,34 @@ public class Connection {
 	public ServerResponse login() {
 		ServerResponse res;
 		JSONObject jObject = null;
-		JSONObject[] courses;	
 		
 		/** Server request */
-		String request = mHost + logQuery + mCode;
-		res = get(request);
+		String request = mHost + logQuery + mID + "/";
+		String signature = md5("login" + mID + mCode);
+		res = get(request+signature+"/");
 		jObject = (JSONObject) res.getRespone();
 		if (jObject == null)
 			return res;
 
 		/** Parse response */
-		//TODO: fac MPair class sau Map
-		ArrayList<Pair<String, String>> cc = new ArrayList<Pair<String, String>>();
+		ArrayList<Map<String, String>> courses = new ArrayList<Map<String, String>>();
 		try {
 			SharedPreferences.Editor editor = mPreferences.edit();
-			String user_id = jObject.getString("user");
-			JSONArray c = jObject.getJSONArray("courses");
+			//String user_id = jObject.getString("user");
+			JSONArray jsonCourses = jObject.getJSONArray("courses");
 			
-			courses = new JSONObject[c.length()];
-			for (int i = 0; i < c.length(); i++) {
-				cc.add(new Pair<String, String>(c.getJSONObject(i).getString("id"),
-						c.getJSONObject(i).getString("abbr")));
+			for (int i = 0; i < jsonCourses.length(); i++) {
+				Map<String, String> course = new HashMap<String, String>(); 
+				course.put("id", jsonCourses.getJSONObject(i).getString("id"));
+				course.put("name", jsonCourses.getJSONObject(i).getString("abbr"));
+				courses.add(course);
 			}
 
-			if (cc.size() > 0) {
-				editor.putString("course", cc.get(0).second);
-				editor.putString("courseId", cc.get(0).first);
+			if (!courses.isEmpty()) {
+				editor.putString("course", courses.get(0).get("name"));
+				editor.putString("courseId", courses.get(0).get("id"));
 			}
-			editor.putString("userId", user_id); 
+			//editor.putString("userId", user_id); 
 			editor.commit();
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -162,7 +167,7 @@ public class Connection {
 		}
 
 		/** Successful login */
-		return new ServerResponse(cc, null);
+		return new ServerResponse(courses, null);
 	}
 
 	/**
@@ -193,31 +198,44 @@ public class Connection {
 
 	public ServerResponse getGroup(String group, String aid, String week) {
 		String request = mHost + groupQuery + mCourse + "/" + mID + "/" 
-				+ mCode + "/" + group + "/" + aid + "/";
-		if (week != null)
+				+ group + "/" + aid + "/";
+		String signature = md5("group" + mCourse + mID + group + aid + mCode);
+		if (week != null) {
 			request += week + "/";
-			
-		return get(request);
+			signature += week;
+		}			
+		return get(request+signature+"/");
+	}
+	
+	public ServerResponse getGroups() {
+		String request = mHost + groupsQuery + mCourse + "/" + mID + "/";
+		String signature = md5("groups" + mCourse + mID + mCode);
+		
+		return get(request+signature+"/");
 	}
 	
 	public ServerResponse getCurrentGroup() {
-		String request = mHost + currentQuery + mCourse + "/" + mID + "/" + mCode;
-		return get(request);
+		String request = mHost + currentQuery + mCourse + "/" + mID + "/";
+		String signature = md5("current_group" + mCourse + mID + mCode); 
+		return get(request+signature+"/");
 	}
 
 	public ServerResponse getSearch(String query) {
-		String request = mHost + searchQuery + mCourse + "/" + mID + "/" + mCode + "/" + query;
-		return get(request);
+		String request = mHost + searchQuery + mCourse + "/" + mID + "/" + query + "/";
+		String signature = md5("search" + mCourse + mID + query + mCode);
+		return get(request+signature+"/");
 	}
 
 	public ServerResponse getStudent(String id) {
-		String request = mHost + individualQuery + mCourse + "/" + mID + "/" + mCode + "/" + id;
-		return get(request);
+		String request = mHost + individualQuery + mCourse + "/" + mID + "/" + id + "/";
+		String signature = md5("student" + mCourse + mID + id + mCode);
+		return get(request+signature+"/");
 	}
 
 	public ServerResponse getTimetable() {
-		String request = mHost + timeQuery + mCourse + "/" + mID + "/" + mCode;
-		return get(request);
+		String request = mHost + timeQuery + mCourse + "/" + mID + "/";
+		String signature = md5("timetable" + mCourse + mID + mCode);
+		return get(request+signature+"/");
 	}
 	
 	/**
@@ -305,4 +323,20 @@ public class Connection {
 		}
 		return sb.toString();
 	}
+	
+	public String md5(String input) {  
+	    try     {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] messageDigest = md.digest(input.getBytes());
+            BigInteger number = new BigInteger(1,messageDigest);
+            String md5 = number.toString(16);
+       
+            while (md5.length() < 32)
+                    md5 = "0" + md5;
+       
+            return md5;
+	    } catch(NoSuchAlgorithmException e) {
+            return null;
+	    }
+	}  
 }

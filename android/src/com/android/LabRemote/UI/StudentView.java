@@ -51,7 +51,7 @@ import com.android.LabRemote.Server.Connection;
 import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.CustomDate;
 
-/** 
+/** TODO: equals 0 si l gr
  * Informations about a selected student
  */
 public class StudentView extends ListActivity {
@@ -133,11 +133,14 @@ public class StudentView extends ListActivity {
 		
 		try {
 			JSONObject grades = data.getJSONObject("attendances"); 
-            for(int i = 0; i < grades.length(); i++) {
+			System.out.println("Test " + Integer.parseInt(" 0 ")); //false :( => pun trim //exceptie
+            for(int i = 1; i <= grades.length(); i++) {
                  HashMap<String, String> map = new HashMap<String, String>();
                  map.put("index", i+".");
-                 map.put("grade", " " + grades.getJSONObject(i+"").getString("grade"));
+                 String grade = grades.getJSONObject(i+"").getString("grade");
                  gradeSum += Integer.parseInt(grades.getJSONObject(i+"").getString("grade"));
+               	 map.put("grade", grade.equals("0") ? "--" :
+               			 " " + grades.getJSONObject(i+"").getString("grade"));
                  contentMap.add(map);
             }
 		} catch (JSONException e) {
@@ -154,7 +157,6 @@ public class StudentView extends ListActivity {
 			TextView groupStudentView = (TextView)findViewById(R.id.individualGroup);
 			groupStudentView.setText(mGroup);
 			ImageView avatar = (ImageView)findViewById(R.id.individualPhoto);
-			//avatar.setBackgroundResource(android.R.drawable.picture_frame); //era frame
 			String avatarUrl = data.getString("avatar");
 			setAvatar(avatar, avatarUrl);
 		} catch (JSONException e) {

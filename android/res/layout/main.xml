@@ -3,6 +3,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent" 
 	android:layout_height="fill_parent" android:background="@drawable/background">
+	
+	<!-- Date -->
+	<TextView android:id="@+id/date" android:textColor="@color/white"
+		android:layout_width="wrap_content" android:layout_height="wrap_content"
+		android:layout_alignParentTop="true" android:layout_alignParentRight="true"
+		android:shadowColor="@color/black" android:shadowDx="2.0" android:shadowDy="2.0"
+		android:shadowRadius="2.0" android:paddingRight="2dip" android:padding="2dip"/>
 
 	<!-- Menu buttons -->
 	<TableLayout android:layout_width="wrap_content" 

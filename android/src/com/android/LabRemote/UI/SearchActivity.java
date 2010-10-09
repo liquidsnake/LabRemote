@@ -84,7 +84,6 @@ public class SearchActivity extends ListActivity {
 					Intent individualIntent = new Intent(getApplicationContext(), StudentView.class);
 					individualIntent.putExtra("ID", String.valueOf(id));
 					startActivityForResult(individualIntent, REQUEST_FROM_SERVER);
-					//TODO: documentat daca id e mereu bun 
 				}
 			});
 		}

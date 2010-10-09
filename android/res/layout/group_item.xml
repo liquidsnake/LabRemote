@@ -2,14 +2,14 @@
 <!-- Layout for an item in GroupView list -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="fill_parent" android:layout_height="wrap_content"
+	android:layout_width="fill_parent" android:layout_height="wrap_content" 
 	android:orientation="horizontal" android:layout_marginRight="4dip" android:fadingEdge="horizontal">
  
  <LinearLayout
  	android:layout_width="fill_parent" android:layout_height="wrap_content"
  	android:layout_margin="3dip" android:background="@drawable/selector">
-	<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:padding="4dip" android:background="@drawable/att" android:layout_margin="5dip">
+	<FrameLayout android:id="@+id/imageframe" android:layout_width="wrap_content" android:layout_height="wrap_content"
+		android:padding="4dip" android:layout_margin="5dip">
 		<ImageView android:id="@+id/groupPhoto"
 			android:layout_width="50dip" android:layout_height="50dip" 
 			android:layout_margin="2dip" />
