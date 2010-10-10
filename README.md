@@ -30,7 +30,7 @@ Middleware:
 The main workflow is:
 ![Basic workflow](http://eftimie.ro/wiki/_media/workflow-en.png?w=&h=&cache=cache "Basic workflow")
 
-For screenshots and more information about the way the application works read the application ![Manual](http://labremote.korect.ro/manual/)
+For screenshots and more information about the way the application works read the application "Manual":http://labremote.korect.ro/manual/
 
 The basic ui views are:
 
