@@ -36,7 +36,11 @@
         {% endfor %}
     </tr>
     {% for week in weeks %}
+    {% if week.week in inactive %}
+    <tr class="inactive_week">
+    {% else %}
     <tr>
+    {% endif %}
         <td>{{week.week}}</td>
         {% for grade in week.grades %}
         <td>{{ grade }}</td>

@@ -218,13 +218,14 @@ def student_profile(request, getcourse, stud_id):
 
     for i,activity in enumerate(activities):
         for attendance in Attendance.objects.filter(student = student, course = course, activity = activity).order_by("week"):
-            weeks[attendance.week - 1]["grades"][i] = attendance.grade
+            weeks[attendance.week - 1]["grades"][i] = int(attendance.grade)
  
     return render_to_response('student_profile.html', 
             {"activities" : activities,
              "weeks" : weeks,
              "student" : student,
              "course" : course,
+             "inactive" : course.inactive_as_list,
             },
             context_instance=RequestContext(request),)
 
@@ -530,8 +531,7 @@ def export_group_csv(request, getcourse, group_id):
 
 def public_group_link(request, getcourse, group_id):
     """Public page to be shown to students containing the grades."""
-    course = request.session.get('course', None)
-    course = Course.objects.get(id=course.id)
+    course = get_object_or_404(Course, id=getcourse)
     group = get_object_or_404(Group, id=group_id)
 
     students = group.students.all() 
@@ -553,7 +553,7 @@ def public_group_link(request, getcourse, group_id):
             sum = 0
             for i in range(1, max+1):
                 try:
-                    grade = attendances.get(week = i).grade
+                    grade = int(attendances.get(week = i).grade)
                     atts.append(grade)
                     sum += grade
                 except Attendance.DoesNotExist:

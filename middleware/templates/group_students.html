@@ -18,7 +18,7 @@ Available ({{ group.parent_group }}):
     </tr>
 {% for d in available_students %}
     <tr>
-        <td>{{ d.name }}</td>
+        <td><a href="{% url middleware.frontend.views.student_profile request.session.course.id d.id %}">{{ d.name }}</a></td>
         <td>{{ d.group }}</td>
         <td><a href='{% url middleware.frontend.views.group_students_add request.session.course.id group.id d.id %}'>add</a></td>
     </tr>
@@ -34,7 +34,7 @@ Group {{ group.name }}:
     </tr>
 {% for d in group.students.all %}
     <tr>
-        <td>{{ d.name }}</td>
+        <td><a href="{% url middleware.frontend.views.student_profile request.session.course.id d.id %}">{{ d.name }}</a></td>
         <td>{{ d.group }}</td>
         <td><a href='{% url middleware.frontend.views.group_students_rem request.session.course.id group.id d.id %}'>remove</a></td>
     </tr>
