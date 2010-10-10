@@ -9,7 +9,7 @@
     {% if user.get_profile.assistant %}
     <div class="login_code">
         Scan the code below to authenticate yourself on the Andorid smartphone<br/>
-        <img src="http://chart.apis.google.com/chart?cht=qr&chs=250x250&chl={{ user.id }}#{{ user.get_profile.assistant.code }}" />
+        <img src="http://chart.apis.google.com/chart?cht=qr&chs=250x250&chl={{ user.id }}%23{{ user.get_profile.assistant.code }}" />
         <br/>
         <span>code: {{ user.id }}#{{ user.get_profile.assistant.code }}</span>
     </div>

@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="ISO-8859-1"?><book lang="en">
 <bookinfo>
+<copyright>
+<year>2010</year>
+<holder>
+Sergiu Iordache, Alexandru Eftimie, Irina Presa - released under GPL v3.
+</holder>
+</copyright>
 <authorgroup>
 <author>
 <firstname>Sergiu</firstname>
@@ -7,8 +13,8 @@
 <email>sergiu.iordache@korect.ro</email>
 </author>
 <author>
-<firstname>Eftimie</firstname>
-<surname>Alexandru</surname>
+<firstname>Alexandru</firstname>
+<surname>Eftimie</surname>
 <email>alex.eftimie@korect.ro</email>
 </author>
 </authorgroup>
@@ -261,7 +267,7 @@ Settings
 <section>
 <title>(Current) group view</title>
 <para>
-We define a group by its name, activity and week. The activity (week day and time interval)  and the week give us the exact moment when the group laboratory takes place. The "Current group" view and the "Group view" are different only in the way the group and activity is selected. If there is no current activity the user is presented with a list of activities. The "Group view" shows a user selected activity.
+We define a group by its name, activity and week. The activity (week day and time interval) and the week give us the exact moment when the group laboratory takes place. The "Current group" view and the "Group view" are different only in the way the group and activity is selected. If there is no current activity the user is presented with a list of activities. The "Group view" shows a user selected activity.
 </para>
 <screenshot>
 <graphic fileref="img/mobile/current_select.png" scale="50"/>
