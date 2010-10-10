@@ -163,7 +163,6 @@ public class TimeTable extends LabRemoteActivity {
 	/**
 	 * Gets timetable from the server and parses the result
 	 * @return A list of week days, represented as hashtables
-	 * @see getWeekDay
 	 */
 	private ArrayList<Hashtable<String, List<GroupID>>> parseTimetable() {
 		ArrayList<Hashtable<String, List<GroupID>>> timetable = 
@@ -233,7 +232,6 @@ public class TimeTable extends LabRemoteActivity {
 	/**
 	 * Starts a group view for the selected class
 	 * @param group class group index
-	 * @param date scheduled lab date 
 	 * @see GroupView
 	 */
 	private void startGroupView(String group, String aid) { 

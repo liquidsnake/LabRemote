@@ -61,6 +61,8 @@ public class GroupItemView extends LinearLayout {
 	private ImageView mImg;
 	/** Student's name */
 	private TextView mName;
+	/** Student's grade frame*/
+	private FrameLayout mGradeFrame;
 	/** Student's grade */
 	private TextView mGrade;
 	/** Detects fling gesture that increases/decreases grade */
@@ -118,6 +120,7 @@ public class GroupItemView extends LinearLayout {
 	private void initGrade(int res) {
 
 		/** Grade */ 
+		mGradeFrame = (FrameLayout) findViewById(R.id.groupGradeFrame);
 		if (mItem.getGrade() != null) {
 			mGrade = (TextView) findViewById(res);
 			String grade = mItem.getGrade().trim();
@@ -125,13 +128,13 @@ public class GroupItemView extends LinearLayout {
 				mGrade.setText("--");	
 			else
 				mGrade.setText(grade);
-			mGrade.setOnClickListener(new OnClickListener() {
+			mGradeFrame.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					int[] location 	= new int[2];
-					v.getLocationOnScreen(location);
+					mGrade.getLocationOnScreen(location);
 					initPopupEdit();
 					initPopupWindow();
-					popupGrade.showAtLocation(v, 
+					popupGrade.showAtLocation(mGrade, 
 							Gravity.NO_GRAVITY, location[0], location[1]);
 				}
 			});
@@ -184,11 +187,6 @@ public class GroupItemView extends LinearLayout {
 			public void onTextChanged(CharSequence s, int start, int before, int count) {}
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 		});
-		popupEdit.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				popupGrade.dismiss();
-			}
-		});
 	}
 
 	/**
@@ -201,16 +199,21 @@ public class GroupItemView extends LinearLayout {
 		popupGrade.setTouchable(true);
 		popupGrade.setOutsideTouchable(true);
 		popupGrade.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
+		popupGrade.setBackgroundDrawable(getResources().
+				getDrawable(android.R.drawable.menuitem_background));
 		popupGrade.setTouchInterceptor(new OnTouchListener() {
 			public boolean onTouch(View v, MotionEvent event) {
-				popupGrade.dismiss();
-				return true;
+				if (event.getAction() == MotionEvent.ACTION_OUTSIDE) {
+					popupGrade.dismiss();
+					return true;
+				}
+				return false;
 			}
 		});
 		popupGrade.setOnDismissListener(new OnDismissListener() {
 			public void onDismiss() {
 				String rez = popupEdit.getText().toString().trim();
-				setGrade((rez == "") ? "0" : rez);
+				setGrade((rez.equals("")) ? "0" : rez);
 			}
 		});
 	}

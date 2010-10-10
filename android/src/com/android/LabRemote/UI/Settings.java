@@ -284,7 +284,7 @@ public class Settings extends Activity {
 	 */
 	private void storeCode(String code) {
 		if (code != null) {
-			StringTokenizer st = new StringTokenizer(code, "|"); 
+			StringTokenizer st = new StringTokenizer(code, "#"); 
 			if (st.countTokens() == 2) {
 				mEditor.putString("userId", st.nextToken());
 				mEditor.putString("loginCode", st.nextToken()); 

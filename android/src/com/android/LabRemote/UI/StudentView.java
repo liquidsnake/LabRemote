@@ -67,6 +67,7 @@ public class StudentView extends LabRemoteActivity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.individual_view);
+		setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
 
 		mListView = (ListView) findViewById(android.R.id.list);
 		mListView.setEmptyView(findViewById(android.R.id.empty));

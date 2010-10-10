@@ -53,7 +53,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-//TODO: post
 /**
  * Handles communication with the server: API posts and request
  */
@@ -299,7 +298,6 @@ public class Connection {
 	 * @return a {@link ServerResponse} that shows if the post succedeed or not
 	 */
 	public ServerResponse post(JSONObject data, String type) {
-		int retry = 1;
 		ServerResponse res = null;
 
 		/** Build Post */
@@ -316,11 +314,7 @@ public class Connection {
 		signature += mCode;
 		nameValuePairs.add(new BasicNameValuePair("hash", md5(signature)));  
 
-		for (int i = 1; i <= retry; i++) {
-			res = sendPost(nameValuePairs);
-			if (res.getError() == null)
-				return res;
-		}
+		res = sendPost(nameValuePairs);
 		return res;
 	}
 

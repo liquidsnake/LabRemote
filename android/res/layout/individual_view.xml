@@ -41,14 +41,15 @@
 	<!-- Attendance list -->
 	<LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
 		android:orientation="vertical">
-	<TextView android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:text="Attendance" android:paddingLeft="20dip"
-		android:textSize="20dip" android:textColor="@color/black" android:paddingRight="20dip"/>
-	<LinearLayout android:layout_width="fill_parent" android:layout_height="2dip" android:background="@color/grey" />
+		<TextView android:layout_width="fill_parent"
+			android:layout_height="wrap_content" android:text="Attendance" android:paddingLeft="20dip"
+			android:textSize="20dip" android:textColor="@color/black" android:paddingRight="20dip"/>
+		<LinearLayout android:layout_width="fill_parent" android:layout_height="2dip" 
+			android:background="@android:drawable/divider_horizontal_bright" />
 	</LinearLayout>
 	<ListView android:id="@android:id/list" android:divider="@color/white" android:layout_width="fill_parent" 
 		android:layout_height="fill_parent" android:background="@color/white" android:orientation="vertical" 
-		android:cacheColorHint="#00000000" android:paddingRight="30dip" android:paddingLeft="25dip">
+		android:cacheColorHint="#00000000" android:paddingRight="30dip" android:paddingLeft="20dip">
 	</ListView>
 
 </LinearLayout>

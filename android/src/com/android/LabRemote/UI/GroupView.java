@@ -119,6 +119,7 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 		requestWindowFeature(Window.FEATURE_NO_TITLE); 
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
 		setContentView(R.layout.group_view);
 
 		mListView = (ListView) findViewById(android.R.id.list);
@@ -277,6 +278,7 @@ public class GroupView extends LabRemoteActivity implements AvatarCallback {
 		layout.setOrientation(LinearLayout.VERTICAL);
 		TextView title = new TextView(getApplicationContext());
 		title.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+		title.setPadding(10, 0, 0, 0);
 		title.setText("Select week:");
 		layout.addView(title);
 
