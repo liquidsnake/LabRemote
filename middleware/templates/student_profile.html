@@ -11,31 +11,60 @@
 
 <table>
     <tr>
-        <td>Group </td>
-        <td>{{ student.group }}, {% for group in student.groups %} {{ group }} {% if not forloop.last%}, {% endif %} {% endfor %} </td>
+        <td>Moodle group: </td>
+        <td>{{ student.group }} </td> 
+    </tr>
+    <tr>
+        <td>LabRemote group(s):</td>
+        <td>
+        {% for group in student.groups %} <a href={% url middleware.frontend.views.group_edit course.id group.id %}>{{ group }}</a> {% if not forloop.last%}, {% endif %} {% empty %} No group(s) selected.{% endfor %}
+         </td>
     </tr>
 </table>
 
-<h3>Attendance</h3>
-{% if student.attendance %}
-    <table class="object_list">
-        <tr>
-           <th>Attendance</th>
-           <th>Week</th>
-           <th>Grade</th>
-        </tr>
-    {% for d in student.attendance %}
-        <tr>
-            <td>{{ d }}</td>
-            <td>{{ d.week }}</td>
-            <td>{{ d.grade }}</td>
-        </tr>
+{% if activities %}
+
+<div class="half">
+    <table>
+    <tr>
+        <th>Week</th>
+        <th colspan="{{ activities.count }}">Activities</td>
+    <tr>
+        <th></th>
+        {% for activity in activities %}
+            <th> {{ forloop.counter }} </th>
+        {% endfor %}
+    </tr>
+    {% for week in weeks %}
+    <tr>
+        <td>{{week.week}}</td>
+        {% for grade in week.grades %}
+        <td>{{ grade }}</td>
+        {% endfor %}
+    </tr>
     {% endfor %}
     </table>
-{% else %}
-    There are no attendances for this student.
-{% endif %}
+</div>
 
+<div class="half">
+    <h3>Legend</h3>
+    <table>
+        <tr>
+            <th> No. </th>
+            <th> Activity </th>
+        </tr>
+        {% for activity in activities %}
+        <tr>
+            <td> {{ forloop.counter }} </td>
+            <td> {{ activity.group }} on {{ activity.day_of_the_week }} {{activity.interval }} </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div style="clear:both"></div>
+{% else %}
+    This student does not have any attendances.
+{% endif %}
 {% block bottom_buttons %}
 {% for g in student.groups %}
     <a href="{% url middleware.frontend.views.group_edit request.session.course.id g.id %}" class="button">Edit attendance {{ g.name }}</a>

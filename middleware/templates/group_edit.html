@@ -7,7 +7,6 @@
 {% block javascript %} 
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.1/build/datatable/assets/skins/sam/datatable.css" />
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.1/build/container/assets/skins/sam/container.css" />
-<script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/dragdrop/dragdrop-min.js"></script>
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
 
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/connection/connection-min.js"></script>
@@ -16,7 +15,7 @@
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/datasource/datasource-min.js"></script>
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/datatable/datatable-min.js"></script>
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/container/container-min.js"></script>
-<script src="http://yui.yahooapis.com/2.8.1/build/dragdrop/dragdrop-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.1/build/dragdrop/dragdrop-min.js"></script>
 
  {% endblock %}
 
@@ -74,12 +73,18 @@ YAHOO.util.Event.addListener(window, "load", function() {
             elLiner.innerHTML = ' <img src="'+url+'" \>';
         };
         
+        this.myCustomFormatterName = function(elLiner, oRecord, oColumn, oData) {
+            var name = oData;
+            elLiner.innerHTML = '<a href="/course/{{course.id}}/student/'+ oRecord.getData("student_id") +'/">'+ name +'</a></td>';
+        };
+        
         // Add the custom formatter to the shortcuts
         YAHOO.widget.DataTable.Formatter.imageFormatter = this.myCustomFormatter;
+        YAHOO.widget.DataTable.Formatter.nameFormatter = this.myCustomFormatterName;
 
         var myColumnDefs = [
             {key:"image", label:"Image", formatter:"imageFormatter"},
-            {key:"name", label:"Name", sortable:true},
+            {key:"name", label:"Name", sortable:true, formatter:"nameFormatter"},
             {% for week in weeks %}
                 {% if week in inactive %}
                     {key:"week_{{ week }}", label:"{{ week }}", abbr: "Week {{ week }}", formatter:YAHOO.widget.DataTable.formatNumber, className: "inactive_column week_column" },

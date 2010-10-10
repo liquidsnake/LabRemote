@@ -18,10 +18,10 @@ class UserProfile(models.Model):
         return u"profile: %s, %s" % (self.assistant, self.approved)
     
 class Student(models.Model):
-    external_id = models.IntegerField(default=0)
+    external_id = models.IntegerField(default=0, help_text = "ID from external source(Moodle)")
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(default='', max_length=64, blank=True)
-    group = models.CharField(default='', blank=True, max_length=20)
+    group = models.CharField(default='', blank=True, max_length=20, help_text = "External source group, not LabRemote group")
     avatar = models.URLField(verify_exists=False, default='', blank=True)
     
     @property
@@ -53,12 +53,13 @@ class Assistant(Student):
     groups = models.ManyToManyField('Group', blank=True)
     
     # Wheter this assistant can add courses/moodle credentials for scrapping
-    is_updater = models.BooleanField(default=False)
-    moodle_url = models.CharField(max_length=128, default='http://', blank=True)
-    moodle_user = models.CharField(max_length=128, blank=True)
-    moodle_password = models.CharField(max_length=128, blank=True)
-    moodle_course_id = models.CharField(max_length=32, default='0', blank=True)
+    is_updater = models.BooleanField(default=False, help_text = "Whether this assistant can add/import courses from Moodle")
+    moodle_url = models.CharField(max_length=128, default='http://', blank=True, help_text = "Url of the Moodle instance")
+    moodle_user = models.CharField(max_length=128, blank=True, help_text = "Moodle url")
+    moodle_password = models.CharField(max_length=128, blank=True, help_text = "Moodle password")
+    moodle_course_id = models.CharField(max_length=32, default='0', blank=True )
     
+    #deprecated, will probably be removed
     def get_session_key(self):
         """ Return an md5 hash built form code + date salt """
         #computed_hash = hashlib.sha256(self.code).hexdigest()
@@ -66,6 +67,7 @@ class Assistant(Student):
         return computed_hash
     
     def get_check_hash(self, request):
+        """ Gets the arguments from the request and returns the hash used to sign the request """
         sir = ''.join(request.path.split('/')[2:-2])
         sir = "%s%s" % (sir, self.code)
         return hashlib.md5(sir).hexdigest()
@@ -112,8 +114,8 @@ class Course(models.Model):
     
 class Group(models.Model):
     """ This is a managed, virtual group. Not a moodle one """
-    parent_group = models.CharField(default='', max_length=64, blank=True)
-    name = models.CharField(max_length=64)
+    parent_group = models.CharField(default='', max_length=64, blank=True, help_text="Name of the group from Moodle, used to filter the students")
+    name = models.CharField(max_length=64, help_text = "LabRemote group name")
     course = models.ForeignKey(Course)
    
     students = models.ManyToManyField(Student,related_name='virtual_group', blank=True)  
@@ -136,7 +138,7 @@ class Activity(models.Model):
     group = models.ForeignKey(Group, default=None, blank=True)
     
     #day of the week from 0 to 6 (0 = Monday)
-    day = models.IntegerField(default=0, choices= DAY_CHOICES)
+    day = models.IntegerField(default=0, choices= DAY_CHOICES, help_text = "Day of the week for the activity")
     #time of day in 24 hour format
     time_hour_start = models.IntegerField(default=8)
     time_minute_start = models.IntegerField(default=0)

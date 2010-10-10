@@ -202,10 +202,30 @@ def students_list(request, getcourse):
 def student_profile(request, getcourse, stud_id):
     """Shows the profile of a student"""
     course = request.session.get('course', None)
-    
+
     student = Student.objects.get(id=stud_id)
+
+    s_groups = [elem["id"] for elem in student.virtual_group.all().values("id")]
+    activities = Activity.objects.filter(course = course).filter(group__pk__in = s_groups)
+    
+    weeks = []
+    for week in range(1,course.max_weeks+1):
+        current_week = {
+            "week" : week,
+            "grades" : [0 for i in range(activities.count())],
+        }
+        weeks.append(current_week)        
+
+    for i,activity in enumerate(activities):
+        for attendance in Attendance.objects.filter(student = student, course = course, activity = activity).order_by("week"):
+            weeks[attendance.week - 1]["grades"][i] = attendance.grade
+ 
     return render_to_response('student_profile.html', 
-            {"student": student},
+            {"activities" : activities,
+             "weeks" : weeks,
+             "student" : student,
+             "course" : course,
+            },
             context_instance=RequestContext(request),)
 
 def _assistants(request):
@@ -414,6 +434,7 @@ def update_grade(request, getcourse, activity_id, student_id, week):
         course = Course.objects.get(id = getcourse)
     except Course.DoesNotExist:
         return HttpResponse("No such course")
+    week = int(week)
     if week > course.max_weeks or week < 1:
         return HttpResponse("Invalid week")
     if new_grade < 0:

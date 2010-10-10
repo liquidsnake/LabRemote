@@ -12,7 +12,11 @@ td {
 label {
     font-size: 0.9em;
 }
-a, a:visited { color: #030; text-decoration: none;}
+a {
+    color: #045700; text-decoration: none;
+    font-weight: 600;
+}
+a:visited { color: ##24541A; text-decoration: none; font-weight: 600;}
 a:hover {text-decoration: underline; color: #040;}
 
 #container {
@@ -86,6 +90,7 @@ td.actions a, a.button{
     white-space: nowrap;
     border-right: 2px solid #999;
     border-bottom: 2px solid #999;
+    line-height: 26px;
 }
 td.actions a:hover, a.button:hover {
     background-color: #aaa;
@@ -161,4 +166,17 @@ table.object_list tr td {
 
 .week_column div{
     font-size: larger;
+}
+
+.half{
+    width:50%;
+    float:left;
+}
+
+.timetable_elem{
+    position:relative; 
+    width:100%; 
+    text-align:center; 
+    background-color:#C5E0FA;
+    line-height: 20px;
 }
