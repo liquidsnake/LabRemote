@@ -357,4 +357,13 @@ After managing the settings the user must push the "Done" button to save the set
 </para>
 </section>
 </chapter>
+<chapter>
+<title>Other information</title>
+<para>
+The application is licensed under GPL v3. You can read the whole license <ulink url="http://www.gnu.org/licenses/gpl-3.0.html">here</ulink>.
+</para>
+<para>
+The information presented here and in other promotional material is for information purposes only. Any resemblance to real information is purely coincidental.
+</para>
+</chapter>
 </book>

@@ -8,23 +8,29 @@ The application will allows retrieving the student list (name and avatar) accord
 ![System architecture](http://eftimie.ro/wiki/_media/general-architecture.png?cache=cache&w=624&h=253 "System architecture")
 
 Base functionalities:
+
 *   obtaining the list of students (according to the timetable)
 *   marking the attendance / grading
 *   synchronizing with the server
 
 # System requirements #
 Mobile application:
+
 *   (development only) Android 2.2 SDK
 *   Android phone with 2.2 firmware(tested) or lower(untested)
 
 Middleware:
+
 *   Pyhton 2.6
 *   Django 1.2.3
+*   django-uni-form
 
 # Workflow #
 
 The main workflow is:
 ![Basic workflow](http://eftimie.ro/wiki/_media/workflow-en.png?w=&h=&cache=cache "Basic workflow")
+
+For screenshots and more information about the way the application works read the application ![Manual](http://labremote.korect.ro/manual/)
 
 The basic ui views are:
 
