@@ -46,6 +46,20 @@ The middleware stores all the data related to the students. The mobile applicati
 
 The middleware is implemented as a web service.
 
+# Eclipse and emulator #
+If you want to build the porject on eclipse follow the following steps:
+* File/New Android Project.
+* Name the project
+* Check Create project from existing source and browse to android frolder from repo
+* Select the same target as in Manifest file (from the project).
+* Finish and it will build automatically
+
+For more informations about eclipse and android check development guide:
+http://developer.android.com/guide/developing/eclipse-adt.html
+http://developer.android.com/sdk/index.html
+
+If you run both the application on emulator and the server on localhost, the emulator will recognize the localhost server as 10.0.2.2 (for the host address in Settings activity).
+
 # Development #
 We recommend using the Android Eclipse-based IDE for developing the mobile application. After cloning the git repository just open the "android" folder as a project.
 
