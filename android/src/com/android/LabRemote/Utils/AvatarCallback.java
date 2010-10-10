@@ -1,6 +1,7 @@
 /**
  * AvatarCallback.java
  *     
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify

@@ -1,6 +1,7 @@
 /**
  * Connection.java
  *     
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -46,11 +47,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.android.LabRemote.R;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-//TODO: return null la catch
+//TODO: post
 /**
  * Handles communication with the server: API posts and request
  */
@@ -67,7 +70,7 @@ public class Connection {
 	private String mID;
 	/** Http client used for queries */
 	private HttpClient mHttpClient;
-	
+
 	/** API Queries */
 	private static final String logQuery = "/api/login/";
 	private static final String searchQuery = "/api/search/";
@@ -76,11 +79,12 @@ public class Connection {
 	private static final String groupsQuery = "/api/groups/";
 	private static final String timeQuery = "/api/timetable/";
 	private static final String currentQuery = "/api/current_group/";
-	
-	/** Error messages */
-	private static final String invalidResponse = "Invalid response from the server";
-	private static final String serverError = "There was a problem with the server or the request";
-	
+
+	/** Error message received when the response from the server has an invalid format */
+	private static String sInvalidResponse;
+	/** Error message received if there was a server error or we sents a bad request */
+	private static String sServerError;
+
 	public Connection(Context context) {
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 		this.mCode = mPreferences.getString("loginCode", null);
@@ -88,6 +92,8 @@ public class Connection {
 		this.mCourse = mPreferences.getString("courseId", null);
 		this.mID = mPreferences.getString("userId", null);
 		this.mHttpClient = new DefaultHttpClient();
+		sInvalidResponse = (String) context.getResources().getString(R.string.invalid_response);
+		sServerError = (String) context.getResources().getString(R.string.connection_problem);
 	}
 
 	/**
@@ -106,7 +112,7 @@ public class Connection {
 			int code = response.getStatusLine().getStatusCode();
 			if (code < 200 || code > 299) 
 				return null;			
-			
+
 			HttpEntity entity = response.getEntity();
 			if (entity != null) {
 				InputStream instream = entity.getContent();
@@ -123,7 +129,7 @@ public class Connection {
 
 		return result;
 	}
-	
+
 	/**
 	 * Handles login queries and saves informations received from 
 	 * the server in the application's private data
@@ -132,7 +138,7 @@ public class Connection {
 	public ServerResponse login() {
 		ServerResponse res;
 		JSONObject jObject = null;
-		
+
 		/** Server request */
 		String request = mHost + logQuery + mID + "/";
 		String signature = md5("login" + mID + mCode);
@@ -145,9 +151,8 @@ public class Connection {
 		ArrayList<Map<String, String>> courses = new ArrayList<Map<String, String>>();
 		try {
 			SharedPreferences.Editor editor = mPreferences.edit();
-			//String user_id = jObject.getString("user");
 			JSONArray jsonCourses = jObject.getJSONArray("courses");
-			
+
 			for (int i = 0; i < jsonCourses.length(); i++) {
 				Map<String, String> course = new HashMap<String, String>(); 
 				course.put("id", jsonCourses.getJSONObject(i).getString("id"));
@@ -159,11 +164,10 @@ public class Connection {
 				editor.putString("course", courses.get(0).get("name"));
 				editor.putString("courseId", courses.get(0).get("id"));
 			}
-			//editor.putString("userId", user_id); 
 			editor.commit();
 		} catch (JSONException e) {
 			e.printStackTrace();
-			return new ServerResponse(null, invalidResponse);
+			return new ServerResponse(null, sInvalidResponse);
 		}
 
 		/** Successful login */
@@ -177,11 +181,11 @@ public class Connection {
 	 */
 	public ServerResponse get(String request) {
 		JSONObject jObject = null;
-		
+
 		/** HTTP error (server or client) */
 		String result = httpReq(request);
 		if (result == null) 
-			return new ServerResponse(null, serverError); 
+			return new ServerResponse(null, sServerError); 
 
 		/** Invalid response from server or error */  
 		try {
@@ -190,7 +194,7 @@ public class Connection {
 				return new ServerResponse(null, jObject.getString("error")); 
 		} catch (JSONException e) {
 			e.printStackTrace();
-			return new ServerResponse(null, invalidResponse); 
+			return new ServerResponse(null, sInvalidResponse); 
 		}
 
 		return new ServerResponse(jObject, null);
@@ -198,7 +202,7 @@ public class Connection {
 
 	public ServerResponse getGroup(String group, String aid, String week) {
 		String request = mHost + groupQuery + mCourse + "/" + mID + "/" 
-				+ group + "/" + aid + "/";
+		+ group + "/" + aid + "/";
 		String signature = "group" + mCourse + mID + group + aid;
 		if (week != null) {
 			request += week + "/";
@@ -207,14 +211,14 @@ public class Connection {
 		signature = md5(signature+mCode);
 		return get(request+signature+"/");
 	}
-	
+
 	public ServerResponse getGroups() {
 		String request = mHost + groupsQuery + mCourse + "/" + mID + "/";
 		String signature = md5("groups" + mCourse + mID + mCode);
-		
+
 		return get(request+signature+"/");
 	}
-	
+
 	public ServerResponse getCurrentGroup() {
 		String request = mHost + currentQuery + mCourse + "/" + mID + "/";
 		String signature = md5("current_group" + mCourse + mID + mCode); 
@@ -238,34 +242,18 @@ public class Connection {
 		String signature = md5("timetable" + mCourse + mID + mCode);
 		return get(request+signature+"/");
 	}
-	
+
 	/**
-	 * Posts data on the server
-	 * @param data content for post
-	 * @param type Post's type (e.g.: group)
-	 * @return a {@link ServerResponse} that shows if the post succedeed or not
+	 * Sends a post to the server using the data received as parametrer
 	 */
-	public ServerResponse post(JSONObject data, String type) {
+	public ServerResponse sendPost(List<NameValuePair> data) {
 		String url = mHost + "/api/post/";
 		HttpPost httpost = new HttpPost(url);
-		String signature = new String();
 		HttpResponse res = null;
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(5);  
-        nameValuePairs.add(new BasicNameValuePair("user", mID));  
-        signature += mID;
-        nameValuePairs.add(new BasicNameValuePair("course", mCourse));  
-        signature += mCourse;
-        nameValuePairs.add(new BasicNameValuePair("type", type));
-        signature += type;
-        nameValuePairs.add(new BasicNameValuePair("contents", data.toString()));  
-        signature += data.toString();
-        signature += mCode;
-        nameValuePairs.add(new BasicNameValuePair("hash", md5(signature)));  
-    
-        
-        /** Send post */
+
+		/** Send post */
 		try {
-	        httpost.setEntity(new UrlEncodedFormEntity(nameValuePairs)); 
+			httpost.setEntity(new UrlEncodedFormEntity(data)); 
 			res = mHttpClient.execute(httpost);
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
@@ -277,7 +265,7 @@ public class Connection {
 			e.printStackTrace();
 			return new ServerResponse("failed", "invalid post");
 		}
-		
+
 		/** Read post result */
 		HttpEntity entity = res.getEntity();
 		if (entity != null) {
@@ -298,10 +286,42 @@ public class Connection {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+
 		}
-		
+
 		return new ServerResponse("failed", "invalid post");
+	}
+
+	/**
+	 * Posts data on the server
+	 * @param data content for post
+	 * @param type Post's type (e.g.: group)
+	 * @return a {@link ServerResponse} that shows if the post succedeed or not
+	 */
+	public ServerResponse post(JSONObject data, String type) {
+		int retry = 1;
+		ServerResponse res = null;
+
+		/** Build Post */
+		String signature = new String();
+		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(5);  
+		nameValuePairs.add(new BasicNameValuePair("user", mID));  
+		signature += mID;
+		nameValuePairs.add(new BasicNameValuePair("course", mCourse));  
+		signature += mCourse;
+		nameValuePairs.add(new BasicNameValuePair("type", type));
+		signature += type;
+		nameValuePairs.add(new BasicNameValuePair("contents", data.toString()));  
+		signature += data.toString();
+		signature += mCode;
+		nameValuePairs.add(new BasicNameValuePair("hash", md5(signature)));  
+
+		for (int i = 1; i <= retry; i++) {
+			res = sendPost(nameValuePairs);
+			if (res.getError() == null)
+				return res;
+		}
+		return res;
 	}
 
 	/**
@@ -329,20 +349,23 @@ public class Connection {
 		}
 		return sb.toString();
 	}
-	
+
+	/**
+	 * Md5 encryption user for signing the requests
+	 */
 	public String md5(String input) {  
-	    try     {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] messageDigest = md.digest(input.getBytes());
-            BigInteger number = new BigInteger(1,messageDigest);
-            String md5 = number.toString(16);
-       
-            while (md5.length() < 32)
-                    md5 = "0" + md5;
-       
-            return md5;
-	    } catch(NoSuchAlgorithmException e) {
-            return null;
-	    }
+		try     {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			byte[] messageDigest = md.digest(input.getBytes());
+			BigInteger number = new BigInteger(1,messageDigest);
+			String md5 = number.toString(16);
+
+			while (md5.length() < 32)
+				md5 = "0" + md5;
+
+			return md5;
+		} catch(NoSuchAlgorithmException e) {
+			return null;
+		}
 	}  
 }

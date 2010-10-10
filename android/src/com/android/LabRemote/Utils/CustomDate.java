@@ -1,6 +1,7 @@
 /**
  * CustomDate.java
  *     
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,25 +24,13 @@ import java.util.Calendar;
 
 /** 
  * Custom date format for the application header
- * TODO: testat bine
  */
 public class CustomDate {
-	public static final String[] short_week = { "Sun", "Mon", "Tue", "Wed", "Thu",
-		"Fri", "Sat"};
+	public static final String[] short_week = { "Sun", "Mon", "Tue", 
+		"Wed", "Thu", "Fri", "Sat"};
 	public static final String[] month = { "January", "February", "March",
 		"April", "May", "June", "July", "August", "September", "October",
 		"November", "December" };
-
-	public static String getDate(int day) { 
-		String result;
-		day = day%7 + 1;
-		final Calendar c = Calendar.getInstance();
-		int dif = day - c.get(Calendar.DAY_OF_WEEK); 
-		c.add(Calendar.DATE, dif);
-		result = short_week[day-1] + ", " + c.get(Calendar.DAY_OF_MONTH) + 
-				" " + month[c.get(Calendar.MONTH)];
-		return result;		
-	}
 
 	public static String getCurrentDate() {
 		String result;
@@ -49,7 +38,7 @@ public class CustomDate {
 		final Calendar c = Calendar.getInstance();
 		int mDay = c.get(Calendar.DAY_OF_MONTH);
 		result = short_week[c.get(Calendar.DAY_OF_WEEK)-1] + ", " + mDay + 
-				" " + month[c.get(Calendar.MONTH)];
+		" " + month[c.get(Calendar.MONTH)];
 		return result;	
 	}
 

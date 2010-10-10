@@ -1,6 +1,7 @@
 /**
  * GroupItemView.java
  *     
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -77,15 +78,18 @@ public class GroupItemView extends LinearLayout {
 		LayoutInflater layoutInflater = (LayoutInflater) 
 		getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		layoutInflater.inflate(R.layout.group_item, this, true);
-		FrameLayout fr = (FrameLayout)findViewById(R.id.imageframe);
-		StateListDrawable st = new StateListDrawable();
-	    st.addState(new int[] {-android.R.attr.state_selected}, 
-	    		getResources().getDrawable(R.drawable.att));
-	    st.addState(new int[] {android.R.attr.state_selected}, 
-	    		getResources().getDrawable(R.color.darkgrey));
-        st.addState(new int[] {android.R.attr.state_pressed}, 
-        		getResources().getDrawable(R.color.darkgrey));
-		fr.setBackgroundDrawable(st);
+
+		/** State selector for avatar frame */
+		FrameLayout frame = (FrameLayout)findViewById(R.id.imageframe);
+		StateListDrawable state = new StateListDrawable();
+		state.addState(new int[] {-android.R.attr.state_selected}, 
+				getResources().getDrawable(R.drawable.grey_gradient));
+		state.addState(new int[] {android.R.attr.state_selected}, 
+				getResources().getDrawable(R.color.darkgrey));
+		state.addState(new int[] {android.R.attr.state_pressed}, 
+				getResources().getDrawable(R.color.darkgrey));
+		frame.setBackgroundDrawable(state);
+
 		initImage(R.id.groupPhoto);
 		initName(R.id.groupName);
 		initGrade(R.id.groupGrade);
@@ -116,7 +120,7 @@ public class GroupItemView extends LinearLayout {
 		/** Grade */ 
 		if (mItem.getGrade() != null) {
 			mGrade = (TextView) findViewById(res);
-			String grade = mItem.getGrade().replaceAll("^\\s+", "").replaceAll("\\s+$", "");
+			String grade = mItem.getGrade().trim();
 			if (grade.equals("0"))
 				mGrade.setText("--");	
 			else
@@ -158,8 +162,7 @@ public class GroupItemView extends LinearLayout {
 		popupEdit.setTextColor(R.color.black);
 		popupEdit.setInputType(InputType.TYPE_CLASS_NUMBER);
 		try {
-			grade = Integer.parseInt(mGrade.getText().toString().				
-					replaceAll("^\\s+", "").replaceAll("\\s+$", ""));
+			grade = Integer.parseInt(mGrade.getText().toString().trim());				
 			popupEdit.setText(grade+"");
 		} catch (NumberFormatException e) {
 			popupEdit.setText("0");
@@ -172,8 +175,7 @@ public class GroupItemView extends LinearLayout {
 				popupGrade.update(ViewGroup.LayoutParams.WRAP_CONTENT, 
 						ViewGroup.LayoutParams.WRAP_CONTENT);
 				try {
-					int grade = Integer.parseInt(popupEdit.getText().toString().
-							replaceAll("^\\s+", "").replaceAll("\\s+$", ""));
+					int grade = Integer.parseInt(popupEdit.getText().toString().trim());
 					setGrade(grade+"");
 				} catch (NumberFormatException e) {
 					setGrade("0"); 
@@ -207,8 +209,7 @@ public class GroupItemView extends LinearLayout {
 		});
 		popupGrade.setOnDismissListener(new OnDismissListener() {
 			public void onDismiss() {
-				String rez = popupEdit.getText().toString().
-				replaceAll("^\\s+", "").replaceAll("\\s+$", "");
+				String rez = popupEdit.getText().toString().trim();
 				setGrade((rez == "") ? "0" : rez);
 			}
 		});
@@ -231,7 +232,7 @@ public class GroupItemView extends LinearLayout {
 			} catch (NumberFormatException e) {
 				newGrade = 0;
 			}
-			
+
 			if (e2.getX() > e1.getX()) 
 				newGrade++;
 			else if (newGrade > 0)

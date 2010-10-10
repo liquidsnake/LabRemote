@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-	<!-- Header layout : Course, class and date -->
+<!-- Header layout : Course, class and date -->
 	
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/header" android:layout_width="fill_parent" android:layout_height="wrap_content"
 	android:background="@drawable/bar_top" >
 		<TextView android:textColor="@color/white" android:textSize="45dip"
-			android:layout_height="wrap_content" android:layout_width="fill_parent" android:layout_weight="1"
+			android:layout_height="wrap_content" android:layout_width="wrap_content"
 			android:id="@+id/courseName" android:paddingLeft="5dip" android:shadowColor="@color/black" 
 			android:shadowDx="2.0" android:shadowDy="2.0" android:shadowRadius="2.0" android:singleLine="true"/>
-		<LinearLayout android:gravity="right" android:layout_height="wrap_content" android:layout_width="fill_parent" 
-			android:layout_weight="1" android:orientation="vertical" android:padding="5dip">
+		<LinearLayout android:gravity="right" android:layout_height="wrap_content" android:layout_alignParentRight="true"
+			android:layout_width="wrap_content" android:orientation="vertical" android:padding="5dip">
 			<TextView android:id="@+id/classHeader" android:singleLine="true" android:layout_width="wrap_content" 
 				android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="15dip" 
 				android:textStyle="bold" android:shadowColor="@color/black" android:shadowDx="1.0" 
@@ -20,4 +20,4 @@
 				android:shadowColor="@color/black" android:shadowDx="1.0" android:shadowDy="1.0"
 				android:shadowRadius="1.0"/>
 		</LinearLayout>
-</LinearLayout>
+</RelativeLayout>

@@ -1,6 +1,7 @@
 /**
  * Main.java
- *     
+ * 
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,9 +36,6 @@ import com.android.LabRemote.Utils.CustomDate;
  */
 public class Main extends LabRemoteActivity {
 
-	/** Requests that a child activity returns with error message 
-	 * if there was a server communication error during its initialization */
-	public static final int REQUEST_FROM_SERVER = 1;
 	/** Starts current group activity on click */
 	private FrameLayout mCurrentButton;
 	/** Starts current timetable activity on click */
@@ -58,7 +56,7 @@ public class Main extends LabRemoteActivity {
 	 * On click event, a button takes us to the selected view
 	 */
 	private void initMenuButtons() {
-		
+
 		/** Date */
 		TextView date = (TextView) findViewById(R.id.date);
 		date.setText(CustomDate.getCurrentDate());
@@ -89,7 +87,7 @@ public class Main extends LabRemoteActivity {
 				onSearchRequested();
 			}
 		});
-		
+
 		/** Settings button */
 		mSettingsButton = (FrameLayout) findViewById(R.id.otherButton);
 		mSettingsButton.setOnClickListener(new OnClickListener() {

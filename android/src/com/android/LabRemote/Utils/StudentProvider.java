@@ -2,6 +2,7 @@
  * StudentProvider.java
  *     
  * Copyright (C) 2010 LabRemote Team
+ * Version 1.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,10 +40,15 @@ import org.json.JSONObject;
  * Provides data for the search manager
  */
 public class StudentProvider extends ContentProvider {
+	/** Location of the provider's authority */
 	public static String AUTHORITY = "com.android.LabRemote.Utils.StudentProvider";
+	/** Uri that identifies the search result */
 	public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/student");
+	/** Used in the uri to identify a student search */
 	private static final int SEARCH_STUDENT = 0;
+	/** Used in the uri to identify a suggestions search */
 	private static final int SEARCH_SUGGEST = 1;
+	/** Identifies search data set (search results or suggestions ) */
 	private static final UriMatcher sURIMatcher = buildUriMatcher();
 
 	/**
@@ -94,18 +100,18 @@ public class StudentProvider extends ContentProvider {
 		ServerResponse result = new Connection(getContext()).getSearch(query); 
 		JSONObject mData = (JSONObject)result.getRespone();
 		if (mData != null)
-		try {
-			JSONArray ar = mData.getJSONArray("students"); 
-			for(int i = 0; i < ar.length(); i++) {
-				JSONObject student = ar.getJSONObject(i);
-				res.addRow(new String[]{student.getString("id"), 
-						student.getString("name"), student.getString("id")});
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} 
+			try {
+				JSONArray ar = mData.getJSONArray("students"); 
+				for(int i = 0; i < ar.length(); i++) {
+					JSONObject student = ar.getJSONObject(i);
+					res.addRow(new String[]{student.getString("id"), 
+							student.getString("name"), student.getString("id")});
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			} 
 
-		return res;
+			return res;
 	}
 
 	/**
@@ -118,21 +124,21 @@ public class StudentProvider extends ContentProvider {
 		MatrixCursor res = new MatrixCursor(columns);
 		if (query == null)
 			return null;
-		
+
 		query = query.toLowerCase();
 		ServerResponse result = new Connection(getContext()).getSearch(query); 
 		JSONObject mData = (JSONObject)result.getRespone();
 		if (mData != null)
-		try {
-			JSONArray ar = mData.getJSONArray("students");
-			for(int i = 0; i < ar.length(); i++) {
-				JSONObject student = ar.getJSONObject(i);
-				res.addRow(new String[]{student.getString("id"), student.getString("name")});
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} 
-		return res;
+			try {
+				JSONArray ar = mData.getJSONArray("students");
+				for(int i = 0; i < ar.length(); i++) {
+					JSONObject student = ar.getJSONObject(i);
+					res.addRow(new String[]{student.getString("id"), student.getString("name")});
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			} 
+			return res;
 	}
 
 	@Override

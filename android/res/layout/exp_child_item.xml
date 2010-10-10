@@ -5,7 +5,8 @@
 	android:layout_width="fill_parent" android:layout_height="wrap_content"
 	android:background="@color/white" android:layout_marginBottom="2dip"
 	android:orientation="horizontal" android:paddingLeft="60dip" >
-	<LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/selector">
+	<LinearLayout android:layout_width="wrap_content" 
+		android:layout_height="wrap_content" android:background="@drawable/selector">
 	<TextView android:layout_width="wrap_content" android:id="@+id/exp_child_group"
 		android:focusable="false" android:layout_height="wrap_content"
 		android:padding="4dip" android:layout_gravity="right"

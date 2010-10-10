@@ -1,6 +1,7 @@
 /**
  * TimeTable.java
  *     
+ * Version 1.0
  * Copyright (C) 2010 LabRemote Team
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,18 +20,6 @@
 
 package com.android.LabRemote.UI;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -40,7 +29,6 @@ import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ExpandableListView.OnGroupExpandListener;
 
@@ -50,8 +38,20 @@ import com.android.LabRemote.Server.ServerResponse;
 import com.android.LabRemote.Utils.CustomDate;
 import com.android.LabRemote.Utils.GroupID;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+
 /** 
- * Select a class group based on a specific day and a time interval
+ * Lets the user to select a class group based on a specific day and a time interval
  */
 public class TimeTable extends LabRemoteActivity {
 
@@ -64,12 +64,8 @@ public class TimeTable extends LabRemoteActivity {
 	/** A matrix with timetable's items. Each week day has a list of sorted 
 	 * intervals, each interval has a group and its activity id */
 	private ArrayList<ArrayList<HashMap<String, String>>> mListItems;
-	/** Requests that a child activity returns with error message 
-	 * if there was a server communication error during its initialization */
-	public static final int REQUEST_FROM_SERVER = 2;
 	/** Array with string representations of the timetable's week days */
-	private static final String[] week_day = { "Monday", "Tuesday", 
-		"Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+	private static String[] sWeekDay;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +75,7 @@ public class TimeTable extends LabRemoteActivity {
 		setContentView(R.layout.timetable);
 
 		setSingleExpandable();
+		sWeekDay = (String[]) getResources().getStringArray(R.array.week_day);
 		mGroupIntent = new Intent(this, GroupView.class);
 
 		mDays.setOnChildClickListener(new OnChildClickListener() {
@@ -86,8 +83,7 @@ public class TimeTable extends LabRemoteActivity {
 					int groupPosition, int childPosition, long id) {
 
 				startGroupView(mListItems.get(groupPosition).get(childPosition).get("group"), 
-						mListItems.get(groupPosition).get(childPosition).get("aid"), 
-						CustomDate.getDate(groupPosition+1));
+						mListItems.get(groupPosition).get(childPosition).get("aid"));
 				return false;
 
 			}
@@ -129,7 +125,7 @@ public class TimeTable extends LabRemoteActivity {
 		parents = new ArrayList<HashMap<String, String>>();
 		for (int i = 0; i < mParsedData.size(); ++i) {
 			parentMap = new HashMap<String, String>();
-			parentMap.put("day", week_day[i]);
+			parentMap.put("day", sWeekDay[i]);
 			parents.add(parentMap);
 		}
 
@@ -240,11 +236,10 @@ public class TimeTable extends LabRemoteActivity {
 	 * @param date scheduled lab date 
 	 * @see GroupView
 	 */
-	private void startGroupView(String group, String aid, String date) { //TODO: scot date
+	private void startGroupView(String group, String aid) { 
 		mGroupIntent.putExtra("Group", group);
-		mGroupIntent.putExtra("Date", date);
 		mGroupIntent.putExtra("AID", aid);
-		startActivityForResult(mGroupIntent, REQUEST_FROM_SERVER);
+		startActivityForResult(mGroupIntent, LabRemoteActivity.REQUEST_FROM_GROUP);
 	}
 
 	/**
