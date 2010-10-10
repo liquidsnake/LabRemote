@@ -50,7 +50,8 @@ Fill in the needed details of the user ( be sure to check "Is Updater" and to fi
 </listitem>
 <listitem>
 <para>
-Login using the Admin account and click the previously edited user to start the import process.</para>
+Login using the Admin account and click the previously edited user to start the import process.
+</para>
 </listitem>
 <listitem>
 <para>
@@ -74,23 +75,48 @@ Logout and login as the desired assistant to start using the application.
 </listitem>
 </orderedlist>
 </sect1>
+<sect1 id="course_select">
+<title>Course select view</title>
+<para>
+The course select view is shown after logging in. This allows the assistant to choose one of the available courses or to import another course from Moodle.
+</para>
+
+</sect1>
 <sect1>
 <title>Dashboard view</title>
 <para>
 The dashboard view contains an overview of the current course. It shows who the logged in assistant is, the current course, the groups that belong to this course and information about the current day.
 </para>
 <para>
-The information about the current day include: the current week relative to when the course started, the current week of the year, whether the current week is inactive or not (e.g. a holiday week) and whether there are any current activities taking place now for this assitant.
+The information about the current day include: the current week relative to when the course started, the current week of the year, whether the current week is inactive or not (e.g. a holiday week) and whether there are any current activities taking place now for this assitant. There is also a timetable overview on this page with the current day highlighted (for a more accurate view use the "Timetable" option from the menu).
 </para>
 <para>
 The dashboard view also contains a QR code that must be scanned with the smartphone in order to login to the application from the mobile phone.
 </para>
+<screenshot>
+<graphic fileref="img/dashboard.png"/>
+</screenshot>
 </sect1>
 <sect1>
 <title>Students view</title>
 <para>
-The students view contains a table of the current students imported from Moodle. The table contains their Moodle avatar, the group imported from Moodle and the virtual groups they are part of. Clicking on the name of a student will take you to the student page which contains the attendances of that student.
+The students view contains a paginated table of the current students imported from Moodle. The table contains their Moodle avatar, the group imported from Moodle and the virtual groups they are part of. Clicking on the name of a student will take you to the student page which contains the attendances of that student.
 </para>
+<para>
+Students can be searched by name or group using the search form.
+</para>
+<screenshot>
+<graphic fileref="img/students.png"/>
+</screenshot>
+</sect1>
+<sect1>
+<title>Student profile view</title>
+<para>
+The student profile view contains information regarding a student along with a table with the attendances for all the activities of this student(if any). Inactive weeks are highlighted in gray.
+</para>
+<screenshot>
+<graphic fileref="img/student_profile.png"/>
+</screenshot>
 </sect1>
 <sect1>
 <title>Groups view</title>
@@ -109,12 +135,12 @@ Besides each of the existing LabRemote group the user can select one of the many
 <itemizedlist>
 <listitem>
 <para>
-Students - Allows adding and removing students to the group based on the parent group
+Students - Allows adding and removing students to the group based on the parent group (see <xref linkend="group_students"/> ).
 </para>
 </listitem>
 <listitem>
 <para>
-Edit attendances - Allows editing the attendances of each student in the group
+Edit attendances - Allows editing the attendances of each student in the group (see <xref linkend="edit_attendances"/>).
 </para>
 </listitem>
 <listitem>
@@ -124,7 +150,7 @@ Export as CSV - Exports the data about the group in CSV format, usable in Excel 
 </listitem>
 <listitem>
 <para>
-Public link - Shareable public link that allows students to view their grades in real time.
+Public link - Shareable public link that allows students to view their grades in real time (see <xref linkend="public"/>)..
 </para>
 </listitem>
 <listitem>
@@ -133,43 +159,195 @@ Edit and delete options.
 </para>
 </listitem>
 </itemizedlist>
+<para>
+Clicking on any of the LabRemote grup names will open up the list of students for that group along with options to add/remove students, edit attendances and to edit group info. Clicking on the Moodle group names will query the student list using that group name.
+</para>
+<screenshot>
+<graphic fileref="img/groups.png"/>
+</screenshot>
+</sect1>
+<sect1 id="edit_attendances">
+<title>Edit attendances view</title>
+<para>
+The edit attendances view offers an editable table with all the grades per week per activity for this student. The assistant can edit the grades by clicking on them and inputting the new grade. Clicking on the "Show week layout" will show the correspodence between the week number and the actual week.
+</para>
+<para>
+The view is accessible from the Groups view by clicking "Edit attendances".
+</para>
+<screenshot>
+<graphic fileref="img/group_attendances.png"/>
+</screenshot>
+</sect1>
+<sect1 id="group_students">
+<title>Group students view</title>
+<para>
+This view contains two columns: on the left a list of the students that have their Moodle group equal to the LabRemote's parent group and are not part of the current LabRemote group and on the right a list of the students that are part of the LabRemote group.
+</para>
+<para>
+Clicking on the add or remove links on each side will move the student in or out of the group.
+</para>
+<screenshot>
+<graphic fileref="img/group_students.png"/>
+</screenshot>
+</sect1>
+<sect1 id="public">
+<title>Public view</title>
+<para>
+This view presents the grades for a certain group. This view can be seen by anyone without the need to have a valid account.
+</para>
+<screenshot>
+<graphic fileref="img/public.png"/>
+</screenshot>
 </sect1>
 <sect1>
 <title>Timetable view</title>
 <para>
-The timetable view presents an overview of the activities along with their time and duration. Activities can be edited, added or deleted.
+The timetable view presents an overview of the activities along with their time and duration in a graphical way. Activities can be edited, added or deleted.
 </para>
+<screenshot>
+<graphic fileref="img/timetable.png"/>
+</screenshot>
 </sect1>
 <sect1>
-<title>Assistants and Courses view</title>
+<title>Assistants view</title>
 <para>
-The user can modify existing Assistants and Courses using these views.
+This view presents the list of current assistants with their details (name, user, courses where he is an assistant, whether he is approved or not) and options to edit the data. If an assistant is approved then he can access the web application for that course.
 </para>
+<screenshot>
+<graphic fileref="img/assistants.png"/>
+</screenshot>
+</sect1>
+<sect1>
+<title>Courses view</title>
+<para>
+This view contains details related to courses and options to modify them.
+</para>
+<screenshot>
+<graphic fileref="img/courses.png"/>
+</screenshot>
 </sect1>
 </chapter>
 <chapter>
 <title>Mobile application</title>
 <para>
-The mobile application has 4 main views: current group, timetable, student search and settings
+The smartphone application offers a menu which provides access to 4 main views: (current) group, timetable, student search and settings.
 </para>
-<section>
-<title>Current group</title>
 <para>
+<table width="300">
+<caption>
+The semnification of the icons from the main menu:
+</caption>
+<tr>
+<td>
+Current group
+</td>
+<td>
+Search
+</td>
+</tr>
+<tr>
+<td>
+Timetable
+</td>
+<td>
+Settings
+</td>
+</tr>
+</table>
 </para>
+<screenshot>
+<graphic fileref="img/mobile/main_menu.png" scale="50"/>
+</screenshot>
+<section>
+<title>(Current) group view</title>
+<para>
+We define a group by its name, activity and week. The activity (week day and time interval)  and the week give us the exact moment when the group laboratory takes place. The "Current group" view and the "Group view" are different only in the way the group and activity is selected. If there is no current activity the user is presented with a list of activities. The "Group view" shows a user selected activity.
+</para>
+<screenshot>
+<graphic fileref="img/mobile/current_select.png" scale="50"/>
+</screenshot>
+<para>
+The (current) group view lists the students in a group and their grades. If the user clicks on a student in the list, he will be taken to the Student View in order to see more information about the selected student and its attendances. 
+</para>
+<screenshot>
+<graphic fileref="img/mobile/group_view.png" scale="50"/>
+</screenshot>
+<para>
+The assistant can increase and decrease a grade by using a fling(to right or left) gesture on a selected student item. He can also directly insert a grade by clicking on it and editing a small pop up box.
+</para>
+<screenshot>
+<graphic fileref="img/mobile/group_grade_edit.png" scale="50"/>
+</screenshot>
+<para>
+In order to change the activity&#8217;s week, the user will have to click on the header. That will display a horizontal bar with a scrollable list of weeks. From here the assistant can change it&#8217;s current activity week, in order to see the group state (grades) from another date. The bar keeps the current week as a bold number and invalid weeks (for example the weeks in which this activity is in a vacation day) as fade grey numbers.
+</para>
+<screenshot>
+<graphic fileref="img/mobile/group_inactive_week.png" scale="50"/>
+</screenshot>
+</section>
+<section>
+<title>Student view</title>
+<para>
+The Student view displays information about the selected student: group, total grade and grade for each attendance.
+</para>
+<screenshot>
+<graphic fileref="img/mobile/student_view.png" scale="50"/>
+</screenshot>
 </section>
 <section>
 <title>Timetable</title>
 <para>
+The timetable view consists of an expandable list where the user can go to an activity (group and interval) from a selected week day. Because the number of activities can be quite large only one item can be expanded at a time.
 </para>
+<screenshot>
+<graphic fileref="img/mobile/timetable.png" scale="50"/>
+</screenshot>
 </section>
 <section>
 <title>Student search</title>
 <para>
+The user can fire the student search box in many different ways: pressing the search button on the smartphone(if the device has one), clicking on the search item in the main view or options menu or by simply starting to type the student&#8217;s name in the current activity.
 </para>
+<para>
+The application also supports integration in the smartphone&#8217;s global search so that the user can search for a student even though he isn&#8217;t currently in the application. Search suggestions are also included.
+</para>
+<screenshot>
+<graphic fileref="img/mobile/search.png" scale="50"/>
+</screenshot>
 </section>
 <section>
 <title>Settings</title>
 <para>
+The settings activity allows the user to add/modify the information needed for the application to work:
+</para>
+<itemizedlist>
+<listitem>
+<para>
+Host address -- address of the server that the application will use.
+</para>
+<screenshot>
+<graphic fileref="img/mobile/settings_server.png" scale="50"/>
+</screenshot>
+</listitem>
+<listitem>
+<para>
+Login code -- used to upload a new login code.
+</para>
+<screenshot>
+<graphic fileref="img/mobile/settings_code.png" scale="50"/>
+</screenshot>
+</listitem>
+<listitem>
+<para>
+Current course -- selects the current course for the application.
+</para>
+<screenshot>
+<graphic fileref="img/mobile/settings_course.png" scale="50"/>
+</screenshot>
+</listitem>
+</itemizedlist>
+<para>
+After managing the settings the user must push the "Done" button to save the settings.
 </para>
 </section>
 </chapter>
