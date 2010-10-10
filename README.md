@@ -30,7 +30,7 @@ Middleware:
 The main workflow is:
 ![Basic workflow](http://eftimie.ro/wiki/_media/workflow-en.png?w=&h=&cache=cache "Basic workflow")
 
-For screenshots and more information about the way the application works read the application "Manual":http://labremote.korect.ro/manual/
+For screenshots and more information about the way the application works read the application manual available at <http://labremote.korect.ro/manual/>
 
 The basic ui views are:
 
@@ -56,13 +56,15 @@ To run the middleware locally all you need to do is install the <code> python-dj
 ./manage.py runserver # to start the server
 </pre>
 
-The server will be available at the following address: "http://127.0.0.1:8000/api/":http://127.0.0.1:8000/api/
+The server will be available at the following address: <http://127.0.0.1:8000/api/>
 
 If you wish to use the server on another port or want the server to be accessible to the outside use:
 
 ./manage.py runserver out.side.ip.address:port # to start the server
 
-To populate the database with info you can use the administration interface at the address: "http://127.0.0.1:8000/admin/":http://127.0.0.1:8000/admin
+To populate the database with info you can use the administration interface at the address: <http://127.0.0.1:8000/admin/>
+
+To see the pretty forms you also have to run <pre>easy_install django-uni-form</pre>.
 
 # Motivation #
 *   Build something useful.
