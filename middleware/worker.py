@@ -28,11 +28,11 @@ if __name__ == "__main__":
         sys.stderr.write("Failed to connect.\n")
         sys.exit(1)
     
-    if session.answered("Overview of my courses"):
+    if session.answered("Overview of my courses") or session.answered("Acas"):
         print "Ok"
         for c in session.list_courses():
             print c[0],c[1]
-        #print session.list_groups(COURSE_ID)
+        print session.list_groups(COURSE_ID)
         session.logout()
         sys.exit(0)
     elif session.answered("forgot_password.php"):

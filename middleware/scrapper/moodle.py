@@ -33,6 +33,8 @@ class MoodleSession(curl.Curl):
         ids = []
         content = self.body()
         body = content[content.find('id="content"'):]
+	if len(body) < 10:
+		body = content[content.find('id="maincontent"'):]
         index = 0
         
         while True:
